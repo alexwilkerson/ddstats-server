@@ -1,3 +1,29 @@
+# ddstats-api
+
+### TODO: endpoints
+
+#### index:
+- [ ] GET user/live
+- [ ] GET game/top
+- [ ] GET game/recent?num=10
+- [ ] GET client/version/latest
+- [ ] GET news/recent?num=1
+
+#### games
+- [ ] GET game/recent?num=10 (maybe page?)
+
+#### game_log
+- [ ] GET game/{id}/info
+- [ ] GET game/{id} (all)
+- [ ] GET game/{id}/gems
+- [ ] GET game/{id}/homing-daggers
+- [ ] GET game/{id}/accuracy
+- [ ] GET game/{id}/enemies-alive
+- [ ] GET game/{id}/enemies-killed
+
+#### users
+- [ ] GET user?num=10 (list all users)
+
 ### importing csvs from app.db
 In order to port the database from SQLite3 to Postgres, the following shenanigans must occur:
 - scp app.db from server, then: `sqlite app3.db`
