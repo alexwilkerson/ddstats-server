@@ -32,7 +32,7 @@ select id, game_id, printf("%.6f", game_time) as game_time, gems, homing_daggers
 select * from spawnset;
 ```
 
-#### player (user)
+#### player (renamed from user)
 ```sql
 .headers on
 .mode csv

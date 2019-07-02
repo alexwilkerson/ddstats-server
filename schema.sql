@@ -18,7 +18,7 @@ CREATE TABLE game (
   enemies_killed BIGINT NOT NULL,
   time_stamp TIMESTAMP WITH TIME ZONE NOT NULL,
   replay_player_id INTEGER NOT NULL,
-  survival_hash TEXT NOT NULL,
+  survival_hash TEXT,
   version TEXT,
   level_two_time DOUBLE PRECISION DEFAULT 0.0,
   level_three_time DOUBLE PRECISION DEFAULT 0.0,
