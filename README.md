@@ -5,12 +5,12 @@
 #### index
 - [ ] GET user/live
 - [ ] GET game/top
-- [ ] GET game/recent?num=10
+- [ ] GET game/recent?pagesize={int}&pagenum={int}
 - [ ] GET client/version/latest
-- [ ] GET news/recent?num=1
+- [ ] GET news/recent?num={int}
 
 #### games
-- [ ] GET game/recent?pagesize={int}&pagenum={int} (maybe page?)
+- [ ] GET game/recent?pagesize={int}&pagenum={int}
 
 #### game_log
 - [ ] GET game/{int:id}/info
