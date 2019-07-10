@@ -22,7 +22,7 @@
 - [ ] GET game/{int:id}/enemies-killed
 
 #### users
-- [ ] GET user?num=10 (list all users)
+- [ ] GET user?pagesize={int}&pagenum={int} (list all users)
 
 #### ddstats backend
 - [ ] GET /ddstats_backend/get_user_by_rank/{int:rank}
@@ -32,7 +32,7 @@
 
 ### importing csvs from app.db
 In order to port the database from SQLite3 to Postgres, the following shenanigans must occur:
-- scp app.db from server, then: `sqlite app3.db`
+- scp app.db from server, then: `sqlite3 app.db`
 - Afterwards, import the csvs via Postico.
 - See `schema.sql` for creating the Postgres database.
 
