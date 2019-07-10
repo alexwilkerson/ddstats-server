@@ -2,7 +2,7 @@
 
 ### TODO: endpoints
 
-#### index:
+#### index
 - [ ] GET user/live
 - [ ] GET game/top
 - [ ] GET game/recent?num=10
@@ -10,19 +10,25 @@
 - [ ] GET news/recent?num=1
 
 #### games
-- [ ] GET game/recent?num=10 (maybe page?)
+- [ ] GET game/recent?pagesize={int}&pagenum={int} (maybe page?)
 
 #### game_log
-- [ ] GET game/{id}/info
-- [ ] GET game/{id} (all)
-- [ ] GET game/{id}/gems
-- [ ] GET game/{id}/homing-daggers
-- [ ] GET game/{id}/accuracy
-- [ ] GET game/{id}/enemies-alive
-- [ ] GET game/{id}/enemies-killed
+- [ ] GET game/{int:id}/info
+- [ ] GET game/{int:id} (all)
+- [ ] GET game/{int:id}/gems
+- [ ] GET game/{int:id}/homing-daggers
+- [ ] GET game/{int:id}/accuracy
+- [ ] GET game/{int:id}/enemies-alive
+- [ ] GET game/{int:id}/enemies-killed
 
 #### users
 - [ ] GET user?num=10 (list all users)
+
+### ddstats backend
+- [ ] GET /ddstats_backend/get_user_by_rank/{int:rank}
+- [ ] GET /ddstats_backend/get_user_by_id/{int:id}
+- [ ] GET /ddstats_backend/user_search/{string:name}
+- [ ] GET /ddstats_backend/get_scores?offset={int}
 
 ### importing csvs from app.db
 In order to port the database from SQLite3 to Postgres, the following shenanigans must occur:
