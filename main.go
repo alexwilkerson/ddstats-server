@@ -19,7 +19,7 @@ const (
 )
 
 func main() {
-	logger := log.New(os.Stdout, "[ddstats-api] ", log.LstdFlags)
+	// logger := log.New(os.Stdout, "[ddstats-api] ", log.LstdFlags)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", HomeHandler)
 
