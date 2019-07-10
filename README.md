@@ -13,21 +13,21 @@
 - [ ] GET game/recent?pagesize={int}&pagenum={int}
 
 #### game_log
-- [ ] GET game/{int:id}/info
-- [ ] GET game/{int:id} (all)
-- [ ] GET game/{int:id}/gems
-- [ ] GET game/{int:id}/homing-daggers
-- [ ] GET game/{int:id}/accuracy
-- [ ] GET game/{int:id}/enemies-alive
-- [ ] GET game/{int:id}/enemies-killed
+- [ ] GET game/info?id={int}
+- [ ] GET game?id={int} (all)
+- [ ] GET game/gems?id={int}
+- [ ] GET game/homing-daggers?id={int}
+- [ ] GET game/accuracy?id={int}
+- [ ] GET game/enemies-alive?id={int}
+- [ ] GET game/enemies-killed?id={int}
 
 #### users
 - [ ] GET user?pagesize={int}&pagenum={int} (list all users)
 
 #### ddstats backend
-- [ ] GET /ddstats_backend/get_user_by_rank/{int:rank}
-- [ ] GET /ddstats_backend/get_user_by_id/{int:id}
-- [ ] GET /ddstats_backend/user_search/{string:name}
+- [ ] GET /ddstats_backend/get_user_by_rank?rank={int}
+- [ ] GET /ddstats_backend/get_user_by_id?id={int}
+- [ ] GET /ddstats_backend/user_search?user={string}
 - [ ] GET /ddstats_backend/get_scores?offset={int}
 
 ### importing csvs from app.db
