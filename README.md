@@ -24,7 +24,7 @@
 #### users
 - [ ] GET user?num=10 (list all users)
 
-### ddstats backend
+#### ddstats backend
 - [ ] GET /ddstats_backend/get_user_by_rank/{int:rank}
 - [ ] GET /ddstats_backend/get_user_by_id/{int:id}
 - [ ] GET /ddstats_backend/user_search/{string:name}
