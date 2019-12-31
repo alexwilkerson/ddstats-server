@@ -14,6 +14,7 @@ import (
 type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
+	client   *http.Client
 	db       *sql.DB
 }
 
@@ -31,9 +32,13 @@ func main() {
 	}
 	defer db.Close()
 
+	// TODO: set up client appropriately
+	client := &http.Client{}
+
 	app := &application{
 		errorLog: errorLog,
 		infoLog:  infoLog,
+		client:   client,
 		db:       db,
 	}
 

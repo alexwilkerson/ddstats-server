@@ -14,5 +14,8 @@ func (app *application) routes() http.Handler {
 
 	mux.Get("/", http.HandlerFunc(app.helloWorld))
 
+	// ddapi
+	mux.Get("/api/v2/ddapi/get_user_by_rank", http.HandlerFunc(app.ddGetUserByRank))
+
 	return standardMiddleware.Then(mux)
 }
