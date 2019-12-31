@@ -15,18 +15,18 @@ func (app *application) helloWorld(w http.ResponseWriter, r *http.Request) {
 func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) {
 	rank, ok := r.URL.Query()["rank"]
 	if !ok || len(rank) < 1 {
-		app.clientError(w, http.StatusBadRequest)
+		app.clientMessage(w, http.StatusBadRequest, "no 'rank' query parameter set")
 		return
 	}
 
 	rankInt, err := strconv.Atoi(rank[0])
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.clientMessage(w, http.StatusBadRequest, "rank must be integer")
 		return
 	}
 
 	if rankInt < 1 {
-		app.clientError(w, http.StatusBadRequest)
+		app.clientMessage(w, http.StatusBadRequest, "negative rank not allowed")
 		return
 	}
 
@@ -70,8 +70,6 @@ func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) 
 		OverallAccuracy     float64 `json:"overall_accuracy"`
 	}{}
 
-	_ = data
-
 	// start reading blob from here
 	offset := 19
 
@@ -82,7 +80,7 @@ func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) 
 	// just figured out this information manually...
 	data.PlayerID = toUint64(bodyBytes, offset+4)
 	if data.PlayerID == 0 {
-		// TODO: HANDLE ERROR
+		app.clientMessage(w, http.StatusNotFound, "no player found")
 		return
 	}
 	data.Rank = toInt32(bodyBytes, offset)
@@ -95,8 +93,7 @@ func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) 
 		data.Accuracy = float64(data.DaggersHit) / float64(data.DaggersFired) * 100
 	}
 	data.DeathType = deathTypes[toInt16(bodyBytes, offset+32)]
-	// TODO: fix the result of this
-	data.OverallTime = float64(toUint64(bodyBytes, offset+60) / 10000)
+	data.OverallTime = float64(toUint64(bodyBytes, offset+60)) / 10000
 	data.OverallKills = toUint64(bodyBytes, offset+44)
 	data.OverallGems = toUint64(bodyBytes, offset+68)
 	data.OverallDeaths = toUint64(bodyBytes, offset+36)
