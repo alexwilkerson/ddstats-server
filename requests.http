@@ -1,5 +1,7 @@
 ### Local request
 GET http://localhost:5000/
 
-### ddapi
-GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=4
+### ddapi - get user by rank
+GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=1
+### ddapi - get user by id
+GET http://localhost:5000/api/v2/ddapi/get_user_by_id?id=148788
