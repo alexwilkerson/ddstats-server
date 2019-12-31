@@ -7,7 +7,7 @@ import (
 	"net/url"
 	"strconv"
 
-	"github.com/alexwilkerson/pkg/ddapi"
+	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 )
 
 func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) {
@@ -104,13 +104,60 @@ func (app *application) ddGetUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// start reading blob from byte position 19
-	player, err := ddBytesToPlayer(bodyBytes, 19)
+	player, err := ddapi.BytesToPlayer(bodyBytes, 19)
 	if err != nil {
 		app.clientMessage(w, http.StatusNotFound, err.Error())
 		return
 	}
 
 	js, err := json.Marshal(player)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) ddUserSearch(w http.ResponseWriter, r *http.Request) {
+	name, ok := r.URL.Query()["name"]
+	if !ok || len(name) < 1 {
+		app.clientMessage(w, http.StatusBadRequest, "no 'name' query parameter set")
+		return
+	}
+
+	u := "http://dd.hasmodai.com/backend16/get_user_search_public.php"
+	form := url.Values{"search": {name[0]}}
+	resp, err := app.client.PostForm(u, form)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		app.serverError(w, err)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	players, err := ddapi.UserSearchBytesToPlayers(bodyBytes)
+	if err != nil {
+		app.clientMessage(w, http.StatusNotFound, err.Error())
+		return
+	}
+	data := struct {
+		PlayerCount int             `json:"player_count"`
+		Players     []*ddapi.Player `json:"players"`
+	}{PlayerCount: len(players), Players: players}
+
+	js, err := json.Marshal(data)
 	if err != nil {
 		app.serverError(w, err)
 		return
