@@ -15,6 +15,9 @@ var DeathTypes = []string{
 // ErrPlayerNotFound returned when player not found from the DD API
 var ErrPlayerNotFound = errors.New("player not found")
 
+// ErrNoPlayersFound is returned when user search produces no users
+var ErrNoPlayersFound = errors.New("no players found")
+
 // Player is the struct returned after parsing the binary data
 // blob returned from the DD API.
 type Player struct {
@@ -35,6 +38,19 @@ type Player struct {
 	OverallDaggersHit   uint64  `json:"overall_daggers_hit"`
 	OverallDaggersFired uint64  `json:"overall_daggers_fired"`
 	OverallAccuracy     float64 `json:"overall_accuracy"`
+}
+
+// Leaderboard is a struct returned after being converted from bytes
+type Leaderboard struct {
+	GlobalDeaths       uint64    `json:"global_deaths"`
+	GlobalKills        uint64    `json:"global_kills"`
+	GlobalTime         float64   `json:"global_time"`
+	GlobalGems         uint64    `json:"global_gems"`
+	GlobalDaggersFired uint64    `json:"global_daggers_fired"`
+	GlobalDaggersHit   uint64    `json:"global_daggers_hit"`
+	GlobalAccuracy     float64   `json:"global_accuracy"`
+	GlobalPlayerCount  int32     `json:"global_player_count"`
+	Players            []*Player `json:"players"`
 }
 
 // BytesToPlayer takes a byte array and an initial offset
@@ -73,6 +89,25 @@ func BytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 	}
 
 	return &player, nil
+}
+
+// UserSearchBytesToPlayers converts a byte array to a player slice
+func UserSearchBytesToPlayers(b []byte) ([]*Player, error) {
+	playerCount := int(toInt16(b, 11))
+	if playerCount < 1 {
+		return nil, ErrNoPlayersFound
+	}
+	var players []*Player
+	offset := 19
+	for i := 0; i < playerCount; i++ {
+		p, err := BytesToPlayer(b, offset)
+		if err != nil {
+			return nil, ErrPlayerNotFound
+		}
+		offset += len(p.PlayerName) + 90
+		players = append(players, p)
+	}
+	return players, nil
 }
 
 func toUint64(b []byte, offset int) uint64 {

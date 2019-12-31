@@ -2,6 +2,8 @@
 GET http://localhost:5000/
 
 ### ddapi - get user by rank
-GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=1
+GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=66
 ### ddapi - get user by id
-GET http://localhost:5000/api/v2/ddapi/get_user_by_id?id=148788
+GET http://localhost:5000/api/v2/ddapi/get_user_by_id?id=65193
+### ddapi - get user by name
+GET http://localhost:5000/api/v2/ddapi/get_user_by_name?name=VHS
