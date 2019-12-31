@@ -19,7 +19,7 @@ type application struct {
 
 func main() {
 	addr := flag.String("addr", ":5000", "HTTP Network Address")
-	dsn := flag.String("dsn", "host=localhost port=5432 user=ddstats password=ddstats sslmode=disable", "PostgreSQL data source name")
+	dsn := flag.String("dsn", "host=localhost port=5432 user=ddstats password=ddstats dbname=ddstats sslmode=disable", "PostgreSQL data source name")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
