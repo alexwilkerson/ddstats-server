@@ -2,4 +2,4 @@
 GET http://localhost:5000/
 
 ### ddapi
-GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=1
+GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=4
