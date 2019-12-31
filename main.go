@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/alexwilkerson/ddstats-api/server"
+	"github.com/gorilla/mux"
 )
 
 var (
@@ -18,12 +19,20 @@ const (
 	message = "Hello, World."
 )
 
+func newRouter() *mux.Router {
+	r := mux.NewRouter()
+	staticFileDirectory := http.Dir("./static")
+	staticFileHandler := http.StripPrefix("/static/", http.FileServer(staticFileDirectory))
+	r.PathPrefix("/static/").Handler(staticFileHandler).Methods("GET")
+	r.HandleFunc("/", HomeHandler).Methods("GET")
+	return r
+}
+
 func main() {
 	// logger := log.New(os.Stdout, "[ddstats-api] ", log.LstdFlags)
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", HomeHandler)
+	r := newRouter()
 
-	err := server.New(mux, ServerAddress).ListenAndServeTLS(CertFile, KeyFile)
+	err := server.New(r, ServerAddress).ListenAndServeTLS(CertFile, KeyFile)
 	if err != nil {
 		log.Fatalf("server failed to start: %v", err)
 	}

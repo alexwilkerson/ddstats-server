@@ -4,9 +4,11 @@ import (
 	"crypto/tls"
 	"net/http"
 	"time"
+
+	"github.com/gorilla/mux"
 )
 
-func New(mux *http.ServeMux, serverAddress string) *http.Server {
+func New(r *mux.Router, serverAddress string) *http.Server {
 	tlsConfig := &tls.Config{
 		// Causes servers to use Go's default cipher suite preferences,
 		// which are tuned to avoid attacks. Does nothing on clients.
@@ -34,7 +36,7 @@ func New(mux *http.ServeMux, serverAddress string) *http.Server {
 		WriteTimeout: 10 * time.Second,
 		IdleTimeout:  120 * time.Second,
 		TLSConfig:    tlsConfig,
-		Handler:      mux,
+		Handler:      r,
 	}
 
 	return srv
