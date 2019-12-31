@@ -3,6 +3,7 @@
 ### TODO: endpoints
 
 #### index
+
 - [ ] GET user/live
 - [ ] GET game/top
 - [ ] GET game/recent?pagesize={int}&pagenum={int}
@@ -10,9 +11,11 @@
 - [ ] GET news/recent?num={int}
 
 #### games
+
 - [ ] GET game/recent?pagesize={int}&pagenum={int}
 
 #### game_log
+
 - [ ] GET game/info?id={int}
 - [ ] GET game?id={int} (all)
 - [ ] GET game/gems?id={int}
@@ -22,21 +25,26 @@
 - [ ] GET game/enemies-killed?id={int}
 
 #### users
+
 - [ ] GET user?pagesize={int}&pagenum={int} (list all users)
 
-#### ddstats backend
-- [ ] GET /ddstats_backend/get_user_by_rank?rank={int}
-- [ ] GET /ddstats_backend/get_user_by_id?id={int}
-- [ ] GET /ddstats_backend/user_search?user={string}
-- [ ] GET /ddstats_backend/get_scores?offset={int}
+#### dd backend
+
+- [ ] GET /ddapi/get_user_by_rank?rank={int}
+- [ ] GET /ddapi/get_user_by_id?id={int}
+- [ ] GET /ddapi/user_search?user={string}
+- [ ] GET /ddapi/get_scores?offset={int}
 
 ### importing csvs from app.db
+
 In order to port the database from SQLite3 to Postgres, the following shenanigans must occur:
+
 - scp app.db from server, then: `sqlite3 app.db`
 - Afterwards, import the csvs via Postico.
 - See `schema.sql` for creating the Postgres database.
 
 #### game
+
 ```sql
 .headers on
 .mode csv
@@ -46,6 +54,7 @@ select id, player_id, granularity, printf("%.6f", game_time) as game_time, death
 ```
 
 #### state
+
 ```sql
 .headers on
 .mode csv
@@ -57,6 +66,7 @@ select id, game_id, printf("%.6f", game_time) as game_time, gems, homing_daggers
 ```
 
 #### spawnset
+
 ```sql
 .headers on
 .mode csv
@@ -65,6 +75,7 @@ select * from spawnset;
 ```
 
 #### player (renamed from user)
+
 ```sql
 .headers on
 .mode csv
@@ -73,6 +84,7 @@ select * from user;
 ```
 
 #### live
+
 ```sql
 .headers on
 .mode csv
