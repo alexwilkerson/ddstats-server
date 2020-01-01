@@ -18,7 +18,7 @@ func (g *GameModel) Get(id int) (*models.Game, error) {
 	stmt := `SELECT * FROM game WHERE id=$1`
 	row := g.DB.QueryRow(stmt, id)
 	//This will hold the values of the retreived record
-	gameModel := &models.Game{}
+	gameModel := models.Game{}
 	err := row.Scan(&gameModel.ID,
 		&gameModel.PlayerID,
 		&gameModel.Granularity,
@@ -47,7 +47,7 @@ func (g *GameModel) Get(id int) (*models.Game, error) {
 		}
 		return nil, err
 	}
-	return gameModel, nil
+	return &gameModel, nil
 }
 
 //GetGems returns how many Gems in the game

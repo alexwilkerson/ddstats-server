@@ -23,8 +23,7 @@ func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 	game, err := app.games.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
-			app.clientMessage(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
-
+			app.clientMessage(w, http.StatusNotFound, err.Error())
 		} else {
 			app.serverError(w, err)
 		}

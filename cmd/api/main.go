@@ -40,12 +40,7 @@ func main() {
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		client:   client,
-		//I want each model to have a pointer to databse saparetly
-		//Since we may add more models i don't like that the db fully is part of application
-		//Also this way methods for gamelog are not part of application struct
-		//They are part of GameModel Struct
-		//Having db pointer wrapped per model seems to satisfy separataion of concern, LET ME KNOW!!
-		games: &postgres.GameModel{DB: db},
+		games:    &postgres.GameModel{DB: db},
 	}
 
 	srv := &http.Server{
