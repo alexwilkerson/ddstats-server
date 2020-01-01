@@ -154,3 +154,77 @@ func (app *application) ddUserSearch(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
+
+func (app *application) ddGetScores(w http.ResponseWriter, r *http.Request) {
+	offset := r.URL.Query().Get("offset")
+	if offset == "" {
+		offset = "0"
+	}
+
+	offsetInt, err := strconv.Atoi(offset)
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "offset must be an integer")
+		return
+	}
+
+	if offsetInt < 0 {
+		app.clientMessage(w, http.StatusBadRequest, "negative offset not allowed")
+		return
+	}
+
+	limit := 100
+	_, ok := r.URL.Query()["limit"]
+	if ok {
+		limit, err = strconv.Atoi(r.URL.Query().Get("limit"))
+		if err != nil {
+			app.clientMessage(w, http.StatusBadRequest, "limit must be an integer")
+			return
+		}
+
+		if limit < 1 || limit > 100 {
+			app.clientMessage(w, http.StatusBadRequest, "limit must be between 1 and 100")
+			return
+		}
+	}
+
+	// the DD API weirdly counts users starting from 1 but internally uses a 0 index
+	// this fix it to make it more readable for users.
+	if offsetInt != 0 {
+		offsetInt--
+	}
+
+	u := "http://dd.hasmodai.com/backend16/get_scores.php"
+	form := url.Values{"user": {"0"}, "level": {"survival"}, "offset": {strconv.Itoa(offsetInt)}}
+	resp, err := app.client.PostForm(u, form)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		app.serverError(w, err)
+		return
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	leaderboard, err := ddapi.GetScoresBytesToLeaderboard(bodyBytes, limit)
+	if err != nil {
+		app.clientMessage(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	js, err := json.Marshal(leaderboard)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
