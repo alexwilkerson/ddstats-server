@@ -30,10 +30,10 @@
 
 #### dd backend
 
-- [ ] GET /ddapi/get_user_by_rank?rank={int}
-- [ ] GET /ddapi/get_user_by_id?id={int}
-- [ ] GET /ddapi/user_search?user={string}
-- [ ] GET /ddapi/get_scores?offset={int}
+- [x] GET api/v2/ddapi/get_user_by_rank?rank={int}
+- [x] GET api/v2/ddapi/get_user_by_id?id={int}
+- [x] GET api/v2/ddapi/user_search?user={string}
+- [x] GET api/v2/ddapi/get_scores?offset={int}&limit={int}
 
 ### importing csvs from app.db
 
