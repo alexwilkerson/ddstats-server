@@ -11,25 +11,19 @@ import (
 )
 
 func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) {
-	rank, ok := r.URL.Query()["rank"]
-	if !ok || len(rank) < 1 {
-		app.clientMessage(w, http.StatusBadRequest, "no 'rank' query parameter set")
-		return
-	}
-
-	rankInt, err := strconv.Atoi(rank[0])
+	rank, err := strconv.Atoi(r.URL.Query().Get("rank"))
 	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, "rank must be integer")
+		app.clientMessage(w, http.StatusBadRequest, "rank must be an integer")
 		return
 	}
 
-	if rankInt < 1 {
+	if rank < 1 {
 		app.clientMessage(w, http.StatusBadRequest, "negative rank not allowed")
 		return
 	}
 
 	u := "http://dd.hasmodai.com/backend16/get_user_by_rank_public.php"
-	form := url.Values{"rank": {rank[0]}}
+	form := url.Values{"rank": {strconv.Itoa(rank)}}
 	resp, err := app.client.PostForm(u, form)
 	if err != nil {
 		app.serverError(w, err)
@@ -66,25 +60,19 @@ func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) 
 }
 
 func (app *application) ddGetUserByID(w http.ResponseWriter, r *http.Request) {
-	id, ok := r.URL.Query()["id"]
-	if !ok || len(id) < 1 {
-		app.clientMessage(w, http.StatusBadRequest, "no 'id' query parameter set")
-		return
-	}
-
-	idInt, err := strconv.Atoi(id[0])
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, "id must be integer")
+		app.clientMessage(w, http.StatusBadRequest, "id must be an integer")
 		return
 	}
 
-	if idInt < 1 {
+	if id < 1 {
 		app.clientMessage(w, http.StatusBadRequest, "negative id not allowed")
 		return
 	}
 
 	u := "http://dd.hasmodai.com/backend16/get_user_by_id_public.php"
-	form := url.Values{"uid": {id[0]}}
+	form := url.Values{"uid": {strconv.Itoa(id)}}
 	resp, err := app.client.PostForm(u, form)
 	if err != nil {
 		app.serverError(w, err)
@@ -121,14 +109,14 @@ func (app *application) ddGetUserByID(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) ddUserSearch(w http.ResponseWriter, r *http.Request) {
-	name, ok := r.URL.Query()["name"]
-	if !ok || len(name) < 1 {
+	name := r.URL.Query().Get("name")
+	if name == "" {
 		app.clientMessage(w, http.StatusBadRequest, "no 'name' query parameter set")
 		return
 	}
 
 	u := "http://dd.hasmodai.com/backend16/get_user_search_public.php"
-	form := url.Values{"search": {name[0]}}
+	form := url.Values{"search": {name}}
 	resp, err := app.client.PostForm(u, form)
 	if err != nil {
 		app.serverError(w, err)
