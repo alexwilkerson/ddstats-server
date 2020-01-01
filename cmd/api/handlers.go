@@ -13,18 +13,17 @@ func (app *application) helloWorld(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, Merle!"))
 }
 
-func (app *application) showGame(w http.ResponseWriter, r *http.Request) {
+func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil {
-		app.clientMessage(w, 400, "Bad query params request")
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
 		return
 	}
-
-	game, err := app.games.GetGame(id)
+	game, err := app.games.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
-			app.clientMessage(w, 404, "Game Does not exist")
+			app.clientMessage(w, http.StatusNotFound, http.StatusText(http.StatusNotFound))
 
 		} else {
 			app.serverError(w, err)
@@ -32,12 +31,12 @@ func (app *application) showGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	//This should work since data had been retreived
-	gameValue, err := json.Marshal(game)
+	js, err := json.Marshal(game)
 	if err != nil {
 		app.clientError(w, http.StatusInternalServerError)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
-	w.Write(gameValue)
+	w.Write(js)
 
 }
