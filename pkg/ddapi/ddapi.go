@@ -50,7 +50,42 @@ type Leaderboard struct {
 	GlobalDaggersHit   uint64    `json:"global_daggers_hit"`
 	GlobalAccuracy     float64   `json:"global_accuracy"`
 	GlobalPlayerCount  int32     `json:"global_player_count"`
+	PlayerCount        int       `json:"player_count"`
 	Players            []*Player `json:"players"`
+}
+
+// GetScoresBytesToLeaderboard converts the byte array from the DD API
+// to a Leaderboard struct
+func GetScoresBytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
+	var leaderboard Leaderboard
+
+	leaderboard.GlobalDeaths = toUint64(b, 11)
+	leaderboard.GlobalKills = toUint64(b, 19)
+	leaderboard.GlobalTime = float64(toUint64(b, 35)) / 1000
+	leaderboard.GlobalGems = toUint64(b, 43)
+	leaderboard.GlobalDaggersHit = toUint64(b, 51)
+	leaderboard.GlobalDaggersFired = toUint64(b, 27)
+	if leaderboard.GlobalDaggersFired > 0 {
+		leaderboard.GlobalAccuracy = float64(leaderboard.GlobalDaggersHit) / float64(leaderboard.GlobalDaggersFired)
+	}
+	leaderboard.GlobalPlayerCount = toInt32(b, 75)
+
+	leaderboard.PlayerCount = int(toInt16(b, 59))
+	if limit < leaderboard.PlayerCount {
+		leaderboard.PlayerCount = limit
+	}
+
+	offset := 83
+	for i := 0; i < leaderboard.PlayerCount; i++ {
+		p, err := BytesToPlayer(b, offset)
+		if err != nil {
+			return nil, ErrPlayerNotFound
+		}
+		offset += len(p.PlayerName) + 90
+		leaderboard.Players = append(leaderboard.Players, p)
+	}
+
+	return &leaderboard, nil
 }
 
 // BytesToPlayer takes a byte array and an initial offset
