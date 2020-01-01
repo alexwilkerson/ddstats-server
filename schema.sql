@@ -44,21 +44,21 @@ CREATE TABLE IF NOT EXISTS state (
 CREATE TABLE IF NOT EXISTS player (
   id BIGSERIAL PRIMARY KEY NOT NULL,
   username TEXT NOT NULL,
-  rank INtEGER NOT NULL,
+  rank INTEGER NOT NULL,
   game_time DOUBLE PRECISION NOT NULL,
   death_type TEXT NOT NULL,
   gems BIGINT NOT NULL,
-  daggers_fired BIGINT NOT NULL,
   daggers_hit BIGINT NOT NULL,
+  daggers_fired BIGINT NOT NULL,
   enemies_killed BIGINT NOT NULL,
   accuracy DOUBLE PRECISION NOT NULL,
-  time_total DOUBLE PRECISION NOT NULL,
-  deaths_total BIGINT NOT NULL,
-  gems_total BIGINT NOT NULL,
-  enemies_killed_total BIGINT NOT NULL,
-  daggers_fired_total BIGINT NOT NULL,
-  daggers_hit_total BIGINT NOT NULL,
-  accuracy_total DOUBLE PRECISION NOT NULL
+  overall_time DOUBLE PRECISION NOT NULL,
+  overall_deaths BIGINT NOT NULL,
+  overall_gems BIGINT NOT NULL,
+  overall_enemies_killed BIGINT NOT NULL,
+  overall_daggers_hit BIGINT NOT NULL,
+  overall_daggers_fired BIGINT NOT NULL,
+  overall_accuracy DOUBLE PRECISION NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS live (

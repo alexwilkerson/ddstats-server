@@ -80,7 +80,7 @@ select * from spawnset;
 .headers on
 .mode csv
 .output player.csv
-select * from user;
+select id, username, rank, game_time, death_type, gems, daggers_fired, daggers_hit, enemies_killed, accuracy, time_total as overall_time, deaths_total as overall_deaths, gems_total as overall_gems, enemies_killed_total as overall_enemies_killed, daggers_fired_total as overall_daggers_fired, daggers_hit_total as overall_daggers_hit, accuracy_total as overall_accuracy from user;
 ```
 
 #### live
