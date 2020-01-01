@@ -1,8 +1,8 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -16,20 +16,28 @@ func (app *application) helloWorld(w http.ResponseWriter, r *http.Request) {
 func (app *application) showGame(w http.ResponseWriter, r *http.Request) {
 
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
-	if err != nil || id < 1 {
-		app.notFound(w)
+	if err != nil {
+		app.clientMessage(w, 400, "Bad query params request")
 		return
 	}
 
-	game, err := app.games.GetGame(1)
+	game, err := app.games.GetGame(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
-			app.notFound(w)
+			app.clientMessage(w, 404, "Game Does not exist")
 
 		} else {
 			app.serverError(w, err)
 		}
 		return
 	}
-	fmt.Fprintf(w, "%v", game)
+	//This should work since data had been retreived
+	gameValue, err := json.Marshal(game)
+	if err != nil {
+		app.clientError(w, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(gameValue)
+
 }
