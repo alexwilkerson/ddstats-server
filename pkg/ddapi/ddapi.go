@@ -3,8 +3,17 @@ package ddapi
 import (
 	"encoding/binary"
 	"errors"
+	"io/ioutil"
 	"math"
+	"net/http"
+	"net/url"
+	"strconv"
 )
+
+// API is used as an abstraction and to inject the client into the ddapi package
+type API struct {
+	Client *http.Client
+}
 
 // DeathTypes as defined by the DD API
 var DeathTypes = []string{
@@ -55,44 +64,125 @@ type Leaderboard struct {
 	Players            []*Player `json:"players"`
 }
 
-// GetScoresBytesToLeaderboard converts the byte array from the DD API
-// to a Leaderboard struct
-func GetScoresBytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
-	var leaderboard Leaderboard
-
-	leaderboard.GlobalDeaths = toUint64(b, 11)
-	leaderboard.GlobalKills = toUint64(b, 19)
-	leaderboard.GlobalTime = roundToNearest(float64(toUint64(b, 35))/1000, 4)
-	leaderboard.GlobalGems = toUint64(b, 43)
-	leaderboard.GlobalDaggersHit = toUint64(b, 51)
-	leaderboard.GlobalDaggersFired = toUint64(b, 27)
-	if leaderboard.GlobalDaggersFired > 0 {
-		leaderboard.GlobalAccuracy = float64(leaderboard.GlobalDaggersHit) / float64(leaderboard.GlobalDaggersFired)
+// UserByID hits the backend DD API and returns a Player
+func (api *API) UserByID(id int) (*Player, error) {
+	u := "http://dd.hasmodai.com/backend16/get_user_by_id_public.php"
+	form := url.Values{"uid": {strconv.Itoa(id)}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
 	}
-	leaderboard.GlobalPlayerCount = toInt32(b, 75)
+	defer resp.Body.Close()
 
-	leaderboard.PlayerCount = int(toInt16(b, 59))
-	if limit < leaderboard.PlayerCount {
-		leaderboard.PlayerCount = limit
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
 	}
 
-	offset := 83
-	for i := 0; i < leaderboard.PlayerCount; i++ {
-		p, err := BytesToPlayer(b, offset)
-		if err != nil {
-			return nil, ErrPlayerNotFound
-		}
-		offset += len(p.PlayerName) + 90
-		leaderboard.Players = append(leaderboard.Players, p)
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
 	}
 
-	return &leaderboard, nil
+	player, err := bytesToPlayer(bodyBytes, 19)
+	if err != nil {
+		return nil, err
+	}
+
+	return player, nil
+}
+
+// UserByRank hits the backend DD API and returns a Player
+func (api *API) UserByRank(rank int) (*Player, error) {
+	u := "http://dd.hasmodai.com/backend16/get_user_by_rank_public.php"
+	form := url.Values{"rank": {strconv.Itoa(rank)}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	player, err := bytesToPlayer(bodyBytes, 19)
+	if err != nil {
+		return nil, err
+	}
+
+	return player, nil
+}
+
+// GetLeaderboard takes a limit and an offset, hits the backend DD API and returns
+// a Leaderboard struct
+func (api *API) GetLeaderboard(limit, offset int) (*Leaderboard, error) {
+	// the DD API weirdly counts users starting from 1 but internally uses a 0 index
+	// this fix it to make it more readable for users.
+	if offset != 0 {
+		offset--
+	}
+
+	u := "http://dd.hasmodai.com/backend16/get_scores.php"
+	form := url.Values{"user": {"0"}, "level": {"survival"}, "offset": {strconv.Itoa(offset)}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	leaderboard, err := bytesToLeaderboard(bodyBytes, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return leaderboard, nil
+}
+
+// UserSearch takes a user name and hits the backend DD API and returns a slice of Players
+func (api *API) UserSearch(name string) ([]*Player, error) {
+	u := "http://dd.hasmodai.com/backend16/get_user_search_public.php"
+	form := url.Values{"search": {name}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	players, err := userSearchBytesToPlayers(bodyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return players, nil
 }
 
 // BytesToPlayer takes a byte array and an initial offset
 // and returns a Player object. Will return an error if the
 // Player is not found
-func BytesToPlayer(b []byte, bytePosition int) (*Player, error) {
+func bytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 	var player Player
 
 	playerNameLength := int(toInt16(b, bytePosition))
@@ -127,8 +217,42 @@ func BytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 	return &player, nil
 }
 
+// GetScoresBytesToLeaderboard converts the byte array from the DD API
+// to a Leaderboard struct
+func bytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
+	var leaderboard Leaderboard
+
+	leaderboard.GlobalDeaths = toUint64(b, 11)
+	leaderboard.GlobalKills = toUint64(b, 19)
+	leaderboard.GlobalTime = roundToNearest(float64(toUint64(b, 35))/1000, 4)
+	leaderboard.GlobalGems = toUint64(b, 43)
+	leaderboard.GlobalDaggersHit = toUint64(b, 51)
+	leaderboard.GlobalDaggersFired = toUint64(b, 27)
+	if leaderboard.GlobalDaggersFired > 0 {
+		leaderboard.GlobalAccuracy = float64(leaderboard.GlobalDaggersHit) / float64(leaderboard.GlobalDaggersFired)
+	}
+	leaderboard.GlobalPlayerCount = toInt32(b, 75)
+
+	leaderboard.PlayerCount = int(toInt16(b, 59))
+	if limit < leaderboard.PlayerCount {
+		leaderboard.PlayerCount = limit
+	}
+
+	offset := 83
+	for i := 0; i < leaderboard.PlayerCount; i++ {
+		p, err := bytesToPlayer(b, offset)
+		if err != nil {
+			return nil, ErrPlayerNotFound
+		}
+		offset += len(p.PlayerName) + 90
+		leaderboard.Players = append(leaderboard.Players, p)
+	}
+
+	return &leaderboard, nil
+}
+
 // UserSearchBytesToPlayers converts a byte array to a player slice
-func UserSearchBytesToPlayers(b []byte) ([]*Player, error) {
+func userSearchBytesToPlayers(b []byte) ([]*Player, error) {
 	playerCount := int(toInt16(b, 11))
 	if playerCount < 1 {
 		return nil, ErrNoPlayersFound
@@ -136,7 +260,7 @@ func UserSearchBytesToPlayers(b []byte) ([]*Player, error) {
 	var players []*Player
 	offset := 19
 	for i := 0; i < playerCount; i++ {
-		p, err := BytesToPlayer(b, offset)
+		p, err := bytesToPlayer(b, offset)
 		if err != nil {
 			return nil, ErrPlayerNotFound
 		}
