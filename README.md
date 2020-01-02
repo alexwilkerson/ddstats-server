@@ -48,7 +48,7 @@ In order to port the database from SQLite3 to Postgres, the following shenanigan
 ```sql
 .headers on
 .mode csv
-.output state.csv
+.output game.csv
 -- printf required because of sqlite's weird float formatting
 select id, player_id, granularity, printf("%.6f", game_time) as game_time, death_type, gems, homing_daggers, daggers_fired, daggers_hit, enemies_alive, enemies_killed, time_stamp, replay_player_id, survival_hash, version, printf("%.6f", level_two_time) as level_two_time, printf("%.6f", level_three_time) as level_three_time, printf("%.6f", level_four_time) as level_four_time, printf("%.6f", homing_daggers_max_time) as homing_daggers_max_time, printf("%.6f", enemies_alive_max_time) as enemies_alive_max_time, homing_daggers_max, enemies_alive_max from game;
 ```
@@ -70,7 +70,7 @@ select id, game_id, printf("%.6f", game_time) as game_time, gems, homing_daggers
 ```sql
 .headers on
 .mode csv
-.output state.csv
+.output spawnset.csv
 select * from spawnset;
 ```
 
