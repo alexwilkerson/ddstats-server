@@ -9,3 +9,10 @@ GET http://localhost:5000/api/v2/ddapi/get_user_by_id?id=151675
 GET http://localhost:5000/api/v2/ddapi/get_user_by_name?name=VHS
 ### ddapi - get leaderboard scores
 GET http://localhost:5000/api/v2/ddapi/get_scores?offset=50&limit=50
+
+###
+GET http://localhost:5000/api/v2/game?id=20
+###
+GET http://localhost:5000/api/v2/player?id=151675
+###
+GET http://localhost:5000/api/v2/player/all?pagesize=9&pagenum=18

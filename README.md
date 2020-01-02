@@ -24,9 +24,10 @@
 - [ ] GET game/enemies-alive?id={int}
 - [ ] GET game/enemies-killed?id={int}
 
-#### users
+#### players
 
-- [ ] GET user?pagesize={int}&pagenum={int} (list all users)
+- [x] GET player/all?pagesize={int}&pagenum={int} (list all users)
+- [x] GET player?id={int}
 
 #### dd backend
 
