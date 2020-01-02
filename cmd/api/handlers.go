@@ -39,6 +39,46 @@ func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("pagesize"))
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "pagesize must be an integer")
+		return
+	}
+	if pageSize < 1 {
+		app.clientMessage(w, http.StatusBadRequest, "pagesize must be greater than 0")
+		return
+	}
+
+	pageNum, err := strconv.Atoi(r.URL.Query().Get("pagenum"))
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "pagenum must be an integer")
+		return
+	}
+	if pageNum < 1 {
+		app.clientMessage(w, http.StatusBadRequest, "pagenum must be greater than 0")
+		return
+	}
+
+	var players struct {
+		Players []*models.Player `json:"players"`
+	}
+
+	players.Players, err = app.players.GetAll(pageSize, pageNum)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	js, err := json.Marshal(players)
+	if err != nil {
+		app.clientError(w, http.StatusInternalServerError)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 func (app *application) getPlayer(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
