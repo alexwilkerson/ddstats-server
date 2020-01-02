@@ -34,3 +34,23 @@ type Game struct {
 	HomingDaggersMax     uint           `json:"homing_daggers_max"`
 	EnemiesAliveMax      uint           `json:"enemies_alive_max"`
 }
+
+type Player struct {
+	ID                   int     `json:"id"`
+	PlayerName           string  `json:"player_name"`
+	Rank                 int     `json:"rank"`
+	GameTime             float64 `json:"game_time"`
+	DeathType            string  `json:"death_type"`
+	Gems                 int     `json:"gems"`
+	DaggersHit           int     `json:"daggers_hit"`
+	DaggersFired         int     `json:"daggers_fired"`
+	EnemiesKilled        int     `json:"enemies_killed"`
+	Accuracy             float64 `json:"accuracy"`
+	OverallTime          float64 `json:"overall_time"`
+	OverallDeaths        int     `json:"overall_deaths"`
+	OverallGems          int     `json:"overall_gems"`
+	OverallEnemiesKilled int     `json:"overall_enemies_killed"`
+	OverallDaggersHit    int     `json:"overall_daggers_hit"`
+	OverallDaggersFired  int     `json:"overall_daggers_fired"`
+	OverallAccuracy      float64 `json:"overall_accuracy"`
+}
