@@ -47,6 +47,7 @@ func (p *PlayerModel) Get(id int) (*models.Player, error) {
 	return &player, nil
 }
 
+// GetAll retreives a slice of users using a specified page size and page num starting at 1
 func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 	var players []*models.Player
 
@@ -88,4 +89,15 @@ func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 	}
 
 	return players, nil
+}
+
+// GetPlayerCount returns the total number of players in the database
+func (p *PlayerModel) GetPlayerCount() (int, error) {
+	var playerCount int
+	stmt := "SELECT COUNT(1) FROM player WHERE id<>-1"
+	err := p.DB.QueryRow(stmt).Scan(&playerCount)
+	if err != nil {
+		return 0, err
+	}
+	return playerCount, nil
 }

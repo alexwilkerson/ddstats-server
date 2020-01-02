@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"math"
 	"net/http"
 	"strconv"
 
@@ -61,7 +62,12 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var players struct {
-		Players []*models.Player `json:"players"`
+		TotalPages       int              `json:"total_pages"`
+		TotalPlayerCount int              `json:"total_player_count"`
+		PageNumber       int              `json:"page_number"`
+		PageSize         int              `json:"page_size"`
+		PlayerCount      int              `json:"player_count"`
+		Players          []*models.Player `json:"players"`
 	}
 
 	players.Players, err = app.players.GetAll(pageSize, pageNum)
@@ -69,6 +75,22 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 		app.serverError(w, err)
 		return
 	}
+
+	if players.Players == nil {
+		app.clientMessage(w, http.StatusNotFound, "no records found in this range")
+		return
+	}
+
+	players.TotalPlayerCount, err = app.players.GetPlayerCount()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	players.TotalPages = int(math.Ceil(float64(players.TotalPlayerCount) / float64(pageSize)))
+	players.PageNumber = pageNum
+	players.PageSize = pageSize
+	players.PlayerCount = len(players.Players)
 
 	js, err := json.Marshal(players)
 	if err != nil {

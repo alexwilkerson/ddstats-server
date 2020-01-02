@@ -13,4 +13,4 @@ GET http://localhost:5000/api/v2/ddapi/get_scores?offset=50&limit=50
 ###
 GET http://localhost:5000/api/v2/player?id=151675
 ###
-GET http://localhost:5000/api/v2/player/all?pagesize=10&pagenum=1
+GET http://localhost:5000/api/v2/player/all?pagesize=1000&pagenum=2
