@@ -8,6 +8,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
 	_ "github.com/lib/pq"
 )
@@ -16,6 +17,7 @@ type application struct {
 	errorLog *log.Logger
 	infoLog  *log.Logger
 	client   *http.Client
+	ddAPI    *ddapi.API
 	games    *postgres.GameModel
 	players  *postgres.PlayerModel
 }
@@ -41,6 +43,7 @@ func main() {
 		errorLog: errorLog,
 		infoLog:  infoLog,
 		client:   client,
+		ddAPI:    &ddapi.API{Client: client},
 		games:    &postgres.GameModel{DB: db},
 		players:  &postgres.PlayerModel{DB: db},
 	}

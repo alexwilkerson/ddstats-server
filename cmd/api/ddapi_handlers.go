@@ -2,9 +2,7 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"net/http"
-	"net/url"
 	"strconv"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
@@ -22,28 +20,7 @@ func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	u := "http://dd.hasmodai.com/backend16/get_user_by_rank_public.php"
-	form := url.Values{"rank": {strconv.Itoa(rank)}}
-	resp, err := app.client.PostForm(u, form)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		app.serverError(w, err)
-		return
-	}
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	// start reading blob from byte position 19
-	player, err := ddapi.BytesToPlayer(bodyBytes, 19)
+	player, err := app.ddAPI.UserByRank(rank)
 	if err != nil {
 		app.clientMessage(w, http.StatusNotFound, err.Error())
 		return
@@ -71,28 +48,8 @@ func (app *application) ddGetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u := "http://dd.hasmodai.com/backend16/get_user_by_id_public.php"
-	form := url.Values{"uid": {strconv.Itoa(id)}}
-	resp, err := app.client.PostForm(u, form)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		app.serverError(w, err)
-		return
-	}
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
 	// start reading blob from byte position 19
-	player, err := ddapi.BytesToPlayer(bodyBytes, 19)
+	player, err := app.ddAPI.UserByID(id)
 	if err != nil {
 		app.clientMessage(w, http.StatusNotFound, err.Error())
 		return
@@ -115,31 +72,12 @@ func (app *application) ddUserSearch(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	u := "http://dd.hasmodai.com/backend16/get_user_search_public.php"
-	form := url.Values{"search": {name}}
-	resp, err := app.client.PostForm(u, form)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		app.serverError(w, err)
-		return
-	}
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	players, err := ddapi.UserSearchBytesToPlayers(bodyBytes)
+	players, err := app.ddAPI.UserSearch(name)
 	if err != nil {
 		app.clientMessage(w, http.StatusNotFound, err.Error())
 		return
 	}
+
 	data := struct {
 		PlayerCount int             `json:"player_count"`
 		Players     []*ddapi.Player `json:"players"`
@@ -167,8 +105,8 @@ func (app *application) ddGetScores(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if offsetInt < 0 {
-		app.clientMessage(w, http.StatusBadRequest, "negative offset not allowed")
+	if offsetInt < 1 {
+		app.clientMessage(w, http.StatusBadRequest, "offset must be greater than 0")
 		return
 	}
 
@@ -187,33 +125,7 @@ func (app *application) ddGetScores(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// the DD API weirdly counts users starting from 1 but internally uses a 0 index
-	// this fix it to make it more readable for users.
-	if offsetInt != 0 {
-		offsetInt--
-	}
-
-	u := "http://dd.hasmodai.com/backend16/get_scores.php"
-	form := url.Values{"user": {"0"}, "level": {"survival"}, "offset": {strconv.Itoa(offsetInt)}}
-	resp, err := app.client.PostForm(u, form)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != http.StatusOK {
-		app.serverError(w, err)
-		return
-	}
-
-	bodyBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	leaderboard, err := ddapi.GetScoresBytesToLeaderboard(bodyBytes, limit)
+	leaderboard, err := app.ddAPI.GetLeaderboard(limit, offsetInt)
 	if err != nil {
 		app.clientMessage(w, http.StatusNotFound, err.Error())
 		return

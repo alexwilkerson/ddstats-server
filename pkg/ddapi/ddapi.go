@@ -3,8 +3,16 @@ package ddapi
 import (
 	"encoding/binary"
 	"errors"
+	"io/ioutil"
 	"math"
+	"net/http"
+	"net/url"
+	"strconv"
 )
+
+type API struct {
+	Client *http.Client
+}
 
 // DeathTypes as defined by the DD API
 var DeathTypes = []string{
@@ -89,6 +97,58 @@ func GetScoresBytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
 	return &leaderboard, nil
 }
 
+func (api *API) UserByID(id int) (*Player, error) {
+	u := "http://dd.hasmodai.com/backend16/get_user_by_id_public.php"
+	form := url.Values{"uid": {strconv.Itoa(id)}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	player, err := BytesToPlayer(bodyBytes, 19)
+	if err != nil {
+		return nil, err
+	}
+
+	return player, nil
+}
+
+func (api *API) UserByRank(rank int) (*Player, error) {
+	u := "http://dd.hasmodai.com/backend16/get_user_by_rank_public.php"
+	form := url.Values{"rank": {strconv.Itoa(rank)}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	player, err := BytesToPlayer(bodyBytes, 19)
+	if err != nil {
+		return nil, err
+	}
+
+	return player, nil
+}
+
 // BytesToPlayer takes a byte array and an initial offset
 // and returns a Player object. Will return an error if the
 // Player is not found
@@ -125,6 +185,64 @@ func BytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 	}
 
 	return &player, nil
+}
+
+func (api *API) GetLeaderboard(limit, offset int) (*Leaderboard, error) {
+	// the DD API weirdly counts users starting from 1 but internally uses a 0 index
+	// this fix it to make it more readable for users.
+	if offset != 0 {
+		offset--
+	}
+
+	u := "http://dd.hasmodai.com/backend16/get_scores.php"
+	form := url.Values{"user": {"0"}, "level": {"survival"}, "offset": {strconv.Itoa(offset)}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	leaderboard, err := GetScoresBytesToLeaderboard(bodyBytes, limit)
+	if err != nil {
+		return nil, err
+	}
+
+	return leaderboard, nil
+}
+
+func (api *API) UserSearch(name string) ([]*Player, error) {
+	u := "http://dd.hasmodai.com/backend16/get_user_search_public.php"
+	form := url.Values{"search": {name}}
+	resp, err := api.Client.PostForm(u, form)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, err
+	}
+
+	bodyBytes, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	players, err := UserSearchBytesToPlayers(bodyBytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return players, nil
 }
 
 // UserSearchBytesToPlayers converts a byte array to a player slice
