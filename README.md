@@ -16,13 +16,13 @@
 
 #### game_log
 
-- [ ] GET game/info?id={int}
-- [ ] GET game?id={int} (all)
-- [ ] GET game/gems?id={int}
-- [ ] GET game/homing-daggers?id={int}
-- [ ] GET game/accuracy?id={int}
-- [ ] GET game/enemies-alive?id={int}
-- [ ] GET game/enemies-killed?id={int}
+- [x] GET game/info?id={int}
+- [x] GET game?id={int} (all)
+- [x] GET game/gems?id={int}
+- [x] GET game/homing-daggers?id={int}
+- [x] GET game/accuracy?id={int}
+- [x] GET game/enemies-alive?id={int}
+- [x] GET game/enemies-killed?id={int}
 
 #### players
 
