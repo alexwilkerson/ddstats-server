@@ -17,9 +17,22 @@ type API struct {
 
 // DeathTypes as defined by the DD API
 var DeathTypes = []string{
-	"FALLEN", "SWARMED", "IMPALED", "GORED", "INFESTED", "OPENED", "PURGED",
-	"DESECRATED", "SACRIFICED", "EVISCERATED", "ANNIHILATED", "INTOXICATED",
-	"ENVENMONATED", "INCARNATED", "DISCARNATED", "BARBED",
+	"FALLEN",
+	"SWARMED",
+	"IMPALED",
+	"GORED",
+	"INFESTED",
+	"OPENED",
+	"PURGED",
+	"DESECRATED",
+	"SACRIFICED",
+	"EVISCERATED",
+	"ANNIHILATED",
+	"INTOXICATED",
+	"ENVENMONATED",
+	"INCARNATED",
+	"DISCARNATED",
+	"BARBED",
 }
 
 // ErrPlayerNotFound returned when player not found from the DD API
