@@ -2,6 +2,7 @@ package models
 
 import (
 	"database/sql"
+	"encoding/json"
 	"errors"
 	"time"
 )
@@ -25,7 +26,7 @@ type Game struct {
 	TimeStamp            time.Time      `json:"time_stamp"`
 	ReplayPlayerID       int            `json:"replay_player_id"`
 	SurvivalHash         string         `json:"survival_hash"`
-	Version              sql.NullString `json:"version"`
+	Version              JsonNullString `json:"version"`
 	LevelTwoTime         float64        `json:"level_two_time"`
 	LevelThreeTime       float64        `json:"level_three_time"`
 	LevelFourTime        float64        `json:"level_four_time"`
@@ -53,4 +54,31 @@ type Player struct {
 	OverallDaggersHit    int     `json:"overall_daggers_hit"`
 	OverallDaggersFired  int     `json:"overall_daggers_fired"`
 	OverallAccuracy      float64 `json:"overall_accuracy"`
+}
+
+type JsonNullString struct {
+	sql.NullString
+}
+
+func (v JsonNullString) MarshalJSON() ([]byte, error) {
+	if v.Valid {
+		return json.Marshal(v.String)
+	} else {
+		return json.Marshal(nil)
+	}
+}
+
+func (v *JsonNullString) UnmarshalJSON(data []byte) error {
+	// Unmarshalling into a pointer will let us detect null
+	var s *string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	if s != nil {
+		v.Valid = true
+		v.String = *s
+	} else {
+		v.Valid = false
+	}
+	return nil
 }
