@@ -14,6 +14,32 @@ func (app *application) helloWorld(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, Merle!"))
 }
 
+func (app *application) getGameAll(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetAll(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
@@ -33,7 +59,7 @@ func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 
 	js, err := json.Marshal(game)
 	if err != nil {
-		app.clientError(w, http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -94,7 +120,7 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 
 	js, err := json.Marshal(players)
 	if err != nil {
-		app.clientError(w, http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -120,7 +146,7 @@ func (app *application) getPlayer(w http.ResponseWriter, r *http.Request) {
 
 	js, err := json.Marshal(player)
 	if err != nil {
-		app.clientError(w, http.StatusInternalServerError)
+		app.serverError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")

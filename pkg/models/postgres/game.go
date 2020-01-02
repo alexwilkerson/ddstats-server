@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"math"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
 )
@@ -50,6 +51,48 @@ func (g *GameModel) Get(id int) (*models.Game, error) {
 	return &gameModel, nil
 }
 
+func (g *GameModel) GetAll(id int) ([]*models.State, error) {
+	stmt := `SELECT game_time, gems, homing_daggers, daggers_hit, daggers_fired, enemies_alive, enemies_killed
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.State
+	for rows.Next() {
+		var state models.State
+		err = rows.Scan(
+			&state.GameTime,
+			&state.Gems,
+			&state.HomingDaggers,
+			&state.DaggersHit,
+			&state.DaggersFired,
+			&state.EnemiesAlive,
+			&state.EnemiesKilled,
+		)
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		if state.DaggersFired > 0 {
+			state.Accuracy = roundToNearest(float64(state.DaggersHit)/float64(state.DaggersFired), 2)
+		}
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
+}
+
 // GetGems returns how many Gems in the game
 func (g *GameModel) GetGems(id int) (int, error) {
 	return 0, nil
@@ -73,4 +116,9 @@ func (g *GameModel) GetEnemiesAlive(id int) (int, error) {
 // GetEnemiesKilled return how many enemies had been killed
 func (g *GameModel) GetEnemiesKilled(id int) (int, error) {
 	return 0, nil
+}
+
+func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {
+	multiplier := math.Pow10(numberOfDecimalPlaces)
+	return math.Round(f*multiplier) / multiplier
 }

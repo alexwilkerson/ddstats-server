@@ -56,3 +56,15 @@ type Player struct {
 	OverallDaggersFired  int     `json:"overall_daggers_fired"`
 	OverallAccuracy      float64 `json:"overall_accuracy"`
 }
+
+// State struct is for State
+type State struct {
+	GameTime      float64 `json:"game_time"`
+	Gems          int     `json:"gems"`
+	HomingDaggers int     `json:"homing_daggers"`
+	DaggersHit    int     `json:"daggers_hit"`
+	DaggersFired  int     `json:"daggers_fired"`
+	Accuracy      float64 `json:"accuracy"`
+	EnemiesAlive  int     `json:"enemies_alive"`
+	EnemiesKilled int     `json:"enemies_killed"`
+}

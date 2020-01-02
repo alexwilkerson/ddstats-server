@@ -54,6 +54,9 @@ func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 	stmt := fmt.Sprintf("SELECT * FROM player WHERE id<>-1 ORDER BY game_time DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
 	rows, err := p.DB.Query(stmt)
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
 		return nil, err
 	}
 	defer rows.Close()
