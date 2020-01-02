@@ -40,6 +40,188 @@ func (app *application) getGameAll(w http.ResponseWriter, r *http.Request) {
 	w.Write(js)
 }
 
+func (app *application) getGameGems(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetGems(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getGameHomingDaggers(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetHomingDaggers(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getGameDaggersHit(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetDaggersHit(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getGameDaggersFired(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetDaggersFired(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getGameAccuracy(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetAccuracy(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getGameEnemiesAlive(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetEnemiesAlive(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getGameEnemiesKilled(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		app.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	states, err := app.games.GetEnemiesKilled(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			app.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			app.serverError(w, err)
+		}
+		return
+	}
+
+	js, err := json.Marshal(states)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {

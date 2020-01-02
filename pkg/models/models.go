@@ -68,3 +68,38 @@ type State struct {
 	EnemiesAlive  int     `json:"enemies_alive"`
 	EnemiesKilled int     `json:"enemies_killed"`
 }
+
+type Gems struct {
+	GameTime float64 `json:"game_time"`
+	Gems     int     `json:"gems"`
+}
+
+type HomingDaggers struct {
+	GameTime      float64 `json:"game_time"`
+	HomingDaggers int     `json:"homing_daggers"`
+}
+
+type DaggersHit struct {
+	GameTime   float64 `json:"game_time"`
+	DaggersHit int     `json:"daggers_hit"`
+}
+
+type DaggersFired struct {
+	GameTime     float64 `json:"game_time"`
+	DaggersFired int     `json:"daggers_fired"`
+}
+
+type Accuracy struct {
+	GameTime float64 `json:"game_time"`
+	Accuracy float64 `json:"accuracy"`
+}
+
+type EnemiesAlive struct {
+	GameTime     float64 `json:"game_time"`
+	EnemiesAlive int     `json:"enemies_alive"`
+}
+
+type EnemiesKilled struct {
+	GameTime      float64 `json:"game_time"`
+	EnemiesKilled int     `json:"enemies_killed"`
+}

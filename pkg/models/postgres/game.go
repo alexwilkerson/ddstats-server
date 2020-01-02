@@ -81,7 +81,7 @@ func (g *GameModel) GetAll(id int) ([]*models.State, error) {
 		}
 		state.GameTime = roundToNearest(state.GameTime, 4)
 		if state.DaggersFired > 0 {
-			state.Accuracy = roundToNearest(float64(state.DaggersHit)/float64(state.DaggersFired), 2)
+			state.Accuracy = roundToNearest(float64(state.DaggersHit)/float64(state.DaggersFired)*100, 2)
 		}
 		states = append(states, &state)
 	}
@@ -93,29 +93,247 @@ func (g *GameModel) GetAll(id int) ([]*models.State, error) {
 	return states, nil
 }
 
-// GetGems returns how many Gems in the game
-func (g *GameModel) GetGems(id int) (int, error) {
-	return 0, nil
+func (g *GameModel) GetGems(id int) ([]*models.Gems, error) {
+	stmt := `SELECT game_time, gems
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.Gems
+	for rows.Next() {
+		var state models.Gems
+		err = rows.Scan(
+			&state.GameTime,
+			&state.Gems,
+		)
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
 }
 
-// GetHomingDaggers returns how many homing daggers
-func (g *GameModel) GetHomingDaggers(id int) (int, error) {
-	return 0, nil
+func (g *GameModel) GetHomingDaggers(id int) ([]*models.HomingDaggers, error) {
+	stmt := `SELECT game_time, homing_daggers
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.HomingDaggers
+	for rows.Next() {
+		var state models.HomingDaggers
+		err = rows.Scan(
+			&state.GameTime,
+			&state.HomingDaggers,
+		)
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
 }
 
-// GetAccuracy returns the game total accuracy
-func (g *GameModel) GetAccuracy(id int) (int, error) {
-	return 0, nil
+func (g *GameModel) GetDaggersHit(id int) ([]*models.DaggersHit, error) {
+	stmt := `SELECT game_time, daggers_hit
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.DaggersHit
+	for rows.Next() {
+		var state models.DaggersHit
+		err = rows.Scan(
+			&state.GameTime,
+			&state.DaggersHit,
+		)
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
 }
 
-// GetEnemiesAlive returns how many enemies are still alive
-func (g *GameModel) GetEnemiesAlive(id int) (int, error) {
-	return 0, nil
+func (g *GameModel) GetDaggersFired(id int) ([]*models.DaggersFired, error) {
+	stmt := `SELECT game_time, daggers_fired
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.DaggersFired
+	for rows.Next() {
+		var state models.DaggersFired
+		err = rows.Scan(
+			&state.GameTime,
+			&state.DaggersFired,
+		)
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
 }
 
-// GetEnemiesKilled return how many enemies had been killed
-func (g *GameModel) GetEnemiesKilled(id int) (int, error) {
-	return 0, nil
+func (g *GameModel) GetAccuracy(id int) ([]*models.Accuracy, error) {
+	stmt := `SELECT game_time, daggers_hit, daggers_fired
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.Accuracy
+	for rows.Next() {
+		var state models.Accuracy
+		var daggersHit, daggersFired int
+		err = rows.Scan(
+			&state.GameTime,
+			&daggersHit,
+			&daggersFired,
+		)
+		if daggersFired > 0 {
+			state.Accuracy = roundToNearest(float64(daggersHit)/float64(daggersFired)*100, 2)
+		}
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
+}
+
+func (g *GameModel) GetEnemiesAlive(id int) ([]*models.EnemiesAlive, error) {
+	stmt := `SELECT game_time, enemies_alive
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.EnemiesAlive
+	for rows.Next() {
+		var state models.EnemiesAlive
+		err = rows.Scan(
+			&state.GameTime,
+			&state.EnemiesAlive,
+		)
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
+}
+
+func (g *GameModel) GetEnemiesKilled(id int) ([]*models.EnemiesKilled, error) {
+	stmt := `SELECT game_time, enemies_killed
+			 FROM state
+			 WHERE game_id=$1`
+	rows, err := g.DB.Query(stmt, id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+
+	var states []*models.EnemiesKilled
+	for rows.Next() {
+		var state models.EnemiesKilled
+		err = rows.Scan(
+			&state.GameTime,
+			&state.EnemiesKilled,
+		)
+		if err != nil {
+			return nil, err
+		}
+		state.GameTime = roundToNearest(state.GameTime, 4)
+		states = append(states, &state)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return states, nil
 }
 
 func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {

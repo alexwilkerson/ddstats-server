@@ -23,6 +23,13 @@ func (app *application) routes() http.Handler {
 	// ddstats api
 	mux.Get("/api/v2/game", http.HandlerFunc(app.getGame))
 	mux.Get("/api/v2/game/all", http.HandlerFunc(app.getGameAll))
+	mux.Get("/api/v2/game/gems", http.HandlerFunc(app.getGameGems))
+	mux.Get("/api/v2/game/homing-daggers", http.HandlerFunc(app.getGameHomingDaggers))
+	mux.Get("/api/v2/game/daggers-hit", http.HandlerFunc(app.getGameDaggersHit))
+	mux.Get("/api/v2/game/daggers-fired", http.HandlerFunc(app.getGameDaggersFired))
+	mux.Get("/api/v2/game/accuracy", http.HandlerFunc(app.getGameAccuracy))
+	mux.Get("/api/v2/game/enemies-alive", http.HandlerFunc(app.getGameEnemiesAlive))
+	mux.Get("/api/v2/game/enemies-killed", http.HandlerFunc(app.getGameEnemiesKilled))
 	mux.Get("/api/v2/player", http.HandlerFunc(app.getPlayer))
 	mux.Get("/api/v2/player/all", http.HandlerFunc(app.getPlayers))
 

@@ -15,6 +15,20 @@ GET http://localhost:5000/api/v2/game?id=20
 ###
 GET http://localhost:5000/api/v2/game/all?id=20
 ###
+GET http://localhost:5000/api/v2/game/gems?id=20
+###
+GET http://localhost:5000/api/v2/game/homing-daggers?id=20
+###
+GET http://localhost:5000/api/v2/game/daggers-hit?id=20
+###
+GET http://localhost:5000/api/v2/game/daggers-fired?id=20
+###
+GET http://localhost:5000/api/v2/game/accuracy?id=20
+###
+GET http://localhost:5000/api/v2/game/enemies-alive?id=20
+###
+GET http://localhost:5000/api/v2/game/enemies-killed?id=20
+###
 GET http://localhost:5000/api/v2/player?id=151675
 ###
 GET http://localhost:5000/api/v2/player/all?pagesize=9&pagenum=18
