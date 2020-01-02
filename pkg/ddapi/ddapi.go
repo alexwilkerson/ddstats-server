@@ -3,6 +3,7 @@ package ddapi
 import (
 	"encoding/binary"
 	"errors"
+	"math"
 )
 
 // DeathTypes as defined by the DD API
@@ -61,7 +62,7 @@ func GetScoresBytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
 
 	leaderboard.GlobalDeaths = toUint64(b, 11)
 	leaderboard.GlobalKills = toUint64(b, 19)
-	leaderboard.GlobalTime = float64(toUint64(b, 35)) / 1000
+	leaderboard.GlobalTime = roundToNearest(float64(toUint64(b, 35))/1000, 4)
 	leaderboard.GlobalGems = toUint64(b, 43)
 	leaderboard.GlobalDaggersHit = toUint64(b, 51)
 	leaderboard.GlobalDaggersFired = toUint64(b, 27)
@@ -104,23 +105,23 @@ func BytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 		return nil, ErrPlayerNotFound
 	}
 	player.Rank = toInt32(b, bytePosition)
-	player.Time = float64(toInt32(b, bytePosition+12)) / 10000
+	player.Time = roundToNearest(float64(toInt32(b, bytePosition+12))/10000, 4)
 	player.Kills = toInt32(b, bytePosition+16)
 	player.Gems = toInt32(b, bytePosition+28)
 	player.DaggersHit = toInt32(b, bytePosition+24)
 	player.DaggersFired = toInt32(b, bytePosition+20)
 	if player.DaggersFired > 0 {
-		player.Accuracy = float64(player.DaggersHit) / float64(player.DaggersFired) * 100
+		player.Accuracy = roundToNearest(float64(player.DaggersHit)/float64(player.DaggersFired)*100, 2)
 	}
 	player.DeathType = DeathTypes[toInt16(b, bytePosition+32)]
-	player.OverallTime = float64(toUint64(b, bytePosition+60)) / 10000
+	player.OverallTime = roundToNearest(float64(toUint64(b, bytePosition+60))/10000, 4)
 	player.OverallKills = toUint64(b, bytePosition+44)
 	player.OverallGems = toUint64(b, bytePosition+68)
 	player.OverallDeaths = toUint64(b, bytePosition+36)
 	player.OverallDaggersHit = toUint64(b, bytePosition+76)
 	player.OverallDaggersFired = toUint64(b, bytePosition+52)
 	if player.OverallDaggersFired > 0 {
-		player.OverallAccuracy = float64(player.OverallDaggersHit) / float64(player.OverallDaggersFired) * 100
+		player.OverallAccuracy = roundToNearest(float64(player.OverallDaggersHit)/float64(player.OverallDaggersFired)*100, 2)
 	}
 
 	return &player, nil
@@ -163,4 +164,9 @@ func toInt32(b []byte, offset int) int32 {
 
 func toInt16(b []byte, offset int) int16 {
 	return int16(binary.LittleEndian.Uint16(b[offset : offset+2]))
+}
+
+func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {
+	multiplier := math.Pow10(numberOfDecimalPlaces)
+	return math.Round(f*multiplier) / multiplier
 }
