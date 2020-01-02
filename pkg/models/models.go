@@ -26,7 +26,7 @@ type Game struct {
 	TimeStamp            time.Time      `json:"time_stamp"`
 	ReplayPlayerID       int            `json:"replay_player_id"`
 	SurvivalHash         string         `json:"survival_hash"`
-	Version              JsonNullString `json:"version"`
+	Version              JSONNullString `json:"version"`
 	LevelTwoTime         float64        `json:"level_two_time"`
 	LevelThreeTime       float64        `json:"level_three_time"`
 	LevelFourTime        float64        `json:"level_four_time"`
@@ -36,6 +36,7 @@ type Game struct {
 	EnemiesAliveMax      uint           `json:"enemies_alive_max"`
 }
 
+// Player struct is for players
 type Player struct {
 	ID                   int     `json:"id"`
 	PlayerName           string  `json:"player_name"`
@@ -56,19 +57,24 @@ type Player struct {
 	OverallAccuracy      float64 `json:"overall_accuracy"`
 }
 
-type JsonNullString struct {
+// JSONNullString struct is used to make postgres and json
+// play nicely with each other
+type JSONNullString struct {
 	sql.NullString
 }
 
-func (v JsonNullString) MarshalJSON() ([]byte, error) {
+// MarshalJSON is used to make the JsonNullString interface
+// work correctly
+func (v JSONNullString) MarshalJSON() ([]byte, error) {
 	if v.Valid {
 		return json.Marshal(v.String)
-	} else {
-		return json.Marshal(nil)
 	}
+	return json.Marshal(nil)
 }
 
-func (v *JsonNullString) UnmarshalJSON(data []byte) error {
+// UnmarshalJSON is used to make the JsonNullString interface
+// work correctly
+func (v *JSONNullString) UnmarshalJSON(data []byte) error {
 	// Unmarshalling into a pointer will let us detect null
 	var s *string
 	if err := json.Unmarshal(data, &s); err != nil {
