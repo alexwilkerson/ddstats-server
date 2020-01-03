@@ -8,11 +8,12 @@ import (
 	"sort"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/jmoiron/sqlx"
 )
 
 // GameModel wraps database connection
 type GameModel struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }
 
 const (
@@ -86,7 +87,7 @@ func (a byTime) Len() int           { return len(a) }
 func (a byTime) Less(i, j int) bool { return (*a[i]).GameTime < (*a[j]).GameTime }
 func (a byTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
-// GetAll retreives a slice of users using a specified page size and page num starting at 1
+// GetRecent retreives a slice of users using a specified page size and page num starting at 1
 func (g *GameModel) GetRecent(pageSize, pageNum int) ([]*models.Game, error) {
 	var games []*models.Game
 

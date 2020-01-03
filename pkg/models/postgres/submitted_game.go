@@ -1,16 +1,16 @@
 package postgres
 
 import (
-	"database/sql"
 	"errors"
 	"net/http"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/jmoiron/sqlx"
 )
 
 type SubmittedGameModel struct {
-	DB     *sql.DB
+	DB     *sqlx.DB
 	Client *http.Client
 }
 

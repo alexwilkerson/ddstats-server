@@ -6,16 +6,17 @@ import (
 	"fmt"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/jmoiron/sqlx"
 )
 
 // PlayerModel wraps the database connection
 type PlayerModel struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }
 
 func (p *PlayerModel) Insert(player *models.Player) error {
 	stmt := `INSERT INTO player(
-			username,
+			player_name,
 			rank,
 			game_time,
 			death_type,
@@ -62,25 +63,7 @@ func (p *PlayerModel) Get(id int) (*models.Player, error) {
 	var player models.Player
 
 	stmt := "SELECT * FROM player WHERE id=$1"
-	err := p.DB.QueryRow(stmt, id).Scan(
-		&player.ID,
-		&player.PlayerName,
-		&player.Rank,
-		&player.GameTime,
-		&player.DeathType,
-		&player.Gems,
-		&player.DaggersHit,
-		&player.DaggersFired,
-		&player.EnemiesKilled,
-		&player.Accuracy,
-		&player.OverallTime,
-		&player.OverallDeaths,
-		&player.OverallGems,
-		&player.OverallEnemiesKilled,
-		&player.OverallDaggersHit,
-		&player.OverallDaggersFired,
-		&player.OverallAccuracy,
-	)
+	err := p.DB.Get(&player, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
@@ -96,42 +79,11 @@ func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 	var players []*models.Player
 
 	stmt := fmt.Sprintf("SELECT * FROM player WHERE id<>-1 ORDER BY game_time DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
-	rows, err := p.DB.Query(stmt)
+	err := p.DB.Select(&players, stmt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}
-		return nil, err
-	}
-	defer rows.Close()
-	for rows.Next() {
-		var player models.Player
-		err = rows.Scan(
-			&player.ID,
-			&player.PlayerName,
-			&player.Rank,
-			&player.GameTime,
-			&player.DeathType,
-			&player.Gems,
-			&player.DaggersHit,
-			&player.DaggersFired,
-			&player.EnemiesKilled,
-			&player.Accuracy,
-			&player.OverallTime,
-			&player.OverallDeaths,
-			&player.OverallGems,
-			&player.OverallEnemiesKilled,
-			&player.OverallDaggersHit,
-			&player.OverallDaggersFired,
-			&player.OverallAccuracy,
-		)
-		if err != nil {
-			return nil, err
-		}
-		players = append(players, &player)
-	}
-	err = rows.Err()
-	if err != nil {
 		return nil, err
 	}
 

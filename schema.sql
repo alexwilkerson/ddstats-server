@@ -45,7 +45,7 @@ CREATE INDEX game_id_idx ON state(game_id);
 
 CREATE TABLE IF NOT EXISTS player (
   id BIGSERIAL PRIMARY KEY NOT NULL,
-  username TEXT NOT NULL,
+  name TEXT NOT NULL,
   rank INTEGER NOT NULL,
   game_time DOUBLE PRECISION NOT NULL,
   death_type TEXT NOT NULL,

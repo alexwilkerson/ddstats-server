@@ -1,13 +1,12 @@
 package postgres
 
 import (
-	"database/sql"
-
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/jmoiron/sqlx"
 )
 
 type StateModel struct {
-	DB *sql.DB
+	DB *sqlx.DB
 }
 
 func (s *StateModel) Insert(state *models.State) error {

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"database/sql"
 	"flag"
 	"log"
 	"net/http"
@@ -10,6 +9,7 @@ import (
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
 
@@ -64,8 +64,8 @@ func main() {
 	errorLog.Fatal(err)
 }
 
-func openDB(dsn string) (*sql.DB, error) {
-	db, err := sql.Open("postgres", dsn)
+func openDB(dsn string) (*sqlx.DB, error) {
+	db, err := sqlx.Open("postgres", dsn)
 	if err != nil {
 		return nil, err
 	}
