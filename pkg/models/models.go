@@ -21,6 +21,7 @@ type Game struct {
 	HomingDaggers        uint        `json:"homing_daggers"`
 	DaggersFired         uint        `json:"daggers_fired"`
 	DaggersHit           uint        `json:"daggers_hit"`
+	Accuracy             float64     `json:"accuracy"`
 	EnemiesAlive         uint        `json:"enemies_alive"`
 	EnemiesKilled        uint        `json:"enemies_killed"`
 	TimeStamp            time.Time   `json:"time_stamp"`

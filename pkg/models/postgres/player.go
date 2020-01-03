@@ -94,8 +94,8 @@ func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 	return players, nil
 }
 
-// GetPlayerCount returns the total number of players in the database
-func (p *PlayerModel) GetPlayerCount() (int, error) {
+// GetTotalCount returns the total number of players in the database
+func (p *PlayerModel) GetTotalCount() (int, error) {
 	var playerCount int
 	stmt := "SELECT COUNT(1) FROM player WHERE id<>-1"
 	err := p.DB.QueryRow(stmt).Scan(&playerCount)

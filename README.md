@@ -12,12 +12,12 @@
 
 #### games
 
-- [ ] GET game/recent?pagesize={int}&pagenum={int}
+- [x] GET game/recent?pagesize={int}&pagenum={int}
 
 #### game_log
 
-- [x] GET game/info?id={int}
-- [x] GET game?id={int} (all)
+- [x] GET game?id={int} (info)
+- [x] GET game/all?id={int}
 - [x] GET game/gems?id={int}
 - [x] GET game/homing-daggers?id={int}
 - [x] GET game/accuracy?id={int}

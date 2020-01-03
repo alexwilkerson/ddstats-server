@@ -21,6 +21,7 @@ func (app *application) routes() http.Handler {
 	mux.Get("/api/v2/ddapi/get_scores", http.HandlerFunc(app.ddGetScores))
 
 	// ddstats api
+	mux.Get("/api/v2/game/recent", http.HandlerFunc(app.getRecentGames))
 	mux.Get("/api/v2/game", http.HandlerFunc(app.getGame))
 	mux.Get("/api/v2/game/all", http.HandlerFunc(app.getGameAll))
 	mux.Get("/api/v2/game/gems", http.HandlerFunc(app.getGameGems))

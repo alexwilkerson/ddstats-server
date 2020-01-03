@@ -254,8 +254,8 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 		app.clientMessage(w, http.StatusBadRequest, "pagesize must be an integer")
 		return
 	}
-	if pageSize < 1 {
-		app.clientMessage(w, http.StatusBadRequest, "pagesize must be greater than 0")
+	if pageSize < 1 || pageSize > 100 {
+		app.clientMessage(w, http.StatusBadRequest, "pagesize must be between 1 and 100")
 		return
 	}
 
@@ -289,7 +289,7 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	players.TotalPlayerCount, err = app.players.GetPlayerCount()
+	players.TotalPlayerCount, err = app.players.GetTotalCount()
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -301,6 +301,67 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 	players.PlayerCount = len(players.Players)
 
 	js, err := json.Marshal(players)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("pagesize"))
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "pagesize must be an integer")
+		return
+	}
+	if pageSize < 1 {
+		app.clientMessage(w, http.StatusBadRequest, "pagesize must be greater than 0")
+		return
+	}
+
+	pageNum, err := strconv.Atoi(r.URL.Query().Get("pagenum"))
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "pagenum must be an integer")
+		return
+	}
+	if pageNum < 1 {
+		app.clientMessage(w, http.StatusBadRequest, "pagenum must be greater than 0")
+		return
+	}
+
+	var games struct {
+		TotalPages     int            `json:"total_pages"`
+		TotalGameCount int            `json:"total_game_count"`
+		PageNumber     int            `json:"page_number"`
+		PageSize       int            `json:"page_size"`
+		GameCount      int            `json:"game_count"`
+		Games          []*models.Game `json:"games"`
+	}
+
+	games.Games, err = app.games.GetRecent(pageSize, pageNum)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	if games.Games == nil {
+		app.clientMessage(w, http.StatusNotFound, "no records found in this range")
+		return
+	}
+
+	games.TotalGameCount, err = app.games.GetTotalCount()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	games.TotalPages = int(math.Ceil(float64(games.TotalGameCount) / float64(pageSize)))
+	games.PageNumber = pageNum
+	games.PageSize = pageSize
+	games.GameCount = len(games.Games)
+
+	js, err := json.Marshal(games)
 	if err != nil {
 		app.serverError(w, err)
 		return

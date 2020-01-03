@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"math"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
@@ -13,34 +14,89 @@ type GameModel struct {
 	DB *sql.DB
 }
 
+// GetAll retreives a slice of users using a specified page size and page num starting at 1
+func (g *GameModel) GetRecent(pageSize, pageNum int) ([]*models.Game, error) {
+	var games []*models.Game
+
+	stmt := fmt.Sprintf("SELECT * FROM game ORDER BY time_stamp DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
+	rows, err := g.DB.Query(stmt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var game models.Game
+		err = rows.Scan(
+			&game.ID,
+			&game.PlayerID,
+			&game.Granularity,
+			&game.GameTime,
+			&game.DeathType,
+			&game.Gems,
+			&game.HomingDaggers,
+			&game.DaggersFired,
+			&game.DaggersHit,
+			&game.EnemiesAlive,
+			&game.EnemiesKilled,
+			&game.TimeStamp,
+			&game.ReplayPlayerID,
+			&game.SurvivalHash,
+			&game.Version,
+			&game.LevelTwoTime,
+			&game.LevelThreeTime,
+			&game.LevelFourTime,
+			&game.HomingDaggersMaxTime,
+			&game.EnemiesAliveMaxTime,
+			&game.HomingDaggersMax,
+			&game.EnemiesAliveMax,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if game.DaggersFired > 0 {
+			game.Accuracy = roundToNearest(float64(game.DaggersHit)/float64(game.DaggersFired)*100, 2)
+		}
+		games = append(games, &game)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	return games, nil
+}
+
 // Get retreives the entire game obeject
 func (g *GameModel) Get(id int) (*models.Game, error) {
-	var gameModel models.Game
+	var game models.Game
 
 	stmt := `SELECT * FROM game WHERE id=$1`
 	err := g.DB.QueryRow(stmt, id).Scan(
-		&gameModel.ID,
-		&gameModel.PlayerID,
-		&gameModel.Granularity,
-		&gameModel.GameTime,
-		&gameModel.DeathType,
-		&gameModel.Gems,
-		&gameModel.HomingDaggers,
-		&gameModel.DaggersFired,
-		&gameModel.DaggersHit,
-		&gameModel.EnemiesAlive,
-		&gameModel.EnemiesKilled,
-		&gameModel.TimeStamp,
-		&gameModel.ReplayPlayerID,
-		&gameModel.SurvivalHash,
-		&gameModel.Version,
-		&gameModel.LevelTwoTime,
-		&gameModel.LevelThreeTime,
-		&gameModel.LevelFourTime,
-		&gameModel.HomingDaggersMaxTime,
-		&gameModel.EnemiesAliveMaxTime,
-		&gameModel.HomingDaggersMax,
-		&gameModel.EnemiesAliveMax,
+		&game.ID,
+		&game.PlayerID,
+		&game.Granularity,
+		&game.GameTime,
+		&game.DeathType,
+		&game.Gems,
+		&game.HomingDaggers,
+		&game.DaggersFired,
+		&game.DaggersHit,
+		&game.EnemiesAlive,
+		&game.EnemiesKilled,
+		&game.TimeStamp,
+		&game.ReplayPlayerID,
+		&game.SurvivalHash,
+		&game.Version,
+		&game.LevelTwoTime,
+		&game.LevelThreeTime,
+		&game.LevelFourTime,
+		&game.HomingDaggersMaxTime,
+		&game.EnemiesAliveMaxTime,
+		&game.HomingDaggersMax,
+		&game.EnemiesAliveMax,
 	)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -48,7 +104,10 @@ func (g *GameModel) Get(id int) (*models.Game, error) {
 		}
 		return nil, err
 	}
-	return &gameModel, nil
+	if game.DaggersFired > 0 {
+		game.Accuracy = roundToNearest(float64(game.DaggersHit)/float64(game.DaggersFired)*100, 2)
+	}
+	return &game, nil
 }
 
 func (g *GameModel) GetAll(id int) ([]*models.State, error) {
@@ -334,6 +393,17 @@ func (g *GameModel) GetEnemiesKilled(id int) ([]*models.EnemiesKilled, error) {
 	}
 
 	return states, nil
+}
+
+// GetTotalCount returns the total number of games in the database
+func (g *GameModel) GetTotalCount() (int, error) {
+	var gameCount int
+	stmt := "SELECT COUNT(1) FROM game"
+	err := g.DB.QueryRow(stmt).Scan(&gameCount)
+	if err != nil {
+		return 0, err
+	}
+	return gameCount, nil
 }
 
 func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {
