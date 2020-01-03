@@ -114,9 +114,9 @@ type SubmittedGame struct {
 	GameTimeSlice       []float64 `json:"inGameTimerVector"`
 	Gems                int       `json:"gems"`
 	GemsSlice           []int     `json:"gemsVector"`
-	Level2Time          float64   `json:"levelTwoTime"`
-	Level3Time          float64   `json:"levelThreeTime"`
-	Level4Time          float64   `json:"levelFourTime"`
+	LevelTwoTime        float64   `json:"levelTwoTime"`
+	LevelThreeTime      float64   `json:"levelThreeTime"`
+	LevelFourTime       float64   `json:"levelFourTime"`
 	HomingDaggers       int       `json:"homingDaggers"`
 	HomingDaggersSlice  []int     `json:"homingDaggersVector"`
 	HomingMax           int       `json:"homingDaggersMax"`

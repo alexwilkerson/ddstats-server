@@ -10,6 +10,7 @@
 
 #### game
 
+- [ ] POST api/v2/game/submit
 - [ ] GET api/v2/game/top
 - [x] GET api/v2/game/recent?pagesize={int}&pagenum={int}
 - [x] GET api/v2/game?id={int} (info)
