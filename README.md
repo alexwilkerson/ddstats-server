@@ -5,29 +5,25 @@
 #### index
 
 - [ ] GET user/live
-- [ ] GET game/top
-- [ ] GET game/recent?pagesize={int}&pagenum={int}
 - [ ] GET client/version/latest
 - [ ] GET news/recent?num={int}
 
-#### games
+#### game
 
-- [x] GET game/recent?pagesize={int}&pagenum={int}
+- [ ] GET api/v2/game/top
+- [x] GET api/v2/game/recent?pagesize={int}&pagenum={int}
+- [x] GET api/v2/game?id={int} (info)
+- [x] GET api/v2/game/all?id={int}
+- [x] GET api/v2/game/gems?id={int}
+- [x] GET api/v2/game/homing-daggers?id={int}
+- [x] GET api/v2/game/accuracy?id={int}
+- [x] GET api/v2/game/enemies-alive?id={int}
+- [x] GET api/v2/game/enemies-killed?id={int}
 
-#### game_log
+#### player
 
-- [x] GET game?id={int} (info)
-- [x] GET game/all?id={int}
-- [x] GET game/gems?id={int}
-- [x] GET game/homing-daggers?id={int}
-- [x] GET game/accuracy?id={int}
-- [x] GET game/enemies-alive?id={int}
-- [x] GET game/enemies-killed?id={int}
-
-#### players
-
-- [x] GET player/all?pagesize={int}&pagenum={int} (list all users)
-- [x] GET player?id={int}
+- [x] GET api/v2/player/all?pagesize={int}&pagenum={int} (list all users)
+- [x] GET api/v2/player?id={int}
 
 #### dd backend
 
