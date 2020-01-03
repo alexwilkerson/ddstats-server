@@ -47,7 +47,7 @@ func main() {
 		ddAPI:          &ddapi.API{Client: client},
 		games:          &postgres.GameModel{DB: db},
 		players:        &postgres.PlayerModel{DB: db},
-		submittedGames: &postgres.SubmittedGameModel{DB: db},
+		submittedGames: &postgres.SubmittedGameModel{DB: db, Client: client},
 	}
 
 	srv := &http.Server{

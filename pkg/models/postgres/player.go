@@ -13,6 +13,50 @@ type PlayerModel struct {
 	DB *sql.DB
 }
 
+func (p *PlayerModel) Insert(player *models.Player) error {
+	stmt := `INSERT INTO player(
+			username,
+			rank,
+			game_time,
+			death_type,
+			gems,
+			daggers_hit,
+			daggers_fired,
+			enemies_killed,
+			accuracy,
+			overall_time,
+			overall_deaths,
+			overall_gems,
+			overall_enemies_killed,
+			overall_daggers_hit,
+			overall_daggers_fired,
+			overall_accuracy
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`
+	_, err := p.DB.Exec(stmt,
+		player.PlayerName,
+		player.Rank,
+		player.GameTime,
+		player.DeathType,
+		player.Gems,
+		player.DaggersHit,
+		player.DaggersFired,
+		player.EnemiesKilled,
+		player.Accuracy,
+		player.OverallTime,
+		player.OverallDeaths,
+		player.OverallGems,
+		player.OverallEnemiesKilled,
+		player.OverallDaggersHit,
+		player.OverallDaggersFired,
+		player.OverallAccuracy,
+	)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 // Get returns a single player record
 func (p *PlayerModel) Get(id int) (*models.Player, error) {
 	var player models.Player

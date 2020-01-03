@@ -3,15 +3,23 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"net/http"
 
+	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
 )
 
 type SubmittedGameModel struct {
-	DB *sql.DB
+	DB     *sql.DB
+	Client *http.Client
 }
 
-func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) error {
+func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
+	// fixes possible older versions of client submitting
+	if game.SurvivalHash == "" {
+		game.SurvivalHash = "5ff43e37d0f85e068caab5457305754e"
+	}
+
 	stmt := `INSERT INTO game(
 				player_id,
 				granularity,
@@ -62,7 +70,7 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) error {
 		game.EnemiesAliveMax,
 	).Scan(&gameID)
 	if err != nil {
-		return err
+		return 0, err
 	}
 
 	// Verify that all slices are of the same length
@@ -72,7 +80,7 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) error {
 		len(game.DaggersFiredSlice)+
 		len(game.EnemiesAliveSlice)+
 		len(game.EnemiesKilledSlice))/6 != len(game.GameTimeSlice) {
-		return errors.New("invalid data")
+		return 0, errors.New("invalid data")
 	}
 
 	states := StateModel{DB: sg.DB}
@@ -95,8 +103,51 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) error {
 		}
 		err = states.Insert(&state)
 		if err != nil {
-			return err
+			return 0, err
 		}
 	}
-	return nil
+
+	players := PlayerModel{sg.DB}
+	_, err = players.Get(game.PlayerID)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			ddAPI := ddapi.API{Client: sg.Client}
+			player, err := ddAPI.UserByID(game.PlayerID)
+			if err != nil {
+				return 0, err
+			}
+			var accuracy, overallAccuracy float64
+			if player.DaggersFired > 0 {
+				accuracy = roundToNearest(float64(player.DaggersHit)/float64(player.DaggersFired)*100, 2)
+			}
+			if player.OverallDaggersFired > 0 {
+				overallAccuracy = roundToNearest(float64(player.OverallDaggersHit)/float64(player.OverallDaggersFired)*100, 2)
+			}
+			err = players.Insert(&models.Player{
+				PlayerName:           player.PlayerName,
+				Rank:                 int(player.Rank),
+				GameTime:             player.Time,
+				DeathType:            player.DeathType,
+				Gems:                 int(player.Gems),
+				DaggersHit:           int(player.DaggersHit),
+				DaggersFired:         int(player.DaggersFired),
+				EnemiesKilled:        int(player.Kills),
+				Accuracy:             accuracy,
+				OverallTime:          player.OverallTime,
+				OverallDeaths:        int(player.OverallDeaths),
+				OverallGems:          int(player.OverallGems),
+				OverallEnemiesKilled: int(player.OverallKills),
+				OverallDaggersHit:    int(player.OverallDaggersHit),
+				OverallDaggersFired:  int(player.OverallDaggersFired),
+				OverallAccuracy:      overallAccuracy,
+			})
+			if err != nil {
+				return 0, err
+			}
+		} else {
+			return 0, err
+		}
+	}
+
+	return gameID, nil
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"errors"
-	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -20,15 +19,40 @@ func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
 	err := json.NewDecoder(r.Body).Decode(&game)
 	if err != nil {
 		app.clientMessage(w, http.StatusBadRequest, "malformed data")
-		fmt.Println(err)
 		return
 	}
-	err = app.submittedGames.Insert(&game)
+
+	if game.PlayerID == -1 {
+		app.clientMessage(w, http.StatusBadRequest, "some kind of error occurred")
+		return
+	}
+
+	if game.Version == "" {
+		app.clientMessage(w, http.StatusBadRequest, "ddstats version not found")
+		return
+	}
+
+	if game.PlayerID == 0 {
+		app.clientMessage(w, http.StatusBadRequest, "player ID not found")
+		return
+	}
+
+	gameID, err := app.submittedGames.Insert(&game)
 	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, err.Error())
-		fmt.Println(err)
+		app.clientMessage(w, http.StatusBadRequest, "error while inserting data to database")
 		return
 	}
+
+	js, err := json.Marshal(struct {
+		Message string `json:"message"`
+		GameID  int    `json:"game_id"`
+	}{"Game submitted.", gameID})
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "error retrieving game ID")
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
 }
 
 func (app *application) getGameAll(w http.ResponseWriter, r *http.Request) {
