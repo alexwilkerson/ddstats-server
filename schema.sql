@@ -41,6 +41,8 @@ CREATE TABLE IF NOT EXISTS state (
   enemies_killed BIGINT NOT NULL
 );
 
+CREATE INDEX game_id_idx ON state(game_id);
+
 CREATE TABLE IF NOT EXISTS player (
   id BIGSERIAL PRIMARY KEY NOT NULL,
   username TEXT NOT NULL,

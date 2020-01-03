@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"math"
+	"sort"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
 )
@@ -13,6 +14,77 @@ import (
 type GameModel struct {
 	DB *sql.DB
 }
+
+const (
+	v3SurvivalHashA = "5ff43e37d0f85e068caab5457305754e"
+	v3SurvivalHashB = "569fead87abf4d30fdee4231a6398051"
+)
+
+// GetAll retreives a slice of users using a specified page size and page num starting at 1
+func (g *GameModel) GetTop(limit int) ([]*models.Game, error) {
+	var games []*models.Game
+
+	stmt := fmt.Sprintf(`SELECT *
+						 FROM game 
+						 WHERE survival_hash=%s OR survival_hash=%s
+						 ORDER BY game_time DESC LIMIT %d`, v3SurvivalHashA, v3SurvivalHashB, limit)
+	rows, err := g.DB.Query(stmt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		var game models.Game
+		err = rows.Scan(
+			&game.ID,
+			&game.PlayerID,
+			&game.Granularity,
+			&game.GameTime,
+			&game.DeathType,
+			&game.Gems,
+			&game.HomingDaggers,
+			&game.DaggersFired,
+			&game.DaggersHit,
+			&game.EnemiesAlive,
+			&game.EnemiesKilled,
+			&game.TimeStamp,
+			&game.ReplayPlayerID,
+			&game.SurvivalHash,
+			&game.Version,
+			&game.LevelTwoTime,
+			&game.LevelThreeTime,
+			&game.LevelFourTime,
+			&game.HomingDaggersMaxTime,
+			&game.EnemiesAliveMaxTime,
+			&game.HomingDaggersMax,
+			&game.EnemiesAliveMax,
+		)
+		if err != nil {
+			return nil, err
+		}
+		if game.DaggersFired > 0 {
+			game.Accuracy = roundToNearest(float64(game.DaggersHit)/float64(game.DaggersFired)*100, 2)
+		}
+		games = append(games, &game)
+	}
+	err = rows.Err()
+	if err != nil {
+		return nil, err
+	}
+
+	sort.Sort(byTime(games))
+
+	return games, nil
+}
+
+type byTime []*models.Game
+
+func (a byTime) Len() int           { return len(a) }
+func (a byTime) Less(i, j int) bool { return (*a[i]).GameTime < (*a[j]).GameTime }
+func (a byTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // GetAll retreives a slice of users using a specified page size and page num starting at 1
 func (g *GameModel) GetRecent(pageSize, pageNum int) ([]*models.Game, error) {

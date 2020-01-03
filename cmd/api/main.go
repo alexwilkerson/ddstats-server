@@ -14,12 +14,13 @@ import (
 )
 
 type application struct {
-	errorLog *log.Logger
-	infoLog  *log.Logger
-	client   *http.Client
-	ddAPI    *ddapi.API
-	games    *postgres.GameModel
-	players  *postgres.PlayerModel
+	errorLog       *log.Logger
+	infoLog        *log.Logger
+	client         *http.Client
+	ddAPI          *ddapi.API
+	games          *postgres.GameModel
+	players        *postgres.PlayerModel
+	submittedGames *postgres.SubmittedGameModel
 }
 
 func main() {
@@ -40,12 +41,13 @@ func main() {
 	client := &http.Client{}
 
 	app := &application{
-		errorLog: errorLog,
-		infoLog:  infoLog,
-		client:   client,
-		ddAPI:    &ddapi.API{Client: client},
-		games:    &postgres.GameModel{DB: db},
-		players:  &postgres.PlayerModel{DB: db},
+		errorLog:       errorLog,
+		infoLog:        infoLog,
+		client:         client,
+		ddAPI:          &ddapi.API{Client: client},
+		games:          &postgres.GameModel{DB: db},
+		players:        &postgres.PlayerModel{DB: db},
+		submittedGames: &postgres.SubmittedGameModel{DB: db},
 	}
 
 	srv := &http.Server{

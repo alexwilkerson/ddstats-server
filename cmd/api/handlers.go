@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -12,6 +13,22 @@ import (
 
 func (app *application) helloWorld(w http.ResponseWriter, r *http.Request) {
 	w.Write([]byte("Hello, Merle!"))
+}
+
+func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
+	var game models.SubmittedGame
+	err := json.NewDecoder(r.Body).Decode(&game)
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "malformed data")
+		fmt.Println(err)
+		return
+	}
+	err = app.submittedGames.Insert(&game)
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, err.Error())
+		fmt.Println(err)
+		return
+	}
 }
 
 func (app *application) getGameAll(w http.ResponseWriter, r *http.Request) {
@@ -359,6 +376,44 @@ func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
 	games.TotalPages = int(math.Ceil(float64(games.TotalGameCount) / float64(pageSize)))
 	games.PageNumber = pageNum
 	games.PageSize = pageSize
+	games.GameCount = len(games.Games)
+
+	js, err := json.Marshal(games)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getTopGames(w http.ResponseWriter, r *http.Request) {
+	limit, err := strconv.Atoi(r.URL.Query().Get("limit"))
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "limit must be an integer")
+		return
+	}
+	if limit < 1 || limit > 100 {
+		app.clientMessage(w, http.StatusBadRequest, "limit must be between 1 and 100")
+		return
+	}
+
+	var games struct {
+		GameCount int            `json:"game_count"`
+		Games     []*models.Game `json:"games"`
+	}
+
+	games.Games, err = app.games.GetTop(limit)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	if games.Games == nil {
+		app.clientMessage(w, http.StatusNotFound, "no records found in this range")
+		return
+	}
+
 	games.GameCount = len(games.Games)
 
 	js, err := json.Marshal(games)

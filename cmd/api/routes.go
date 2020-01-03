@@ -21,6 +21,10 @@ func (app *application) routes() http.Handler {
 	mux.Get("/api/v2/ddapi/get_scores", http.HandlerFunc(app.ddGetScores))
 
 	// ddstats api
+	// this endpoint is redundant so as to handle older client submissions
+	mux.Post("/api/submit_game", http.HandlerFunc(app.submitGame))
+	mux.Post("/api/v2/submit_game", http.HandlerFunc(app.submitGame))
+	mux.Get("/api/v2/game/top", http.HandlerFunc(app.getTopGames))
 	mux.Get("/api/v2/game/recent", http.HandlerFunc(app.getRecentGames))
 	mux.Get("/api/v2/game", http.HandlerFunc(app.getGame))
 	mux.Get("/api/v2/game/all", http.HandlerFunc(app.getGameAll))

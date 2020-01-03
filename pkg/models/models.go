@@ -12,18 +12,18 @@ var ErrNoRecord = errors.New("no record found")
 
 //Game record representation
 type Game struct {
-	ID                   uint        `json:"id"`
-	PlayerID             uint        `json:"player_id"`
+	ID                   int         `json:"id"`
+	PlayerID             int         `json:"player_id"`
 	Granularity          int         `json:"granularity"`
 	GameTime             float64     `json:"game_time"`
 	DeathType            int         `json:"death_type"`
-	Gems                 uint        `json:"gems"`
-	HomingDaggers        uint        `json:"homing_daggers"`
-	DaggersFired         uint        `json:"daggers_fired"`
-	DaggersHit           uint        `json:"daggers_hit"`
+	Gems                 int         `json:"gems"`
+	HomingDaggers        int         `json:"homing_daggers"`
+	DaggersFired         int         `json:"daggers_fired"`
+	DaggersHit           int         `json:"daggers_hit"`
 	Accuracy             float64     `json:"accuracy"`
-	EnemiesAlive         uint        `json:"enemies_alive"`
-	EnemiesKilled        uint        `json:"enemies_killed"`
+	EnemiesAlive         int         `json:"enemies_alive"`
+	EnemiesKilled        int         `json:"enemies_killed"`
 	TimeStamp            time.Time   `json:"time_stamp"`
 	ReplayPlayerID       int         `json:"replay_player_id"`
 	SurvivalHash         string      `json:"survival_hash"`
@@ -33,8 +33,8 @@ type Game struct {
 	LevelFourTime        float64     `json:"level_four_time"`
 	HomingDaggersMaxTime float64     `json:"homing_daggers_max_time"`
 	EnemiesAliveMaxTime  float64     `json:"enemies_alive_max_time"`
-	HomingDaggersMax     uint        `json:"homing_daggers_max"`
-	EnemiesAliveMax      uint        `json:"enemies_alive_max"`
+	HomingDaggersMax     int         `json:"homing_daggers_max"`
+	EnemiesAliveMax      int         `json:"enemies_alive_max"`
 }
 
 // Player struct is for players
@@ -60,6 +60,7 @@ type Player struct {
 
 // State struct is for State
 type State struct {
+	GameID        int     `json:"game_id,omitempty"`
 	GameTime      float64 `json:"game_time"`
 	Gems          int     `json:"gems"`
 	HomingDaggers int     `json:"homing_daggers"`
@@ -103,4 +104,35 @@ type EnemiesAlive struct {
 type EnemiesKilled struct {
 	GameTime      float64 `json:"game_time"`
 	EnemiesKilled int     `json:"enemies_killed"`
+}
+
+type SubmittedGame struct {
+	PlayerID            int       `json:"playerID"`
+	PlayerName          string    `json:"playerName"`
+	Granularity         int       `json:"granularity"`
+	GameTime            float64   `json:"inGameTimer"`
+	GameTimeSlice       []float64 `json:"inGameTimerVector"`
+	Gems                int       `json:"gems"`
+	GemsSlice           []int     `json:"gemsVector"`
+	Level2Time          float64   `json:"levelTwoTime"`
+	Level3Time          float64   `json:"levelThreeTime"`
+	Level4Time          float64   `json:"levelFourTime"`
+	HomingDaggers       int       `json:"homingDaggers"`
+	HomingDaggersSlice  []int     `json:"homingDaggersVector"`
+	HomingMax           int       `json:"homingDaggersMax"`
+	HomingMaxTime       float64   `json:"homingDaggersMaxTime"`
+	DaggersFired        int       `json:"daggersFired"`
+	DaggersFiredSlice   []int     `json:"daggersFiredVector"`
+	DaggersHit          int       `json:"daggersHit"`
+	DaggersHitSlice     []int     `json:"daggersHitVector"`
+	EnemiesAlive        int       `json:"enemiesAlive"`
+	EnemiesAliveSlice   []int     `json:"enemiesAliveVector"`
+	EnemiesAliveMax     int       `json:"enemiesAliveMax"`
+	EnemiesAliveMaxTime float64   `json:"enemiesAliveMaxTime"`
+	EnemiesKilled       int       `json:"enemiesKilled"`
+	EnemiesKilledSlice  []int     `json:"enemiesKilledVector"`
+	DeathType           int       `json:"deathType"`
+	ReplayPlayerID      int       `json:"replayPlayerID"`
+	Version             string    `json:"version"`
+	SurvivalHash        string    `json:"survivalHash"`
 }
