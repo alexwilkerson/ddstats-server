@@ -22,11 +22,10 @@ const (
 )
 
 // GetAll retreives a slice of users using a specified page size and page num starting at 1
-func (g *GameModel) GetTop(limit int) ([]*models.Game, error) {
-	var games []*models.Game
+func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
+	var games []*models.GameWithName
 
-	stmt := fmt.Sprintf(`SELECT *
-						 FROM game 
+	stmt := fmt.Sprintf(`SELECT game.id, player_id, player_name, granularity, game.game_time, game.death_type, game.gems, game.homing_daggers, game.daggers_fired, game.daggers_hit, game.enemies_alive, game.enemies_killed, time_stamp, replay_player_id, survival_hash, version, level_two_time, level_three_time, level_four_time, homing_daggers_max_time, enemies_alive_max_time, homing_daggers_max, enemies_alive_max FROM game JOIN player ON game.player_id=player.id 
 						 WHERE replay_player_id=0 AND (survival_hash='%s' OR survival_hash='%s')
 						 ORDER BY game_time DESC LIMIT %d`, v3SurvivalHashA, v3SurvivalHashB, limit)
 	rows, err := g.DB.Query(stmt)
@@ -38,10 +37,11 @@ func (g *GameModel) GetTop(limit int) ([]*models.Game, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var game models.Game
+		var game models.GameWithName
 		err = rows.Scan(
 			&game.ID,
 			&game.PlayerID,
+			&game.PlayerName,
 			&game.Granularity,
 			&game.GameTime,
 			&game.DeathType,
@@ -81,17 +81,17 @@ func (g *GameModel) GetTop(limit int) ([]*models.Game, error) {
 	return games, nil
 }
 
-type byTime []*models.Game
+type byTime []*models.GameWithName
 
 func (a byTime) Len() int           { return len(a) }
 func (a byTime) Less(i, j int) bool { return (*a[i]).GameTime < (*a[j]).GameTime }
 func (a byTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // GetRecent retreives a slice of users using a specified page size and page num starting at 1
-func (g *GameModel) GetRecent(pageSize, pageNum int) ([]*models.Game, error) {
-	var games []*models.Game
+func (g *GameModel) GetRecent(pageSize, pageNum int) ([]*models.GameWithName, error) {
+	var games []*models.GameWithName
 
-	stmt := fmt.Sprintf("SELECT * FROM game ORDER BY time_stamp DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
+	stmt := fmt.Sprintf("SELECT game.id, player_id, player_name, granularity, game.game_time, game.death_type, game.gems, game.homing_daggers, game.daggers_fired, game.daggers_hit, game.enemies_alive, game.enemies_killed, time_stamp, replay_player_id, survival_hash, version, level_two_time, level_three_time, level_four_time, homing_daggers_max_time, enemies_alive_max_time, homing_daggers_max, enemies_alive_max FROM game JOIN player ON game.player_id=player.id ORDER BY id DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
 	rows, err := g.DB.Query(stmt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -101,10 +101,11 @@ func (g *GameModel) GetRecent(pageSize, pageNum int) ([]*models.Game, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var game models.Game
+		var game models.GameWithName
 		err = rows.Scan(
 			&game.ID,
 			&game.PlayerID,
+			&game.PlayerName,
 			&game.Granularity,
 			&game.GameTime,
 			&game.DeathType,

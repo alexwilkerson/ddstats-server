@@ -37,6 +37,12 @@ type Game struct {
 	EnemiesAliveMax      int         `json:"enemies_alive_max" db:"enemies_alive_max"`
 }
 
+// GameWithName is game with player_name included
+type GameWithName struct {
+	PlayerName string `json:"player_name" db:"player_name"`
+	Game
+}
+
 // Player struct is for players
 type Player struct {
 	ID                   int     `json:"id" db:"id"`
@@ -72,38 +78,38 @@ type State struct {
 }
 
 type Gems struct {
-	GameTime float64 `json:"game_time"`
-	Gems     int     `json:"gems"`
+	GameTime float64 `json:"game_time" db:"game_time"`
+	Gems     int     `json:"gems" db:"gems"`
 }
 
 type HomingDaggers struct {
-	GameTime      float64 `json:"game_time"`
-	HomingDaggers int     `json:"homing_daggers"`
+	GameTime      float64 `json:"game_time" db:"game_time"`
+	HomingDaggers int     `json:"homing_daggers" db:"homing_daggers"`
 }
 
 type DaggersHit struct {
-	GameTime   float64 `json:"game_time"`
-	DaggersHit int     `json:"daggers_hit"`
+	GameTime   float64 `json:"game_time" db:"game_time"`
+	DaggersHit int     `json:"daggers_hit" db:"daggers_hit"`
 }
 
 type DaggersFired struct {
-	GameTime     float64 `json:"game_time"`
-	DaggersFired int     `json:"daggers_fired"`
+	GameTime     float64 `json:"game_time" db:"game_time"`
+	DaggersFired int     `json:"daggers_fired" db:"daggers_fired"`
 }
 
 type Accuracy struct {
-	GameTime float64 `json:"game_time"`
-	Accuracy float64 `json:"accuracy"`
+	GameTime float64 `json:"game_time" db:"game_time"`
+	Accuracy float64 `json:"accuracy" db:"accuracy"`
 }
 
 type EnemiesAlive struct {
-	GameTime     float64 `json:"game_time"`
-	EnemiesAlive int     `json:"enemies_alive"`
+	GameTime     float64 `json:"game_time" db:"game_time"`
+	EnemiesAlive int     `json:"enemies_alive" db:"enemies_alive"`
 }
 
 type EnemiesKilled struct {
-	GameTime      float64 `json:"game_time"`
-	EnemiesKilled int     `json:"enemies_killed"`
+	GameTime      float64 `json:"game_time" db:"game_time"`
+	EnemiesKilled int     `json:"enemies_killed" db:"enemies_killed"`
 }
 
 type SubmittedGame struct {

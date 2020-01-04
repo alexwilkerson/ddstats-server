@@ -372,12 +372,12 @@ func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var games struct {
-		TotalPages     int            `json:"total_pages"`
-		TotalGameCount int            `json:"total_game_count"`
-		PageNumber     int            `json:"page_number"`
-		PageSize       int            `json:"page_size"`
-		GameCount      int            `json:"game_count"`
-		Games          []*models.Game `json:"games"`
+		TotalPages     int                    `json:"total_pages"`
+		TotalGameCount int                    `json:"total_game_count"`
+		PageNumber     int                    `json:"page_number"`
+		PageSize       int                    `json:"page_size"`
+		GameCount      int                    `json:"game_count"`
+		Games          []*models.GameWithName `json:"games"`
 	}
 
 	games.Games, err = app.games.GetRecent(pageSize, pageNum)
@@ -423,8 +423,8 @@ func (app *application) getTopGames(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var games struct {
-		GameCount int            `json:"game_count"`
-		Games     []*models.Game `json:"games"`
+		GameCount int                    `json:"game_count"`
+		Games     []*models.GameWithName `json:"games"`
 	}
 
 	games.Games, err = app.games.GetTop(limit)
