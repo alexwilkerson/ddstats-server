@@ -72,3 +72,8 @@ CREATE TABLE IF NOT EXISTS spawnset (
   survival_hash TEXT PRIMARY KEY NOT NULL,
   spawnset_name TEXT NOT NULL
 );
+
+-- 
+CREATE FUNCTION ROUND(float,int) RETURNS FLOAT AS $$
+  SELECT ROUND($1::numeric,$2)::FLOAT;
+$$ language SQL IMMUTABLE;

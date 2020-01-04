@@ -16,7 +16,7 @@ type Game struct {
 	PlayerID             int         `json:"player_id" db:"player_id"`
 	Granularity          int         `json:"granularity" db:"granularity"`
 	GameTime             float64     `json:"game_time" db:"game_time"`
-	DeathType            int         `json:"death_type" db:"death_type"`
+	DeathType            string      `json:"death_type"`
 	Gems                 int         `json:"gems" db:"gems"`
 	HomingDaggers        int         `json:"homing_daggers" db:"homing_daggers"`
 	DaggersFired         int         `json:"daggers_fired" db:"daggers_fired"`
