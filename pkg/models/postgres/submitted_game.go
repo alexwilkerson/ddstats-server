@@ -50,7 +50,7 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 	err := sg.DB.QueryRow(stmt,
 		game.PlayerID,
 		game.Granularity,
-		roundToNearest(game.GameTime, 4),
+		game.GameTime,
 		game.DeathType,
 		game.Gems,
 		game.HomingDaggers,

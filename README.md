@@ -40,7 +40,7 @@
 
 - [ ] POST api/v2/game/submit (half done... still needs more work on filtering)
 - [x] GET api/v2/game/top
-- [x] GET api/v2/game/recent?pagesize={int}&pagenum={int}
+- [x] GET api/v2/game/recent?pagesize={int}&pagenum={int} (optional: playerid={int} will give most recent for given player)
 - [x] GET api/v2/game?id={int} (info)
 - [x] GET api/v2/game/all?id={int}
 - [x] GET api/v2/game/gems?id={int}
@@ -52,8 +52,9 @@
 #### player
 
 - [x] GET api/v2/player/all?pagesize={int}&pagenum={int} (list all users)
-- [ ] GET api/v2/player/games?id={int}pagesize={int}&pagenum={int} (paginated list of games by player id)
 - [x] GET api/v2/player?id={int}
+- [x] ~GET api/v2/player/games?id={int}pagesize={int}&pagenum={int} (paginated list of games by player id)~
+      (see api/v2/game/recent)
 
 #### dd backend
 

@@ -88,11 +88,22 @@ func (a byTime) Less(i, j int) bool { return (*a[i]).GameTime < (*a[j]).GameTime
 func (a byTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // GetRecent retreives a slice of users using a specified page size and page num starting at 1
-func (g *GameModel) GetRecent(pageSize, pageNum int) ([]*models.GameWithName, error) {
+func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWithName, error) {
+	var where string
+	if playerID != 0 {
+		where = fmt.Sprintf("WHERE game.player_id=$1 AND game.replay_player_id=0")
+	}
+
 	var games []*models.GameWithName
 
-	stmt := fmt.Sprintf("SELECT game.id, player_id, player_name, granularity, game.game_time, game.death_type, game.gems, game.homing_daggers, game.daggers_fired, game.daggers_hit, game.enemies_alive, game.enemies_killed, time_stamp, replay_player_id, survival_hash, version, level_two_time, level_three_time, level_four_time, homing_daggers_max_time, enemies_alive_max_time, homing_daggers_max, enemies_alive_max FROM game JOIN player ON game.player_id=player.id ORDER BY id DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
-	rows, err := g.DB.Query(stmt)
+	stmt := fmt.Sprintf("SELECT game.id, player_id, player_name, granularity, game.game_time, game.death_type, game.gems, game.homing_daggers, game.daggers_fired, game.daggers_hit, game.enemies_alive, game.enemies_killed, time_stamp, replay_player_id, survival_hash, version, level_two_time, level_three_time, level_four_time, homing_daggers_max_time, enemies_alive_max_time, homing_daggers_max, enemies_alive_max FROM game JOIN player ON game.player_id=player.id %s ORDER BY id DESC LIMIT %d OFFSET %d", where, pageSize, (pageNum-1)*pageSize)
+	var rows *sql.Rows
+	var err error
+	if playerID != 0 {
+		rows, err = g.DB.Query(stmt, playerID)
+	} else {
+		rows, err = g.DB.Query(stmt)
+	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
@@ -470,11 +481,21 @@ func (g *GameModel) GetEnemiesKilled(id int) ([]*models.EnemiesKilled, error) {
 }
 
 // GetTotalCount returns the total number of games in the database
-func (g *GameModel) GetTotalCount() (int, error) {
+func (g *GameModel) GetTotalCount(playerID int) (int, error) {
+	var err error
+	var stmt string
 	var gameCount int
-	stmt := "SELECT COUNT(1) FROM game"
-	err := g.DB.QueryRow(stmt).Scan(&gameCount)
+	if playerID != 0 {
+		stmt = "SELECT COUNT(1) FROM game WHERE player_id=$1 AND replay_player_id=0"
+		err = g.DB.QueryRow(stmt, playerID).Scan(&gameCount)
+	} else {
+		stmt = "SELECT COUNT(1) FROM game"
+		err = g.DB.QueryRow(stmt).Scan(&gameCount)
+	}
 	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrNoRecord
+		}
 		return 0, err
 	}
 	return gameCount, nil

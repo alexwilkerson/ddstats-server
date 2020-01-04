@@ -351,6 +351,20 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
+	var playerID int
+	var err error
+	if _, ok := r.URL.Query()["playerid"]; ok {
+		playerID, err = strconv.Atoi(r.URL.Query().Get("playerid"))
+		if err != nil {
+			app.clientMessage(w, http.StatusBadRequest, "playerid must be an integer")
+			return
+		}
+		if playerID < 1 {
+			app.clientMessage(w, http.StatusBadRequest, "playerid must be greater than 0")
+			return
+		}
+	}
+
 	pageSize, err := strconv.Atoi(r.URL.Query().Get("pagesize"))
 	if err != nil {
 		app.clientMessage(w, http.StatusBadRequest, "pagesize must be an integer")
@@ -380,7 +394,7 @@ func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		Games          []*models.GameWithName `json:"games"`
 	}
 
-	games.Games, err = app.games.GetRecent(pageSize, pageNum)
+	games.Games, err = app.games.GetRecent(playerID, pageSize, pageNum)
 	if err != nil {
 		app.serverError(w, err)
 		return
@@ -391,7 +405,7 @@ func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	games.TotalGameCount, err = app.games.GetTotalCount()
+	games.TotalGameCount, err = app.games.GetTotalCount(playerID)
 	if err != nil {
 		app.serverError(w, err)
 		return
