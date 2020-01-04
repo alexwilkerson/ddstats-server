@@ -1,17 +1,45 @@
 # ddstats-api
 
+### Things Left to Do...
+
+#### socket-io stuff
+
+- [ ] clear live table func
+- [ ] create get_live_users in /ddstats-bot namespace https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L344-L354
+- [ ] create on get_status in namespace /stats https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L331-L337
+- [ ] create game_submitted in namespace /stats https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L311-L328
+- [ ] create submit in namespace /stats https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L279-L308
+- [ ] create status_update https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L217-L222
+- [ ] create submit https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L224-L253
+- [ ] create game_submitted https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L255-L272
+- [ ] create disconnect https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L197-L206
+- [ ] create login https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L175-L194
+- [ ] create join in namespace /user-page https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L160-L172
+- [ ] create disconnect in namespace /user-page https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L138-L152
+- [ ] create a userList and playerDict https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L116-L118
+
+#### submission stuff
+
+- [ ] finish the logic behind game submissions and filtering
+
 ### TODO: endpoints
 
 #### index
 
-- [ ] GET user/live
-- [ ] GET client/version/latest
-- [ ] GET news/recent?num={int}
+- [ ] GET api/v2/motd
+- [ ] create table in database for motd
+- [ ] GET api/v2/client/releases?pagesize={int}&pagenum={int}
+- [ ] GET api/v2/client/download?version={string}
+- [ ] create database in table for client version/filename
+- [ ] GET api/v2/news?pagesize={int}&pagenum={int}
+- [ ] create table in database for news
+
+- [ ] GET user/live (idk about this one?)
 
 #### game
 
-- [ ] POST api/v2/game/submit
-- [ ] GET api/v2/game/top
+- [ ] POST api/v2/game/submit (half done... still needs more work on filtering)
+- [x] GET api/v2/game/top
 - [x] GET api/v2/game/recent?pagesize={int}&pagenum={int}
 - [x] GET api/v2/game?id={int} (info)
 - [x] GET api/v2/game/all?id={int}
@@ -78,7 +106,7 @@ select * from spawnset;
 .headers on
 .mode csv
 .output player.csv
-select id, username, rank, game_time, death_type, gems, daggers_fired, daggers_hit, enemies_killed, accuracy, time_total as overall_time, deaths_total as overall_deaths, gems_total as overall_gems, enemies_killed_total as overall_enemies_killed, daggers_fired_total as overall_daggers_fired, daggers_hit_total as overall_daggers_hit, accuracy_total as overall_accuracy from user;
+select id, username as player_name, rank, game_time, death_type, gems, daggers_fired, daggers_hit, enemies_killed, accuracy, time_total as overall_time, deaths_total as overall_deaths, gems_total as overall_gems, enemies_killed_total as overall_enemies_killed, daggers_fired_total as overall_daggers_fired, daggers_hit_total as overall_daggers_hit, accuracy_total as overall_accuracy from user;
 ```
 
 #### live

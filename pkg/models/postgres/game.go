@@ -27,7 +27,7 @@ func (g *GameModel) GetTop(limit int) ([]*models.Game, error) {
 
 	stmt := fmt.Sprintf(`SELECT *
 						 FROM game 
-						 WHERE survival_hash='%s' OR survival_hash='%s'
+						 WHERE replay_player_id=0 AND (survival_hash='%s' OR survival_hash='%s')
 						 ORDER BY game_time DESC LIMIT %d`, v3SurvivalHashA, v3SurvivalHashB, limit)
 	rows, err := g.DB.Query(stmt)
 	if err != nil {
