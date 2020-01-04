@@ -52,6 +52,7 @@
 #### player
 
 - [x] GET api/v2/player/all?pagesize={int}&pagenum={int} (list all users)
+- [ ] GET api/v2/player/games?id={int}pagesize={int}&pagenum={int} (paginated list of games by player id)
 - [x] GET api/v2/player?id={int}
 
 #### dd backend
