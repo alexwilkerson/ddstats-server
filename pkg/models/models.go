@@ -16,7 +16,7 @@ type Game struct {
 	PlayerID             int         `json:"player_id" db:"player_id"`
 	Granularity          int         `json:"granularity" db:"granularity"`
 	GameTime             float64     `json:"game_time" db:"game_time"`
-	DeathType            string      `json:"death_type"`
+	DeathType            string      `json:"death_type" db:"death_type"`
 	Gems                 int         `json:"gems" db:"gems"`
 	HomingDaggers        int         `json:"homing_daggers" db:"homing_daggers"`
 	DaggersFired         int         `json:"daggers_fired" db:"daggers_fired"`
@@ -24,7 +24,7 @@ type Game struct {
 	Accuracy             float64     `json:"accuracy" db:"accuracy"`
 	EnemiesAlive         int         `json:"enemies_alive" db:"enemies_alive"`
 	EnemiesKilled        int         `json:"enemies_killed" db:"enemies_killed"`
-	TimeStamp            time.Time   `json:"time_stamp" db:"time_stampe"`
+	TimeStamp            time.Time   `json:"time_stamp" db:"time_stamp"`
 	ReplayPlayerID       int         `json:"replay_player_id" db:"replay_player_id"`
 	SurvivalHash         string      `json:"survival_hash" db:"survival_hash"`
 	Version              null.String `json:"version" db:"version"`

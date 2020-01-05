@@ -73,7 +73,23 @@ CREATE TABLE IF NOT EXISTS spawnset (
   spawnset_name TEXT NOT NULL
 );
 
--- 
-CREATE FUNCTION ROUND(float,int) RETURNS FLOAT AS $$
+CREATE TABLE IF NOT EXISTS death_type (
+  id INTEGER NOT NULL PRIMARY KEY,
+  name TEXT NOT NULL
+);
+
+-- below are POSTGRES helper functions to make dealing with the database easier --
+
+-- this function is used internally
+CREATE OR REPLACE FUNCTION ROUND(float,int) RETURNS FLOAT AS $$
   SELECT ROUND($1::numeric,$2)::FLOAT;
+$$ language SQL IMMUTABLE;
+
+-- takes two floats and returns a float... if zero, returns 0.0
+CREATE OR REPLACE FUNCTION DIVZERO(float,float) RETURNS FLOAT AS $$
+  SELECT
+    CASE
+      WHEN $2=0 THEN 0::FLOAT
+      ELSE
+        ($1::FLOAT/$2::FLOAT)::FLOAT END;
 $$ language SQL IMMUTABLE;
