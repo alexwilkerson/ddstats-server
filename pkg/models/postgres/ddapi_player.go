@@ -36,7 +36,7 @@ func (ddp *DDPlayersModel) Insert(player *ddapi.Player) error {
 		player.PlayerName,
 		player.Rank,
 		player.GameTime,
-		player.DeathType,
+		deathTypes[player.DeathType],
 		player.Gems,
 		player.DaggersHit,
 		player.DaggersFired,
@@ -54,4 +54,27 @@ func (ddp *DDPlayersModel) Insert(player *ddapi.Player) error {
 		return err
 	}
 	return nil
+}
+
+// this is used to retrieve the corresponding death type id
+// since the ddapi package automatically converts the death type
+// to a string
+var deathTypes = map[string]int{
+	"RESTART":      -1,
+	"FALLEN":       0,
+	"SWARMED":      1,
+	"IMPALED":      2,
+	"GORED":        3,
+	"INFESTED":     4,
+	"OPENED":       5,
+	"PURGED":       6,
+	"DESECRATED":   7,
+	"SACRIFICED":   8,
+	"EVISCERATED":  9,
+	"ANNIHILATED":  10,
+	"INTOXICATED":  11,
+	"ENVENMONATED": 12,
+	"INCARNATED":   13,
+	"DISCARNATED":  14,
+	"BARBED":       15,
 }
