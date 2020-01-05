@@ -26,7 +26,7 @@
 
 #### index
 
-- [ ] POST api/v2/client_connect (client sends client version and receives info)
+- [x] POST api/v2/client_connect (client sends client version and receives info)
 - [x] GET api/v2/motd
 - [x] create table in database for motd
 - [ ] GET api/v2/client/releases?pagesize={int}&pagenum={int}
