@@ -20,7 +20,7 @@
 
 #### submission stuff
 
-- [ ] finish the logic behind game submissions and filtering
+- [x] finish the logic behind game submissions and filtering (i think this is done)
 
 ### TODO: endpoints
 

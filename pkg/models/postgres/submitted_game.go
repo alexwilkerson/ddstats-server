@@ -17,6 +17,11 @@ type SubmittedGameModel struct {
 	Client *http.Client
 }
 
+// CheckDuplicate takes a submitted game, checks if it's a replay...
+// if it is, it will try to find a matching game recording to make sure
+// the game hasn't already been previously recorded into the database.
+// This is to make sure people who are watching replays of their own games
+// won't record the same games over and over and over again.
 func (sg *SubmittedGameModel) CheckDuplicate(game *models.SubmittedGame) (bool, int, error) {
 	var id int
 	if game.ReplayPlayerID == 0 {
