@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"sort"
 	"strconv"
 )
 
@@ -188,6 +189,10 @@ func (api *API) UserSearch(name string) ([]*Player, error) {
 	if err != nil {
 		return nil, err
 	}
+
+	sort.SliceStable(players, func(i, j int) bool {
+		return players[i].Rank < players[j].Rank
+	})
 
 	return players, nil
 }
