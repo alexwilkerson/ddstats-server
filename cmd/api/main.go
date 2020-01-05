@@ -9,6 +9,7 @@ import (
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+	socketio "github.com/googollee/go-socket.io"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -27,6 +28,7 @@ type application struct {
 	players        *postgres.PlayerModel
 	submittedGames *postgres.SubmittedGameModel
 	motd           *postgres.MOTDModel
+	socketIO       *socketio.Server
 }
 
 func main() {
@@ -46,6 +48,11 @@ func main() {
 	// TODO: set up client appropriately
 	client := &http.Client{}
 
+	socketIOServer, err := socketio.NewServer(nil)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	app := &application{
 		errorLog:       errorLog,
 		infoLog:        infoLog,
@@ -55,6 +62,7 @@ func main() {
 		players:        &postgres.PlayerModel{DB: db},
 		submittedGames: &postgres.SubmittedGameModel{DB: db, Client: client},
 		motd:           &postgres.MOTDModel{DB: db},
+		socketIO:       socketIOServer,
 	}
 
 	srv := &http.Server{
