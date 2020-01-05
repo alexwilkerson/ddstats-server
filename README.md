@@ -39,7 +39,7 @@
 
 #### game
 
-- [ ] POST api/v2/game/submit (half done... still needs more work on filtering)
+- [x] POST api/v2/game/submit
 - [x] GET api/v2/game/top
 - [x] GET api/v2/game/recent?pagesize={int}&pagenum={int} (optional: playerid={int} will give most recent for given player)
 - [x] GET api/v2/game?id={int} (info)
