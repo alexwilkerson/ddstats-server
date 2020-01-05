@@ -8,10 +8,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// MOTDModel wraps database connection
 type MOTDModel struct {
 	DB *sqlx.DB
 }
 
+// Get returns the most recent message of the day
 func (m *MOTDModel) Get() (*models.MOTD, error) {
 	var motd models.MOTD
 	stmt := `
