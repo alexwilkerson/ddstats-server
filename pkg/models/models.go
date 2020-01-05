@@ -77,41 +77,50 @@ type State struct {
 	EnemiesKilled int     `json:"enemies_killed" db:"enemies_killed"`
 }
 
+// Gems holds game time and gems
 type Gems struct {
 	GameTime float64 `json:"game_time" db:"game_time"`
 	Gems     int     `json:"gems" db:"gems"`
 }
 
+// HomingDaggers holds game time and homing daggers
 type HomingDaggers struct {
 	GameTime      float64 `json:"game_time" db:"game_time"`
 	HomingDaggers int     `json:"homing_daggers" db:"homing_daggers"`
 }
 
+// DaggersHit holds game time and daggers hit
 type DaggersHit struct {
 	GameTime   float64 `json:"game_time" db:"game_time"`
 	DaggersHit int     `json:"daggers_hit" db:"daggers_hit"`
 }
 
+// DaggersFired holds game time and daggers fired
 type DaggersFired struct {
 	GameTime     float64 `json:"game_time" db:"game_time"`
 	DaggersFired int     `json:"daggers_fired" db:"daggers_fired"`
 }
 
+// Accuracy holds game time and accuracy
 type Accuracy struct {
 	GameTime float64 `json:"game_time" db:"game_time"`
 	Accuracy float64 `json:"accuracy" db:"accuracy"`
 }
 
+// EnemiesAlive holds game time and enemies alive
 type EnemiesAlive struct {
 	GameTime     float64 `json:"game_time" db:"game_time"`
 	EnemiesAlive int     `json:"enemies_alive" db:"enemies_alive"`
 }
 
+// EnemiesKilled holds game time and enemies killed
 type EnemiesKilled struct {
 	GameTime      float64 `json:"game_time" db:"game_time"`
 	EnemiesKilled int     `json:"enemies_killed" db:"enemies_killed"`
 }
 
+// SubmittedGame is used to decode the JSON struct that comes in when a player
+// completes a game and is submitted
 type SubmittedGame struct {
 	PlayerID            int       `json:"playerID"`
 	PlayerName          string    `json:"playerName"`

@@ -44,37 +44,37 @@ var ErrNoPlayersFound = errors.New("no players found")
 // Player is the struct returned after parsing the binary data
 // blob returned from the DD API.
 type Player struct {
-	PlayerName          string  `json:"player_name"`
-	PlayerID            uint64  `json:"player_id"`
-	Rank                int32   `json:"rank"`
-	Time                float64 `json:"time"`
-	Kills               int32   `json:"kills"`
-	Gems                int32   `json:"gems"`
-	DaggersHit          int32   `json:"daggers_hit"`
-	DaggersFired        int32   `json:"daggers_fired"`
-	Accuracy            float64 `json:"accuracy"`
-	DeathType           string  `json:"death_type"`
-	OverallTime         float64 `json:"overall_time"`
-	OverallKills        uint64  `json:"overall_kills"`
-	OverallGems         uint64  `json:"overall_gems"`
-	OverallDeaths       uint64  `json:"overall_deaths"`
-	OverallDaggersHit   uint64  `json:"overall_daggers_hit"`
-	OverallDaggersFired uint64  `json:"overall_daggers_fired"`
-	OverallAccuracy     float64 `json:"overall_accuracy"`
+	PlayerName           string  `json:"player_name"`
+	PlayerID             uint64  `json:"player_id"`
+	Rank                 int32   `json:"rank"`
+	GameTime             float64 `json:"game_time"`
+	EnemiesKilled        int32   `json:"enemies_killed"`
+	Gems                 int32   `json:"gems"`
+	DaggersHit           int32   `json:"daggers_hit"`
+	DaggersFired         int32   `json:"daggers_fired"`
+	Accuracy             float64 `json:"accuracy"`
+	DeathType            string  `json:"death_type"`
+	OverallTime          float64 `json:"overall_time"`
+	OverallEnemiesKilled uint64  `json:"overall_enemies_killed"`
+	OverallGems          uint64  `json:"overall_gems"`
+	OverallDeaths        uint64  `json:"overall_deaths"`
+	OverallDaggersHit    uint64  `json:"overall_daggers_hit"`
+	OverallDaggersFired  uint64  `json:"overall_daggers_fired"`
+	OverallAccuracy      float64 `json:"overall_accuracy"`
 }
 
 // Leaderboard is a struct returned after being converted from bytes
 type Leaderboard struct {
-	GlobalDeaths       uint64    `json:"global_deaths"`
-	GlobalKills        uint64    `json:"global_kills"`
-	GlobalTime         float64   `json:"global_time"`
-	GlobalGems         uint64    `json:"global_gems"`
-	GlobalDaggersFired uint64    `json:"global_daggers_fired"`
-	GlobalDaggersHit   uint64    `json:"global_daggers_hit"`
-	GlobalAccuracy     float64   `json:"global_accuracy"`
-	GlobalPlayerCount  int32     `json:"global_player_count"`
-	PlayerCount        int       `json:"player_count"`
-	Players            []*Player `json:"players"`
+	GlobalDeaths        uint64    `json:"global_deaths"`
+	GlobalEnemiesKilled uint64    `json:"global_enemies_killed"`
+	GlobalTime          float64   `json:"global_time"`
+	GlobalGems          uint64    `json:"global_gems"`
+	GlobalDaggersFired  uint64    `json:"global_daggers_fired"`
+	GlobalDaggersHit    uint64    `json:"global_daggers_hit"`
+	GlobalAccuracy      float64   `json:"global_accuracy"`
+	GlobalPlayerCount   int32     `json:"global_player_count"`
+	PlayerCount         int       `json:"player_count"`
+	Players             []*Player `json:"players"`
 }
 
 // UserByID hits the backend DD API and returns a Player
@@ -208,8 +208,8 @@ func bytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 		return nil, ErrPlayerNotFound
 	}
 	player.Rank = toInt32(b, bytePosition)
-	player.Time = roundToNearest(float64(toInt32(b, bytePosition+12))/10000, 4)
-	player.Kills = toInt32(b, bytePosition+16)
+	player.GameTime = roundToNearest(float64(toInt32(b, bytePosition+12))/10000, 4)
+	player.EnemiesKilled = toInt32(b, bytePosition+16)
 	player.Gems = toInt32(b, bytePosition+28)
 	player.DaggersHit = toInt32(b, bytePosition+24)
 	player.DaggersFired = toInt32(b, bytePosition+20)
@@ -218,7 +218,7 @@ func bytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 	}
 	player.DeathType = DeathTypes[toInt16(b, bytePosition+32)]
 	player.OverallTime = roundToNearest(float64(toUint64(b, bytePosition+60))/10000, 4)
-	player.OverallKills = toUint64(b, bytePosition+44)
+	player.OverallEnemiesKilled = toUint64(b, bytePosition+44)
 	player.OverallGems = toUint64(b, bytePosition+68)
 	player.OverallDeaths = toUint64(b, bytePosition+36)
 	player.OverallDaggersHit = toUint64(b, bytePosition+76)
@@ -236,7 +236,7 @@ func bytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
 	var leaderboard Leaderboard
 
 	leaderboard.GlobalDeaths = toUint64(b, 11)
-	leaderboard.GlobalKills = toUint64(b, 19)
+	leaderboard.GlobalEnemiesKilled = toUint64(b, 19)
 	leaderboard.GlobalTime = roundToNearest(float64(toUint64(b, 35))/1000, 4)
 	leaderboard.GlobalGems = toUint64(b, 43)
 	leaderboard.GlobalDaggersHit = toUint64(b, 51)

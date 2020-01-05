@@ -9,11 +9,14 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// SubmittedGameModel wraps the database connection and http client
 type SubmittedGameModel struct {
 	DB     *sqlx.DB
 	Client *http.Client
 }
 
+// Insert takes a submitted game and inserts the data into the game table,
+// then iterates over all of the states and inserts each state into the state table
 func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 	// fixes possible older versions of client submitting
 	if game.SurvivalHash == "" {
@@ -126,17 +129,17 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 			err = players.Insert(&models.Player{
 				PlayerName:           player.PlayerName,
 				Rank:                 int(player.Rank),
-				GameTime:             player.Time,
+				GameTime:             player.GameTime,
 				DeathType:            player.DeathType,
 				Gems:                 int(player.Gems),
 				DaggersHit:           int(player.DaggersHit),
 				DaggersFired:         int(player.DaggersFired),
-				EnemiesKilled:        int(player.Kills),
+				EnemiesKilled:        int(player.EnemiesKilled),
 				Accuracy:             accuracy,
 				OverallTime:          player.OverallTime,
 				OverallDeaths:        int(player.OverallDeaths),
 				OverallGems:          int(player.OverallGems),
-				OverallEnemiesKilled: int(player.OverallKills),
+				OverallEnemiesKilled: int(player.OverallEnemiesKilled),
 				OverallDaggersHit:    int(player.OverallDaggersHit),
 				OverallDaggersFired:  int(player.OverallDaggersFired),
 				OverallAccuracy:      overallAccuracy,

@@ -5,10 +5,12 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
+// StateModel wraps the database connection
 type StateModel struct {
 	DB *sqlx.DB
 }
 
+// Insert inserts a state into the state table
 func (s *StateModel) Insert(state *models.State) error {
 	stmt := `INSERT INTO state(
 			game_id,

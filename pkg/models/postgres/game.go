@@ -21,7 +21,7 @@ const (
 	v3SurvivalHashB = "569fead87abf4d30fdee4231a6398051"
 )
 
-// GetTop retreives a slice of games
+// GetTop retreives a slice of the top games in the database with a given limit
 func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 	var games []*models.GameWithName
 
@@ -167,6 +167,7 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 	return &game, nil
 }
 
+// GetAll returns a slice of states including all of the data from each state
 func (g *GameModel) GetAll(id int) ([]*models.State, error) {
 	var states []*models.State
 	stmt := `
@@ -192,6 +193,7 @@ func (g *GameModel) GetAll(id int) ([]*models.State, error) {
 	return states, nil
 }
 
+// GetGems returns a slice game time and gems from the given game
 func (g *GameModel) GetGems(id int) ([]*models.Gems, error) {
 	var states []*models.Gems
 	stmt := `SELECT round(game_time, 4) as game_time, gems
@@ -207,6 +209,7 @@ func (g *GameModel) GetGems(id int) ([]*models.Gems, error) {
 	return states, nil
 }
 
+// GetHomingDaggers returns a slice game time and homing daggers from the given game
 func (g *GameModel) GetHomingDaggers(id int) ([]*models.HomingDaggers, error) {
 	var states []*models.HomingDaggers
 	stmt := `SELECT round(game_time, 4) as game_time, homing_daggers
@@ -222,6 +225,7 @@ func (g *GameModel) GetHomingDaggers(id int) ([]*models.HomingDaggers, error) {
 	return states, nil
 }
 
+// GetDaggersHit returns a slice game time and daggers hit from the given game
 func (g *GameModel) GetDaggersHit(id int) ([]*models.DaggersHit, error) {
 	var states []*models.DaggersHit
 	stmt := `SELECT round(game_time, 4) as game_time, daggers_hit
@@ -237,6 +241,7 @@ func (g *GameModel) GetDaggersHit(id int) ([]*models.DaggersHit, error) {
 	return states, nil
 }
 
+// GetDaggersFired returns a slice game time and daggers fired from the given game
 func (g *GameModel) GetDaggersFired(id int) ([]*models.DaggersFired, error) {
 	var states []*models.DaggersFired
 	stmt := `SELECT round(game_time, 4) as game_time, daggers_fired
@@ -252,6 +257,7 @@ func (g *GameModel) GetDaggersFired(id int) ([]*models.DaggersFired, error) {
 	return states, nil
 }
 
+// GetAccuracy returns a slice game time and accuracy from the given game
 func (g *GameModel) GetAccuracy(id int) ([]*models.Accuracy, error) {
 	var states []*models.Accuracy
 	stmt := `SELECT round(game_time, 4) as game_time, round(divzero(daggers_hit, daggers_fired)*100, 2) as accuracy
@@ -267,6 +273,7 @@ func (g *GameModel) GetAccuracy(id int) ([]*models.Accuracy, error) {
 	return states, nil
 }
 
+// GetEnemiesAlive returns a slice game time and enemies alive from the given game
 func (g *GameModel) GetEnemiesAlive(id int) ([]*models.EnemiesAlive, error) {
 	var states []*models.EnemiesAlive
 	stmt := `SELECT round(game_time, 4) as game_time, enemies_alive
@@ -282,6 +289,7 @@ func (g *GameModel) GetEnemiesAlive(id int) ([]*models.EnemiesAlive, error) {
 	return states, nil
 }
 
+// GetEnemiesKilled returns a slice game time and enemies killed from the given game
 func (g *GameModel) GetEnemiesKilled(id int) ([]*models.EnemiesKilled, error) {
 	var states []*models.EnemiesKilled
 	stmt := `SELECT round(game_time, 4) as game_time, enemies_killed

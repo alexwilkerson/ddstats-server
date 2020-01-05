@@ -21,6 +21,7 @@ type application struct {
 	games          *postgres.GameModel
 	players        *postgres.PlayerModel
 	submittedGames *postgres.SubmittedGameModel
+	ddPlayers      *postgres.DDPlayerModel
 }
 
 func main() {
@@ -48,6 +49,7 @@ func main() {
 		games:          &postgres.GameModel{DB: db},
 		players:        &postgres.PlayerModel{DB: db},
 		submittedGames: &postgres.SubmittedGameModel{DB: db, Client: client},
+		ddPlayers:      &postgres.DDPlayerModel{DB: db},
 	}
 
 	srv := &http.Server{

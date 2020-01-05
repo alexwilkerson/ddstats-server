@@ -14,8 +14,10 @@ type PlayerModel struct {
 	DB *sqlx.DB
 }
 
+// Insert inserts a player into the player table
 func (p *PlayerModel) Insert(player *models.Player) error {
-	stmt := `INSERT INTO player(
+	stmt := `
+		INSERT INTO player(
 			player_name,
 			rank,
 			game_time,
@@ -54,14 +56,12 @@ func (p *PlayerModel) Insert(player *models.Player) error {
 	if err != nil {
 		return err
 	}
-
 	return nil
 }
 
 // Get returns a single player record
 func (p *PlayerModel) Get(id int) (*models.Player, error) {
 	var player models.Player
-
 	stmt := "SELECT * FROM player WHERE id=$1"
 	err := p.DB.Get(&player, stmt, id)
 	if err != nil {
@@ -70,14 +70,12 @@ func (p *PlayerModel) Get(id int) (*models.Player, error) {
 		}
 		return nil, err
 	}
-
 	return &player, nil
 }
 
 // GetAll retreives a slice of users using a specified page size and page num starting at 1
 func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 	var players []*models.Player
-
 	stmt := fmt.Sprintf("SELECT * FROM player WHERE id<>-1 ORDER BY game_time DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
 	err := p.DB.Select(&players, stmt)
 	if err != nil {
@@ -86,7 +84,6 @@ func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 		}
 		return nil, err
 	}
-
 	return players, nil
 }
 
