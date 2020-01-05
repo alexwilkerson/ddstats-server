@@ -38,6 +38,16 @@ func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
 
+func (app *application) writeJSON(w http.ResponseWriter, v interface{}) {
+	js, err := json.Marshal(v)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
 func validVersion(version string) (bool, error) {
 	var vMajor, vMinor, vPatch, ovMajor, ovMinor, ovPatch int
 	_, err := fmt.Sscanf(version, "%d.%d.%d", &vMajor, &vMinor, &vPatch)

@@ -79,16 +79,10 @@ func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(struct {
+	app.writeJSON(w, struct {
 		Message string `json:"message"`
 		GameID  int    `json:"game_id"`
 	}{"Game submitted.", gameID})
-	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, "error retrieving game ID")
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
 }
 
 func (app *application) getGameAll(w http.ResponseWriter, r *http.Request) {
@@ -108,13 +102,7 @@ func (app *application) getGameAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGameGems(w http.ResponseWriter, r *http.Request) {
@@ -134,13 +122,7 @@ func (app *application) getGameGems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGameHomingDaggers(w http.ResponseWriter, r *http.Request) {
@@ -160,13 +142,7 @@ func (app *application) getGameHomingDaggers(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGameDaggersHit(w http.ResponseWriter, r *http.Request) {
@@ -186,13 +162,7 @@ func (app *application) getGameDaggersHit(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGameDaggersFired(w http.ResponseWriter, r *http.Request) {
@@ -212,13 +182,7 @@ func (app *application) getGameDaggersFired(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGameAccuracy(w http.ResponseWriter, r *http.Request) {
@@ -238,13 +202,7 @@ func (app *application) getGameAccuracy(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGameEnemiesAlive(w http.ResponseWriter, r *http.Request) {
@@ -264,13 +222,7 @@ func (app *application) getGameEnemiesAlive(w http.ResponseWriter, r *http.Reque
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGameEnemiesKilled(w http.ResponseWriter, r *http.Request) {
@@ -290,13 +242,7 @@ func (app *application) getGameEnemiesKilled(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	js, err := json.Marshal(states)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, states)
 }
 
 func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
@@ -316,13 +262,7 @@ func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(game)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, game)
 }
 
 func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
@@ -377,13 +317,7 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 	players.PageSize = pageSize
 	players.PlayerCount = len(players.Players)
 
-	js, err := json.Marshal(players)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, players)
 }
 
 func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
@@ -452,13 +386,7 @@ func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
 	games.PageSize = pageSize
 	games.GameCount = len(games.Games)
 
-	js, err := json.Marshal(games)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, games)
 }
 
 func (app *application) getTopGames(w http.ResponseWriter, r *http.Request) {
@@ -490,13 +418,7 @@ func (app *application) getTopGames(w http.ResponseWriter, r *http.Request) {
 
 	games.GameCount = len(games.Games)
 
-	js, err := json.Marshal(games)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, games)
 }
 
 func (app *application) getPlayer(w http.ResponseWriter, r *http.Request) {
@@ -516,13 +438,7 @@ func (app *application) getPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(player)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, player)
 }
 
 func (app *application) playerUpdate(w http.ResponseWriter, r *http.Request) {
@@ -550,13 +466,7 @@ func (app *application) playerUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(player)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, player)
 }
 
 func (app *application) getMOTD(w http.ResponseWriter, r *http.Request) {
@@ -566,13 +476,7 @@ func (app *application) getMOTD(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(motd)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, motd)
 }
 
 func (app *application) clientConnect(w http.ResponseWriter, r *http.Request) {
@@ -614,11 +518,5 @@ func (app *application) clientConnect(w http.ResponseWriter, r *http.Request) {
 		UpdateAvailable: update,
 	}
 
-	js, err := json.Marshal(data)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, data)
 }
