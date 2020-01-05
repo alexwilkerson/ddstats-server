@@ -120,31 +120,7 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 			if err != nil {
 				return 0, err
 			}
-			var accuracy, overallAccuracy float64
-			if player.DaggersFired > 0 {
-				accuracy = roundToNearest(float64(player.DaggersHit)/float64(player.DaggersFired)*100, 2)
-			}
-			if player.OverallDaggersFired > 0 {
-				overallAccuracy = roundToNearest(float64(player.OverallDaggersHit)/float64(player.OverallDaggersFired)*100, 2)
-			}
-			err = players.Insert(&models.Player{
-				PlayerName:           player.PlayerName,
-				Rank:                 int(player.Rank),
-				GameTime:             player.GameTime,
-				DeathType:            player.DeathType,
-				Gems:                 int(player.Gems),
-				DaggersHit:           int(player.DaggersHit),
-				DaggersFired:         int(player.DaggersFired),
-				EnemiesKilled:        int(player.EnemiesKilled),
-				Accuracy:             accuracy,
-				OverallTime:          player.OverallTime,
-				OverallDeaths:        int(player.OverallDeaths),
-				OverallGems:          int(player.OverallGems),
-				OverallEnemiesKilled: int(player.OverallEnemiesKilled),
-				OverallDaggersHit:    int(player.OverallDaggersHit),
-				OverallDaggersFired:  int(player.OverallDaggersFired),
-				OverallAccuracy:      overallAccuracy,
-			})
+			err = players.UpsertDDPlayer(player)
 			if err != nil {
 				return 0, err
 			}

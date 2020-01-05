@@ -38,6 +38,22 @@ func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// this retrieves the most recent player from the dd backend api and
+	// updates the database this may take too much time, and if so...
+	// it's worth it to take this block of code out and solely rely on the database.
+	// it does, however ensure that each time a user submits a game, the user
+	// data is up to date!
+	player, err := app.ddAPI.UserByID(game.PlayerID)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	err = app.players.UpsertDDPlayer(player)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
 	gameID, err := app.submittedGames.Insert(&game)
 	if err != nil {
 		app.clientMessage(w, http.StatusBadRequest, "error while inserting data to database")
