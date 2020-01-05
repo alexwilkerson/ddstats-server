@@ -196,9 +196,10 @@ func (g *GameModel) GetAll(id int) ([]*models.State, error) {
 // GetGems returns a slice game time and gems from the given game
 func (g *GameModel) GetGems(id int) ([]*models.Gems, error) {
 	var states []*models.Gems
-	stmt := `SELECT round(game_time, 4) as game_time, gems
-			 FROM state
-			 WHERE game_id=$1`
+	stmt := `
+		SELECT round(game_time, 4) as game_time, gems
+		FROM state
+		WHERE game_id=$1`
 	err := g.DB.Select(&states, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -212,9 +213,10 @@ func (g *GameModel) GetGems(id int) ([]*models.Gems, error) {
 // GetHomingDaggers returns a slice game time and homing daggers from the given game
 func (g *GameModel) GetHomingDaggers(id int) ([]*models.HomingDaggers, error) {
 	var states []*models.HomingDaggers
-	stmt := `SELECT round(game_time, 4) as game_time, homing_daggers
-			 FROM state
-			 WHERE game_id=$1`
+	stmt := `
+		SELECT round(game_time, 4) as game_time, homing_daggers
+		FROM state
+		WHERE game_id=$1`
 	err := g.DB.Select(&states, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -228,9 +230,10 @@ func (g *GameModel) GetHomingDaggers(id int) ([]*models.HomingDaggers, error) {
 // GetDaggersHit returns a slice game time and daggers hit from the given game
 func (g *GameModel) GetDaggersHit(id int) ([]*models.DaggersHit, error) {
 	var states []*models.DaggersHit
-	stmt := `SELECT round(game_time, 4) as game_time, daggers_hit
-			 FROM state
-			 WHERE game_id=$1`
+	stmt := `
+		SELECT round(game_time, 4) as game_time, daggers_hit
+		FROM state
+		WHERE game_id=$1`
 	err := g.DB.Select(&states, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -244,9 +247,10 @@ func (g *GameModel) GetDaggersHit(id int) ([]*models.DaggersHit, error) {
 // GetDaggersFired returns a slice game time and daggers fired from the given game
 func (g *GameModel) GetDaggersFired(id int) ([]*models.DaggersFired, error) {
 	var states []*models.DaggersFired
-	stmt := `SELECT round(game_time, 4) as game_time, daggers_fired
-			 FROM state
-			 WHERE game_id=$1`
+	stmt := `
+		SELECT round(game_time, 4) as game_time, daggers_fired
+		FROM state
+		WHERE game_id=$1`
 	err := g.DB.Select(&states, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -260,9 +264,10 @@ func (g *GameModel) GetDaggersFired(id int) ([]*models.DaggersFired, error) {
 // GetAccuracy returns a slice game time and accuracy from the given game
 func (g *GameModel) GetAccuracy(id int) ([]*models.Accuracy, error) {
 	var states []*models.Accuracy
-	stmt := `SELECT round(game_time, 4) as game_time, round(divzero(daggers_hit, daggers_fired)*100, 2) as accuracy
-			 FROM state
-			 WHERE game_id=$1`
+	stmt := `
+		SELECT round(game_time, 4) as game_time, round(divzero(daggers_hit, daggers_fired)*100, 2) as accuracy
+		FROM state
+		WHERE game_id=$1`
 	err := g.DB.Select(&states, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -276,9 +281,10 @@ func (g *GameModel) GetAccuracy(id int) ([]*models.Accuracy, error) {
 // GetEnemiesAlive returns a slice game time and enemies alive from the given game
 func (g *GameModel) GetEnemiesAlive(id int) ([]*models.EnemiesAlive, error) {
 	var states []*models.EnemiesAlive
-	stmt := `SELECT round(game_time, 4) as game_time, enemies_alive
-			 FROM state
-			 WHERE game_id=$1`
+	stmt := `
+		SELECT round(game_time, 4) as game_time, enemies_alive
+		FROM state
+		WHERE game_id=$1`
 	err := g.DB.Select(&states, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -292,9 +298,10 @@ func (g *GameModel) GetEnemiesAlive(id int) ([]*models.EnemiesAlive, error) {
 // GetEnemiesKilled returns a slice game time and enemies killed from the given game
 func (g *GameModel) GetEnemiesKilled(id int) ([]*models.EnemiesKilled, error) {
 	var states []*models.EnemiesKilled
-	stmt := `SELECT round(game_time, 4) as game_time, enemies_killed
-			 FROM state
-			 WHERE game_id=$1`
+	stmt := `
+		SELECT round(game_time, 4) as game_time, enemies_killed
+		FROM state
+		WHERE game_id=$1`
 	err := g.DB.Select(&states, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -311,10 +318,15 @@ func (g *GameModel) GetTotalCount(playerID int) (int, error) {
 	var stmt string
 	var gameCount int
 	if playerID != 0 {
-		stmt = "SELECT COUNT(1) FROM game WHERE player_id=$1 AND replay_player_id=0"
+		stmt = `
+			SELECT COUNT(1)
+			FROM game
+			WHERE player_id=$1 AND replay_player_id=0`
 		err = g.DB.QueryRow(stmt, playerID).Scan(&gameCount)
 	} else {
-		stmt = "SELECT COUNT(1) FROM game"
+		stmt = `
+			SELECT COUNT(1)
+			FROM game`
 		err = g.DB.QueryRow(stmt).Scan(&gameCount)
 	}
 	if err != nil {

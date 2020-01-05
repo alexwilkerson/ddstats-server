@@ -23,32 +23,32 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 		game.SurvivalHash = "5ff43e37d0f85e068caab5457305754e"
 	}
 
-	stmt := `INSERT INTO game(
-				player_id,
-				granularity,
-				game_time,
-				death_type,
-				gems,
-				homing_daggers,
-				daggers_fired,
-				daggers_hit,
-				enemies_alive,
-				enemies_killed,
-				time_stamp,
-				replay_player_id,
-				survival_hash,
-				version,
-				level_two_time,
-				level_three_time,
-				level_four_time,
-				homing_daggers_max_time,
-				enemies_alive_max_time,
-				homing_daggers_max,
-				enemies_alive_max
-			) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP,
-				$11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
-			RETURNING id`
-
+	stmt := `
+		INSERT INTO game(
+			player_id,
+			granularity,
+			game_time,
+			death_type,
+			gems,
+			homing_daggers,
+			daggers_fired,
+			daggers_hit,
+			enemies_alive,
+			enemies_killed,
+			time_stamp,
+			replay_player_id,
+			survival_hash,
+			version,
+			level_two_time,
+			level_three_time,
+			level_four_time,
+			homing_daggers_max_time,
+			enemies_alive_max_time,
+			homing_daggers_max,
+			enemies_alive_max)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP,
+			$11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+		RETURNING id`
 	var gameID int
 	err := sg.DB.QueryRow(stmt,
 		game.PlayerID,

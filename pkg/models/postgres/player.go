@@ -33,8 +33,8 @@ func (p *PlayerModel) Insert(player *models.Player) error {
 			overall_enemies_killed,
 			overall_daggers_hit,
 			overall_daggers_fired,
-			overall_accuracy
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`
+			overall_accuracy)
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`
 	_, err := p.DB.Exec(stmt,
 		player.PlayerName,
 		player.Rank,
@@ -62,7 +62,10 @@ func (p *PlayerModel) Insert(player *models.Player) error {
 // Get returns a single player record
 func (p *PlayerModel) Get(id int) (*models.Player, error) {
 	var player models.Player
-	stmt := "SELECT * FROM player WHERE id=$1"
+	stmt := `
+		SELECT *
+		FROM player
+		WHERE id=$1`
 	err := p.DB.Get(&player, stmt, id)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -76,7 +79,11 @@ func (p *PlayerModel) Get(id int) (*models.Player, error) {
 // GetAll retreives a slice of users using a specified page size and page num starting at 1
 func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 	var players []*models.Player
-	stmt := fmt.Sprintf("SELECT * FROM player WHERE id<>-1 ORDER BY game_time DESC LIMIT %d OFFSET %d", pageSize, (pageNum-1)*pageSize)
+	stmt := fmt.Sprintf(`
+		SELECT *
+		FROM player
+		WHERE id<>-1
+		ORDER BY game_time DESC LIMIT %d OFFSET %d`, pageSize, (pageNum-1)*pageSize)
 	err := p.DB.Select(&players, stmt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -90,7 +97,10 @@ func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
 // GetTotalCount returns the total number of players in the database
 func (p *PlayerModel) GetTotalCount() (int, error) {
 	var playerCount int
-	stmt := "SELECT COUNT(1) FROM player WHERE id<>-1"
+	stmt := `
+		SELECT COUNT(1)
+		FROM player
+		WHERE id<>-1`
 	err := p.DB.QueryRow(stmt).Scan(&playerCount)
 	if err != nil {
 		return 0, err
