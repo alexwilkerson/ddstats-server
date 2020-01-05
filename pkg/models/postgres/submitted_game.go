@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"database/sql"
 	"errors"
 	"math"
 	"net/http"
@@ -14,6 +15,59 @@ import (
 type SubmittedGameModel struct {
 	DB     *sqlx.DB
 	Client *http.Client
+}
+
+func (sg *SubmittedGameModel) CheckDuplicate(game *models.SubmittedGame) (bool, int, error) {
+	var id int
+	if game.ReplayPlayerID == 0 {
+		return false, 0, nil
+	}
+	// this squirrelly bit of logic in this statement is so weed out duplicates...
+	// however, we only want to check if the game is a duplicate if replay_player_id != 0..
+	// in the SQL statement we check replay_player_id=0 OR replay_player_id=replay_player_id
+	// to try to filter out when people are watching replays of their own games.
+	// we can't simply check if the player_id=replay_player_id and call those duplicates
+	// because sometimes people will start ddstats after a run has finished and record their
+	// replay.
+	stmt := `
+		SELECT id
+		FROM game
+		WHERE
+			player_id=$1 AND
+			game_time=$2 AND
+			death_type=$3 AND
+			gems=$4 AND
+			homing_daggers=$5 AND
+			daggers_fired=$6 AND
+			daggers_hit=$7 AND
+			enemies_alive=$8 AND
+			enemies_killed=$9 AND
+			homing_daggers_max=$10 AND
+			enemies_alive_max=$11 AND
+			(replay_player_id=0 OR replay_player_id=$12)
+		ORDER BY id ASC
+		LIMIT 1`
+	err := sg.DB.QueryRow(stmt,
+		game.PlayerID,
+		game.GameTime,
+		game.DeathType,
+		game.Gems,
+		game.HomingDaggers,
+		game.DaggersFired,
+		game.DaggersHit,
+		game.EnemiesAlive,
+		game.EnemiesKilled,
+		game.HomingMax,
+		game.EnemiesAliveMax,
+		game.ReplayPlayerID,
+	).Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, 0, nil
+		}
+		return false, 0, err
+	}
+	return true, id, nil
 }
 
 // Insert takes a submitted game and inserts the data into the game table,

@@ -38,6 +38,25 @@ func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	duplicate, id, err := app.submittedGames.CheckDuplicate(&game)
+	if duplicate {
+		js, err := json.Marshal(struct {
+			Message string `json:"message"`
+			GameID  int    `json:"game_id"`
+		}{"Replay already recorded.", id})
+		if err != nil {
+			app.clientMessage(w, http.StatusBadRequest, "error retrieving game ID")
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.Write(js)
+		return
+	}
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
 	// this retrieves the most recent player from the dd backend api and
 	// updates the database this may take too much time, and if so...
 	// it's worth it to take this block of code out and solely rely on the database.
