@@ -13,6 +13,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	oldestValidClientVersion = "0.3.1"
+	currentClientVersion     = "0.4.5"
+)
+
 type application struct {
 	errorLog       *log.Logger
 	infoLog        *log.Logger

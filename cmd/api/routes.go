@@ -21,9 +21,8 @@ func (app *application) routes() http.Handler {
 	mux.Get("/api/v2/ddapi/get_scores", http.HandlerFunc(app.ddGetScores))
 
 	// ddstats api
-	// this endpoint is redundant so as to handle older client submissions
-	mux.Post("/api/submit_game", http.HandlerFunc(app.submitGame))
 	mux.Post("/api/v2/submit_game", http.HandlerFunc(app.submitGame))
+	mux.Post("/api/v2/client_connect", http.HandlerFunc(app.clientConnect))
 	mux.Get("/api/v2/game/top", http.HandlerFunc(app.getTopGames))
 	mux.Get("/api/v2/game/recent", http.HandlerFunc(app.getRecentGames))
 	mux.Get("/api/v2/game", http.HandlerFunc(app.getGame))
@@ -39,6 +38,10 @@ func (app *application) routes() http.Handler {
 	mux.Get("/api/v2/player/update", http.HandlerFunc(app.playerUpdate))
 	mux.Get("/api/v2/player/all", http.HandlerFunc(app.getPlayers))
 	mux.Get("/api/v2/motd", http.HandlerFunc(app.getMOTD))
+
+	// these are here for now to be backward compatible
+	mux.Post("/api/get_motd", http.HandlerFunc(app.clientConnect))
+	mux.Post("/api/submit_game", http.HandlerFunc(app.submitGame))
 
 	return standardMiddleware.Then(mux)
 }

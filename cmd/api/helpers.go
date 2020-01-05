@@ -37,3 +37,39 @@ func (app *application) clientMessage(w http.ResponseWriter, status int, message
 func (app *application) notFound(w http.ResponseWriter) {
 	app.clientError(w, http.StatusNotFound)
 }
+
+func validVersion(version string) (bool, error) {
+	var vMajor, vMinor, vPatch, ovMajor, ovMinor, ovPatch int
+	_, err := fmt.Sscanf(version, "%d.%d.%d", &vMajor, &vMinor, &vPatch)
+	if err != nil {
+		return false, err
+	}
+	_, err = fmt.Sscanf(oldestValidClientVersion, "%d.%d.%d", &ovMajor, &ovMinor, &ovPatch)
+	if err != nil {
+		return false, err
+	}
+	if vMajor > ovMajor ||
+		(vMajor == ovMajor && vMinor > ovMinor) ||
+		(vMajor == ovMajor && vMinor == ovMinor && vPatch >= ovPatch) {
+		return true, nil
+	}
+	return false, nil
+}
+
+func updateAvailable(version string) (bool, error) {
+	var vMajor, vMinor, vPatch, cvMajor, cvMinor, cvPatch int
+	_, err := fmt.Sscanf(version, "%d.%d.%d", &vMajor, &vMinor, &vPatch)
+	if err != nil {
+		return false, err
+	}
+	_, err = fmt.Sscanf(currentClientVersion, "%d.%d.%d", &cvMajor, &cvMinor, &cvPatch)
+	if err != nil {
+		return false, err
+	}
+	if cvMajor > vMajor ||
+		(cvMajor == vMajor && cvMinor > vMinor) ||
+		(cvMajor == vMajor && cvMinor == vMinor && cvPatch > vPatch) {
+		return true, nil
+	}
+	return false, nil
+}

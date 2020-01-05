@@ -539,3 +539,51 @@ func (app *application) getMOTD(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.Write(js)
 }
+
+func (app *application) clientConnect(w http.ResponseWriter, r *http.Request) {
+	var version struct {
+		Version string `json:"version"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&version)
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "malformed data")
+		fmt.Println(err)
+		return
+	}
+
+	motd, err := app.motd.Get()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	valid, err := validVersion(version.Version)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	update, err := updateAvailable(version.Version)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	data := struct {
+		MOTD            string `json:"motd"`
+		ValidVersion    bool   `json:"valid_version"`
+		UpdateAvailable bool   `json:"update_available"`
+	}{
+		MOTD:            motd.Message,
+		ValidVersion:    valid,
+		UpdateAvailable: update,
+	}
+
+	js, err := json.Marshal(data)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}

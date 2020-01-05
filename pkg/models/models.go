@@ -157,5 +157,5 @@ type SubmittedGame struct {
 type MOTD struct {
 	ID      int       `json:"id" db:"id"`
 	Created time.Time `json:"created" db:"created"`
-	Message string    `json:"message" db:"message"`
+	Message string    `json:"motd" db:"message"`
 }
