@@ -4,7 +4,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"math"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
 	"github.com/jmoiron/sqlx"
@@ -327,9 +326,4 @@ func (g *GameModel) GetTotalCount(playerID int) (int, error) {
 		return 0, err
 	}
 	return gameCount, nil
-}
-
-func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {
-	multiplier := math.Pow10(numberOfDecimalPlaces)
-	return math.Round(f*multiplier) / multiplier
 }

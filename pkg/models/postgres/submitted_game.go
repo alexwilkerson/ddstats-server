@@ -2,6 +2,7 @@ package postgres
 
 import (
 	"errors"
+	"math"
 	"net/http"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
@@ -153,4 +154,9 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 	}
 
 	return gameID, nil
+}
+
+func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {
+	multiplier := math.Pow10(numberOfDecimalPlaces)
+	return math.Round(f*multiplier) / multiplier
 }
