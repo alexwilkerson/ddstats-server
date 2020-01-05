@@ -11,7 +11,7 @@ import (
 )
 
 func (app *application) helloWorld(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, Merle!"))
+	w.Write([]byte("Hello, Amer!"))
 }
 
 func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
