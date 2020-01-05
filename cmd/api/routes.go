@@ -36,7 +36,9 @@ func (app *application) routes() http.Handler {
 	mux.Get("/api/v2/game/enemies_alive", http.HandlerFunc(app.getGameEnemiesAlive))
 	mux.Get("/api/v2/game/enemies_killed", http.HandlerFunc(app.getGameEnemiesKilled))
 	mux.Get("/api/v2/player", http.HandlerFunc(app.getPlayer))
+	mux.Get("/api/v2/player/update", http.HandlerFunc(app.playerUpdate))
 	mux.Get("/api/v2/player/all", http.HandlerFunc(app.getPlayers))
+	mux.Get("/api/v2/motd", http.HandlerFunc(app.getMOTD))
 
 	return standardMiddleware.Then(mux)
 }

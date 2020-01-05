@@ -45,7 +45,7 @@ type GameWithName struct {
 
 // Player struct is for players
 type Player struct {
-	ID                   int     `json:"id" db:"id"`
+	ID                   int     `json:"player_id" db:"id"`
 	PlayerName           string  `json:"player_name" db:"player_name"`
 	Rank                 int     `json:"rank" db:"rank"`
 	GameTime             float64 `json:"game_time" db:"game_time"`
@@ -150,4 +150,12 @@ type SubmittedGame struct {
 	ReplayPlayerID      int       `json:"replayPlayerID"`
 	Version             string    `json:"version"`
 	SurvivalHash        string    `json:"survivalHash"`
+}
+
+// MOTD is Message of the Day and it's used by the client
+// to display the message of the day
+type MOTD struct {
+	ID      int       `json:"id" db:"id"`
+	Created time.Time `json:"created" db:"created"`
+	Message string    `json:"message" db:"message"`
 }

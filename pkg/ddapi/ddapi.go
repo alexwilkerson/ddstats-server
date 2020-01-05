@@ -44,8 +44,8 @@ var ErrNoPlayersFound = errors.New("no players found")
 // Player is the struct returned after parsing the binary data
 // blob returned from the DD API.
 type Player struct {
-	PlayerName           string  `json:"player_name"`
 	PlayerID             uint64  `json:"player_id"`
+	PlayerName           string  `json:"player_name"`
 	Rank                 int32   `json:"rank"`
 	GameTime             float64 `json:"game_time"`
 	EnemiesKilled        int32   `json:"enemies_killed"`

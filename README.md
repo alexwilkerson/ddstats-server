@@ -26,8 +26,8 @@
 
 #### index
 
-- [ ] GET api/v2/motd
-- [ ] create table in database for motd
+- [x] GET api/v2/motd
+- [x] create table in database for motd
 - [ ] GET api/v2/client/releases?pagesize={int}&pagenum={int}
 - [ ] GET api/v2/client/download?version={string}
 - [ ] create database in table for client version/filename
@@ -51,6 +51,7 @@
 
 #### player
 
+- [x] GET api/v2/player/update?id={int} (updates or creates user in database from dd backend)
 - [x] GET api/v2/player/all?pagesize={int}&pagenum={int} (list all users)
 - [x] GET api/v2/player?id={int}
 - [x] ~GET api/v2/player/games?id={int}pagesize={int}&pagenum={int} (paginated list of games by player id)~

@@ -48,7 +48,6 @@ func (app *application) ddGetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// start reading blob from byte position 19
 	player, err := app.ddAPI.UserByID(id)
 	if err != nil {
 		app.clientMessage(w, http.StatusNotFound, err.Error())

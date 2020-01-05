@@ -78,6 +78,12 @@ CREATE TABLE IF NOT EXISTS death_type (
   name TEXT NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS message_of_the_day (
+  id SERIAL PRIMARY KEY NOT NULL,
+  created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  message VARCHAR(67)
+);
+
 -- below are POSTGRES helper functions to make dealing with the database easier --
 
 -- this function is used internally

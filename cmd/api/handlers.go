@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"math"
 	"net/http"
 	"strconv"
@@ -481,6 +482,56 @@ func (app *application) getPlayer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	js, err := json.Marshal(player)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) playerUpdate(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		app.clientMessage(w, http.StatusBadRequest, "id must be an integer")
+		return
+	}
+
+	if id < 1 {
+		app.clientMessage(w, http.StatusBadRequest, "negative id not allowed")
+		return
+	}
+
+	player, err := app.ddAPI.UserByID(id)
+	if err != nil {
+		app.clientMessage(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	err = app.players.UpsertDDPlayer(player)
+	if err != nil {
+		app.clientMessage(w, http.StatusNotFound, "error updating player in database")
+		fmt.Println(err)
+		return
+	}
+
+	js, err := json.Marshal(player)
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(js)
+}
+
+func (app *application) getMOTD(w http.ResponseWriter, r *http.Request) {
+	motd, err := app.motd.Get()
+	if err != nil {
+		app.serverError(w, err)
+		return
+	}
+
+	js, err := json.Marshal(motd)
 	if err != nil {
 		app.serverError(w, err)
 		return

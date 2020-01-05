@@ -109,11 +109,12 @@ func (p *PlayerModel) GetTotalCount() (int, error) {
 	return playerCount, nil
 }
 
-// InsertDDPlayer takes the Player struct from the ddapi package and inserts it into
+// UpsertDDPlayer takes the Player struct from the ddapi package and inserts it into
 // the player table in the database
-func (p *PlayerModel) InsertDDPlayer(player *ddapi.Player) error {
+func (p *PlayerModel) UpsertDDPlayer(player *ddapi.Player) error {
 	stmt := `
 		INSERT INTO player(
+			id,
 			player_name,
 			rank,
 			game_time,
@@ -130,12 +131,32 @@ func (p *PlayerModel) InsertDDPlayer(player *ddapi.Player) error {
 			overall_daggers_hit,
 			overall_daggers_fired,
 			overall_accuracy
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)`
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
+		ON CONFLICT (id) DO
+		UPDATE SET
+			player_name=$2,
+			rank=$3,
+			game_time=$4,
+			death_type=$5,
+			gems=$6,
+			daggers_hit=$7,
+			daggers_fired=$8,
+			enemies_killed=$9,
+			accuracy=$10,
+			overall_time=$11,
+			overall_deaths=$12,
+			overall_gems=$13,
+			overall_enemies_killed=$14,
+			overall_daggers_hit=$15,
+			overall_daggers_fired=$16,
+			overall_accuracy=$17
+		WHERE player.id=$1`
 	_, err := p.DB.Exec(stmt,
+		player.PlayerID,
 		player.PlayerName,
 		player.Rank,
 		player.GameTime,
-		deathTypes[player.DeathType],
+		player.DeathType,
 		player.Gems,
 		player.DaggersHit,
 		player.DaggersFired,
@@ -153,27 +174,4 @@ func (p *PlayerModel) InsertDDPlayer(player *ddapi.Player) error {
 		return err
 	}
 	return nil
-}
-
-// this is used to retrieve the corresponding death type id
-// since the ddapi package automatically converts the death type
-// to a string
-var deathTypes = map[string]int{
-	"RESTART":      -1,
-	"FALLEN":       0,
-	"SWARMED":      1,
-	"IMPALED":      2,
-	"GORED":        3,
-	"INFESTED":     4,
-	"OPENED":       5,
-	"PURGED":       6,
-	"DESECRATED":   7,
-	"SACRIFICED":   8,
-	"EVISCERATED":  9,
-	"ANNIHILATED":  10,
-	"INTOXICATED":  11,
-	"ENVENMONATED": 12,
-	"INCARNATED":   13,
-	"DISCARNATED":  14,
-	"BARBED":       15,
 }
