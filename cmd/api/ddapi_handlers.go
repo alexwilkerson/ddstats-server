@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -26,14 +25,7 @@ func (app *application) ddGetUserByRank(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	js, err := json.Marshal(player)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, player)
 }
 
 func (app *application) ddGetUserByID(w http.ResponseWriter, r *http.Request) {
@@ -54,14 +46,7 @@ func (app *application) ddGetUserByID(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(player)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, player)
 }
 
 func (app *application) ddUserSearch(w http.ResponseWriter, r *http.Request) {
@@ -82,14 +67,7 @@ func (app *application) ddUserSearch(w http.ResponseWriter, r *http.Request) {
 		Players     []*ddapi.Player `json:"players"`
 	}{PlayerCount: len(players), Players: players}
 
-	js, err := json.Marshal(data)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, data)
 }
 
 func (app *application) ddGetScores(w http.ResponseWriter, r *http.Request) {
@@ -130,12 +108,5 @@ func (app *application) ddGetScores(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	js, err := json.Marshal(leaderboard)
-	if err != nil {
-		app.serverError(w, err)
-		return
-	}
-
-	w.Header().Set("Content-Type", "application/json")
-	w.Write(js)
+	app.writeJSON(w, leaderboard)
 }
