@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"math"
-	"sort"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
 	"github.com/jmoiron/sqlx"
@@ -62,16 +61,8 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 		return nil, err
 	}
 
-	sort.Sort(byTime(games))
-
 	return games, nil
 }
-
-type byTime []*models.GameWithName
-
-func (a byTime) Len() int           { return len(a) }
-func (a byTime) Less(i, j int) bool { return (*a[i]).GameTime < (*a[j]).GameTime }
-func (a byTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 
 // GetRecent retreives a slice of users using a specified page size and page num starting at 1
 func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWithName, error) {
