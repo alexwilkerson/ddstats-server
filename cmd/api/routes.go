@@ -9,7 +9,7 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-	standardMiddleware := alice.New(app.handleCors, app.recoverPanic, app.logRequest, secureHeaders)
+	standardMiddleware := alice.New(app.handleCORS, app.recoverPanic, app.logRequest, secureHeaders)
 
 	mux := pat.New()
 
@@ -42,16 +42,7 @@ func (app *application) routes() http.Handler {
 	mux.Post("/api/get_motd", http.HandlerFunc(app.clientConnect))
 	mux.Post("/api/submit_game", http.HandlerFunc(app.submitGame))
 
-	// Why? Well, because the pat application only accounts for REST requests,
-	// so if the server receives anything else (such as a websocket request),
-	// there's no way to register it.. these three lines will match the /socket-io/
-	// end point and if it doesn't match will pass everything on to the pat mux
-	// since "/" matches everything
-	sioMux := http.NewServeMux()
-	sioMux.HandleFunc("/socket-io/", testSocketIO)
-	sioMux.Handle("/", standardMiddleware.Then(mux))
-
-	return sioMux
+	return standardMiddleware.Then(mux)
 }
 
 func testSocketIO(w http.ResponseWriter, r *http.Request) {

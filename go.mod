@@ -9,5 +9,6 @@ require (
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/justinas/alice v1.2.0
 	github.com/lib/pq v1.3.0
+	github.com/rs/cors v1.7.0
 	gopkg.in/guregu/null.v3 v3.4.0
 )

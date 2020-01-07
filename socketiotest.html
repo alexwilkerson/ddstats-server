@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge" />
+    <title>Document</title>
+  </head>
+  <body>
+    <h2>Socket.io Test</h2>
+    <div id="output"></div>
+  </body>
+  <!-- test-io-client.html -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.dev.js"></script>
+  <script>
+    function init() {
+      output = document.getElementById("output");
+      testSocket();
+    }
+    function testSocket() {
+      var socket = io.connect("http://localhost:5000");
+      //using client-side socket.io-1.X.X.js
+      socket.emit("some:event", JSON.stringify({ test: "monkey" }), function(
+        data
+      ) {
+        console.log("ACK from server wtih data: ", data);
+      });
+    }
+    window.addEventListener("load", init, false);
+  </script>
+</html>

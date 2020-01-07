@@ -47,3 +47,12 @@ content-type: application/json
 {
     "version": "0.4.5"
 }
+###
+GET /happy HTTP/1.1
+    Host: localhost:5000
+    Connection: Upgrade
+    Upgrade: websocket
+    Origin: http://localhost:5000
+
+###
+GET http://localhost:5000/socket.io/ HTTP/1.1

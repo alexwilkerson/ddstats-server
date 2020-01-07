@@ -134,6 +134,7 @@ func (p *PlayerModel) UpsertDDPlayer(player *ddapi.Player) error {
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17)
 		ON CONFLICT (id) DO
 		UPDATE SET
+			id=$1,
 			player_name=$2,
 			rank=$3,
 			game_time=$4,

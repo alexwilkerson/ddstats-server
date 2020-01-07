@@ -2,14 +2,16 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/alexwilkerson/ddstats-api/pkg/sio"
+
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
-	socketio "github.com/googollee/go-socket.io"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -28,7 +30,6 @@ type application struct {
 	players        *postgres.PlayerModel
 	submittedGames *postgres.SubmittedGameModel
 	motd           *postgres.MOTDModel
-	socketIO       *socketio.Server
 }
 
 func main() {
@@ -48,10 +49,12 @@ func main() {
 	// TODO: set up client appropriately
 	client := &http.Client{}
 
-	socketIOServer, err := socketio.NewServer(nil)
+	sioServer, err := sio.Server(client, db)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+	go sioServer.Serve()
+	defer sioServer.Close()
 
 	app := &application{
 		errorLog:       errorLog,
@@ -62,13 +65,33 @@ func main() {
 		players:        &postgres.PlayerModel{DB: db},
 		submittedGames: &postgres.SubmittedGameModel{DB: db, Client: client},
 		motd:           &postgres.MOTDModel{DB: db},
-		socketIO:       socketIOServer,
 	}
+
+	// Why? Well, because the pat application only accounts for REST requests,
+	// so if the server receives anything else (such as a websocket request),
+	// there's no way to register it.. these three lines will match the /socket-io/
+	// end point and if it doesn't match will pass everything on to the pat mux
+	// since "/" matches everything
+	// testFunc := func(w http.ResponseWriter, r *http.Request) {
+	// 	w.Header().Set("Access-Control-Allow-Credentials", "true")
+	// 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+	// 	w.Header().Set("Access-Control-Allow-Headers", "x-requested-with, Origin, Content-Type, Authorization")
+	// 	fmt.Println(r.Header.Get("Origin"))
+	// 	w.Header().Set("Access-Control-Allow-Origin", "*")
+	// 	fmt.Println("working")
+	// }
+	// _ = testFunc
+	sioMux := http.NewServeMux()
+	sioMux.Handle("/socket.io/", sioServer)
+	// 	AllowedOrigins:   []string{"*"},
+	// 	AllowCredentials: true,
+	// }).HandlerFunc(testFunc))
+	sioMux.Handle("/", app.routes())
 
 	srv := &http.Server{
 		Addr:         *addr,
 		ErrorLog:     errorLog,
-		Handler:      app.routes(),
+		Handler:      sioMux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -88,4 +111,8 @@ func openDB(dsn string) (*sqlx.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func testFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("wekring")
 }
