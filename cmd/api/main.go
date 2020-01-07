@@ -72,20 +72,8 @@ func main() {
 	// there's no way to register it.. these three lines will match the /socket-io/
 	// end point and if it doesn't match will pass everything on to the pat mux
 	// since "/" matches everything
-	// testFunc := func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Header().Set("Access-Control-Allow-Credentials", "true")
-	// 	w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
-	// 	w.Header().Set("Access-Control-Allow-Headers", "x-requested-with, Origin, Content-Type, Authorization")
-	// 	fmt.Println(r.Header.Get("Origin"))
-	// 	w.Header().Set("Access-Control-Allow-Origin", "*")
-	// 	fmt.Println("working")
-	// }
-	// _ = testFunc
 	sioMux := http.NewServeMux()
-	sioMux.Handle("/socket.io/", sioServer)
-	// 	AllowedOrigins:   []string{"*"},
-	// 	AllowCredentials: true,
-	// }).HandlerFunc(testFunc))
+	sioMux.Handle("/socket.io/", socketioCORS(sioServer))
 	sioMux.Handle("/", app.routes())
 
 	srv := &http.Server{

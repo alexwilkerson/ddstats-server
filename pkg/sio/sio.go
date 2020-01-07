@@ -17,17 +17,30 @@ import (
 )
 
 type sio struct {
-	Client *http.Client
-	DB     *sqlx.DB
+	client      *http.Client
+	db          *sqlx.DB
+	ddAPI       *ddapi.API
+	games       *postgres.GameModel
+	players     *postgres.PlayerModel
+	livePlayers map[string]*player
 }
 
 const (
 	defaultNamespace  = "/"
 	botNamespace      = "/ddstats-bot"
 	userPageNamespace = "/user_page"
+	indexNamespace    = "/index"
 )
 
-type LiveSubmission struct {
+type player struct {
+	playerID   int
+	playerName string
+	gameTime   float64
+	deathType  int
+	isReplay   bool
+}
+
+type state struct {
 	PlayerID         int
 	GameTime         float64
 	Gems             int
@@ -46,19 +59,33 @@ type LiveSubmission struct {
 }
 
 func Server(client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
-	s := sio{Client: client, DB: db}
+	s := sio{
+		client:      client,
+		db:          db,
+		ddAPI:       &ddapi.API{Client: client},
+		games:       &postgres.GameModel{DB: db},
+		players:     &postgres.PlayerModel{DB: db},
+		livePlayers: map[string]*player{},
+	}
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		return nil, err
 	}
-	server.OnConnect(defaultNamespace, s.onConnect)
-	server.OnEvent(defaultNamespace, "login", s.onLogin)
-	server.OnEvent(defaultNamespace, "submit", s.onSubmit)
+	s.routes(server)
 	return server, nil
+}
+
+func (si *sio) routes(server *socketio.Server) {
+	server.OnConnect(defaultNamespace, si.onConnect)
+	server.OnEvent(defaultNamespace, "login", si.onLogin)
+	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
 }
 
 func (si *sio) onConnect(s socketio.Conn) error {
 	s.SetContext("")
+
+	s.Emit("live_users_update", "working")
+
 	fmt.Println("connected:", s.ID())
 	return nil
 }
@@ -71,15 +98,21 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 		return
 	}
 
-	dd := ddapi.API{Client: si.Client}
-	player, err := dd.UserByID(id)
+	p, err := si.ddAPI.UserByID(id)
 	if err != nil {
 		// todo: handle error, print?
 		return
 	}
 
-	players := postgres.PlayerModel{DB: si.DB}
-	err = players.UpsertDDPlayer(player)
+	si.livePlayers[s.ID()] = &player{
+		playerID:   int(p.PlayerID),
+		playerName: p.PlayerName,
+		gameTime:   0,
+		deathType:  -2, // IN MENU
+		isReplay:   false,
+	}
+
+	err = si.players.UpsertDDPlayer(p)
 	if err != nil {
 		// todo: handle error, print?
 		return
@@ -90,7 +123,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 }
 
 func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired int, levelTwoTime, levelThreeTime, levelFourTime float64, isReplay bool, deathType int, notifyPlayerBest, notifyAbove1000 bool) {
-	liveSubmission := LiveSubmission{
+	state := state{
 		PlayerID:         playerID,
 		GameTime:         gameTime,
 		Gems:             gems,
@@ -110,5 +143,5 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	if playerID == -1 {
 		return
 	}
-	fmt.Printf("%+v\n", liveSubmission)
+	fmt.Printf("%+v\n", state)
 }
