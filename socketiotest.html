@@ -10,10 +10,12 @@
     <div id="log"></div>
     <script>
       $(document).ready(function() {
-        // var socket = io.connect('https://' + document.domain + ':' + location.port + '/test');
         var socket = io.connect("http://localhost:5000/");
-        socket.on("live_user_update", function(msg) {
-          $("#log").append("<p>Received: " + msg.data + "</p>");
+        socket.on("connect", () => {
+          socket.emit("hello", "hi bud");
+        });
+        socket.on("live_users_update", function(msg) {
+          $("#log").append("<p>Received: " + msg + "</p>");
         });
       });
     </script>

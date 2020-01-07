@@ -79,6 +79,13 @@ func (si *sio) routes(server *socketio.Server) {
 	server.OnConnect(defaultNamespace, si.onConnect)
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
+	server.OnEvent(defaultNamespace, "hello", func(s socketio.Conn, msg string) {
+		fmt.Println(msg)
+	})
+	// server.OnEvent(defaultNamespace, "hello", func(s socketio.Conn, msg string) {
+	// 	fmt.Println("helloed")
+	// 	fmt.Println(msg)
+	// })
 }
 
 func (si *sio) onConnect(s socketio.Conn) error {
