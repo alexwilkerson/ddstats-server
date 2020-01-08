@@ -14,7 +14,7 @@ Run reflex using the following command:
 reflex -d none -c reflex.conf
 ```
 
-### Things Left to Do...
+## Things Left to Do...
 
 #### socket-io stuff
 
