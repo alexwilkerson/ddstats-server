@@ -4,8 +4,10 @@
 package sio
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
@@ -17,6 +19,7 @@ import (
 )
 
 type sio struct {
+	server      *socketio.Server
 	client      *http.Client
 	db          *sqlx.DB
 	ddAPI       *ddapi.API
@@ -33,11 +36,11 @@ const (
 )
 
 type player struct {
-	playerID   int
-	playerName string
-	gameTime   float64
-	deathType  int
-	isReplay   bool
+	PlayerID   int `json:"player_id"`
+	PlayerName string
+	GameTime   float64
+	DeathType  int
+	IsReplay   bool
 }
 
 type state struct {
@@ -59,7 +62,12 @@ type state struct {
 }
 
 func Server(client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
+	server, err := socketio.NewServer(nil)
+	if err != nil {
+		return nil, err
+	}
 	s := sio{
+		server:      server,
 		client:      client,
 		db:          db,
 		ddAPI:       &ddapi.API{Client: client},
@@ -67,16 +75,13 @@ func Server(client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
 		players:     &postgres.PlayerModel{DB: db},
 		livePlayers: map[string]*player{},
 	}
-	server, err := socketio.NewServer(nil)
-	if err != nil {
-		return nil, err
-	}
 	s.routes(server)
 	return server, nil
 }
 
 func (si *sio) routes(server *socketio.Server) {
 	server.OnConnect(defaultNamespace, si.onConnect)
+	server.OnDisconnect(defaultNamespace, si.onDisconnect)
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
 	server.OnEvent(defaultNamespace, "hello", func(s socketio.Conn, msg string) {
@@ -90,11 +95,42 @@ func (si *sio) routes(server *socketio.Server) {
 
 func (si *sio) onConnect(s socketio.Conn) error {
 	s.SetContext("")
-
-	s.Emit("live_users_update", "working")
+	p := player{
+		151515,
+		"vhs",
+		25.02,
+		135,
+		true,
+	}
+	si.livePlayers[s.ID()] = &p
+	js, err := json.Marshal(si.livePlayers)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(js))
+	s.Emit("live_users_update", string(js))
+	// s.Emit("live_users_update", "oahtoahwtoh")
 
 	fmt.Println("connected:", s.ID())
 	return nil
+}
+
+func (si *sio) onDisconnect(s socketio.Conn, msg string) {
+	if _, ok := si.livePlayers[s.ID()]; !ok {
+		fmt.Println("this")
+		return
+	}
+	player := si.livePlayers[s.ID()]
+	delete(si.livePlayers, s.ID())
+	js, err := json.Marshal(si.livePlayers)
+	if err != nil {
+		fmt.Println("that")
+		return
+	}
+	fmt.Println(s.ID(), "disconnected")
+	s.Emit("live_users_update", string(js))
+	si.server.BroadcastToRoom(strconv.Itoa(player.PlayerID), "offline")
+	return
 }
 
 func (si *sio) onLogin(s socketio.Conn, id int) {
@@ -112,11 +148,11 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 	}
 
 	si.livePlayers[s.ID()] = &player{
-		playerID:   int(p.PlayerID),
-		playerName: p.PlayerName,
-		gameTime:   0,
-		deathType:  -2, // IN MENU
-		isReplay:   false,
+		PlayerID:   int(p.PlayerID),
+		PlayerName: p.PlayerName,
+		GameTime:   0,
+		DeathType:  -2, // IN MENU
+		IsReplay:   false,
 	}
 
 	err = si.players.UpsertDDPlayer(p)

@@ -1,5 +1,10 @@
 # ddstats-api
 
+## Automatically restarting server during dev
+
+Go 1.11+ installation required
+Install reflex: `go get github.com/cespare/reflex`
+
 ### Things Left to Do...
 
 #### socket-io stuff
