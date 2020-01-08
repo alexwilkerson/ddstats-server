@@ -1,8 +1,24 @@
 # ddstats-api
 
-### Things Left to Do...
+## Automatically restarting server during dev
+
+Go 1.11+ installation required\
+
+```
+go get github.com/cespare/reflex
+```
+
+Run reflex using the following command:
+
+```
+reflex -d none -c reflex.conf
+```
+
+## Things Left to Do...
 
 #### socket-io stuff
+
+Currently working on possibly converting a lot of the socket-io stuff to websockets. In order to stay backward-compatible with older clients, socket.io may still have to be used for client and login. Ideally, we could have the client functioning with socket.io and everything else will be running with websockets. The only thing that needs to be updated at that point would be the Discord bot which is currently receiving information via socket.io. The website could then strictly use websockets. Then at a later date, the client could be updated to use websockets as that's going to be a lot of updates to the client, I'd rather not hinder this project with that work.
 
 - [ ] clear live table func
 - [ ] create get_live_users in /ddstats-bot namespace https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L344-L354
@@ -64,6 +80,8 @@
 - [x] GET api/v2/ddapi/get_user_by_id?id={int}
 - [x] GET api/v2/ddapi/user_search?user={string}
 - [x] GET api/v2/ddapi/get_scores?offset={int}&limit={int}
+
+## Exporting data from SQLite3 database to PostgreSQL database
 
 ### importing csvs from app.db
 

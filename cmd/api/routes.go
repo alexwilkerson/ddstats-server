@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/bmizerany/pat"
@@ -8,11 +9,9 @@ import (
 )
 
 func (app *application) routes() http.Handler {
-	standardMiddleware := alice.New(app.handleCors, app.recoverPanic, app.logRequest, secureHeaders)
+	standardMiddleware := alice.New(app.handleCORS, app.recoverPanic, app.logRequest, secureHeaders)
 
 	mux := pat.New()
-
-	mux.Get("/", http.HandlerFunc(app.helloWorld))
 
 	// ddapi
 	mux.Get("/api/v2/ddapi/get_user_by_rank", http.HandlerFunc(app.ddGetUserByRank))
@@ -44,4 +43,8 @@ func (app *application) routes() http.Handler {
 	mux.Post("/api/submit_game", http.HandlerFunc(app.submitGame))
 
 	return standardMiddleware.Then(mux)
+}
+
+func testSocketIO(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("socket data received")
 }

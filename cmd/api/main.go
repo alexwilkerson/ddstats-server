@@ -2,10 +2,13 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
+
+	"github.com/alexwilkerson/ddstats-api/pkg/socketio"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
@@ -46,6 +49,13 @@ func main() {
 	// TODO: set up client appropriately
 	client := &http.Client{}
 
+	socketioServer, err := socketio.NewServer(client, db)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	go socketioServer.Serve()
+	defer socketioServer.Close()
+
 	app := &application{
 		errorLog:       errorLog,
 		infoLog:        infoLog,
@@ -57,10 +67,19 @@ func main() {
 		motd:           &postgres.MOTDModel{DB: db},
 	}
 
+	// Why? Well, because the pat application only accounts for REST requests,
+	// so if the server receives anything else (such as a websocket request),
+	// there's no way to register it.. these three lines will match the /socket-io/
+	// end point and if it doesn't match will pass everything on to the pat mux
+	// since "/" matches everything
+	sioMux := http.NewServeMux()
+	sioMux.Handle("/socket.io/", socketioCORS(socketioServer))
+	sioMux.Handle("/", app.routes())
+
 	srv := &http.Server{
 		Addr:         *addr,
 		ErrorLog:     errorLog,
-		Handler:      app.routes(),
+		Handler:      sioMux,
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -80,4 +99,8 @@ func openDB(dsn string) (*sqlx.DB, error) {
 		return nil, err
 	}
 	return db, nil
+}
+
+func testFunc(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("wekring")
 }

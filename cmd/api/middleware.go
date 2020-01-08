@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"net/http"
+
+	socketio "github.com/googollee/go-socket.io"
 )
 
 func secureHeaders(next http.Handler) http.Handler {
@@ -36,7 +38,7 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 	})
 }
 
-func (app *application) handleCors(next http.Handler) http.Handler {
+func (app *application) handleCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		var allowedHost string
@@ -59,6 +61,23 @@ func (app *application) handleCors(next http.Handler) http.Handler {
 		}
 		// Set CORS headers for the main request.
 		w.Header().Set("Access-Control-Allow-Origin", allowedHost)
+		next.ServeHTTP(w, r)
+	})
+}
+
+func socketioCORS(next *socketio.Server) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		origin := r.Header.Get("Origin")
+		w.Header().Set("Access-Control-Allow-Origin", origin)
+		w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusNoContent)
+			return
+		}
+
+		r.Header.Del("Origin")
+
 		next.ServeHTTP(w, r)
 	})
 }
