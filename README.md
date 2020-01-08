@@ -79,6 +79,8 @@ reflex -d none -c reflex.conf
 - [x] GET api/v2/ddapi/user_search?user={string}
 - [x] GET api/v2/ddapi/get_scores?offset={int}&limit={int}
 
+## Exporting data from SQLite3 database to PostgreSQL database
+
 ### importing csvs from app.db
 
 In order to port the database from SQLite3 to Postgres, the following shenanigans must occur:
