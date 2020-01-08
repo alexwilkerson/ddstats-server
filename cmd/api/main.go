@@ -8,7 +8,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/sio"
+	"github.com/alexwilkerson/ddstats-api/pkg/socketio"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
@@ -49,12 +49,12 @@ func main() {
 	// TODO: set up client appropriately
 	client := &http.Client{}
 
-	sioServer, err := sio.Server(client, db)
+	socketioServer, err := socketio.NewServer(client, db)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
-	go sioServer.Serve()
-	defer sioServer.Close()
+	go socketioServer.Serve()
+	defer socketioServer.Close()
 
 	app := &application{
 		errorLog:       errorLog,
@@ -73,7 +73,7 @@ func main() {
 	// end point and if it doesn't match will pass everything on to the pat mux
 	// since "/" matches everything
 	sioMux := http.NewServeMux()
-	sioMux.Handle("/socket.io/", socketioCORS(sioServer))
+	sioMux.Handle("/socket.io/", socketioCORS(socketioServer))
 	sioMux.Handle("/", app.routes())
 
 	srv := &http.Server{

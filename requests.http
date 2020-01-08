@@ -47,32 +47,3 @@ content-type: application/json
 {
     "version": "0.4.5"
 }
-###
-GET /happy HTTP/1.1
-    Host: localhost:5000
-    Connection: Upgrade
-    Upgrade: websocket
-    Origin: http://localhost:5000
-
-###
-GET http://localhost:5000/socket.io/ HTTP/1.1
-
-###
-GET /socket.io/?EIO=3&transport=polling&t=Mz-fjAm
-    Host: localhost:5000
-    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:71.0) Gecko/20100101 Firefox/71.0
-    Accept: */*
-    Accept-Language: en-US,en;q=0.5
-    Accept-Encoding: gzip, deflate
-    Origin: null
-    Connection: keep-alive
-
-###
-GET /socket.io/?EIO=3&transport=polling&t=Mz-fjAm
-    Host: ddstats.com
-    User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10.15; rv:71.0) Gecko/20100101 Firefox/71.0
-    Accept: */*
-    Accept-Language: en-US,en;q=0.5
-    Accept-Encoding: gzip, deflate
-    Origin: null
-    Connection: keep-aliv

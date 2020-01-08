@@ -1,7 +1,7 @@
-// Package sio runs the live stats on the website. it is intended to be backward compatible
+// Package socketio runs the live stats on the website. it is intended to be backward compatible
 // so that the client needn't be updated. However, it should be rewritten alongside
 // the client in the future
-package sio
+package socketio
 
 import (
 	"encoding/json"
@@ -29,18 +29,15 @@ type sio struct {
 }
 
 const (
-	defaultNamespace  = "/"
-	botNamespace      = "/ddstats-bot"
-	userPageNamespace = "/user_page"
-	indexNamespace    = "/index"
+	defaultNamespace = "/"
 )
 
 type player struct {
-	PlayerID   int `json:"player_id"`
-	PlayerName string
-	GameTime   float64
-	DeathType  int
-	IsReplay   bool
+	PlayerID   int     `json:"player_id"`
+	PlayerName string  `json:"player_name"`
+	GameTime   float64 `json:"game_time"`
+	DeathType  int     `json:"death_type"`
+	IsReplay   bool    `json:"is_replay"`
 }
 
 type state struct {
@@ -61,7 +58,7 @@ type state struct {
 	NotifyAbove1000  bool
 }
 
-func Server(client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
+func NewServer(client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		return nil, err
@@ -84,33 +81,11 @@ func (si *sio) routes(server *socketio.Server) {
 	server.OnDisconnect(defaultNamespace, si.onDisconnect)
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
-	server.OnEvent(defaultNamespace, "hello", func(s socketio.Conn, msg string) {
-		fmt.Println(msg)
-	})
-	// server.OnEvent(defaultNamespace, "hello", func(s socketio.Conn, msg string) {
-	// 	fmt.Println("helloed")
-	// 	fmt.Println(msg)
-	// })
 }
 
 func (si *sio) onConnect(s socketio.Conn) error {
 	s.SetContext("")
-	p := player{
-		151515,
-		"vhs",
-		25.02,
-		135,
-		true,
-	}
-	si.livePlayers[s.ID()] = &p
-	js, err := json.Marshal(si.livePlayers)
-	if err != nil {
-		return err
-	}
-	fmt.Println(string(js))
-	s.Emit("live_users_update", string(js))
-	// s.Emit("live_users_update", "oahtoahwtoh")
-
+	// TODO: update using websockets
 	fmt.Println("connected:", s.ID())
 	return nil
 }
