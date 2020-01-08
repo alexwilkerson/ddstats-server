@@ -3,10 +3,15 @@
 ## Automatically restarting server during dev
 
 Go 1.11+ installation required\
-Install reflex:
 
 ```
 go get github.com/cespare/reflex
+```
+
+Run reflex using the following command:
+
+```
+reflex -d none -c reflex.conf
 ```
 
 ### Things Left to Do...
