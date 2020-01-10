@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	defaultColor = 10096640
+	defaultColor = 0x9A1000 // dark reddish color
 )
 
 const (
