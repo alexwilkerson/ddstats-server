@@ -118,6 +118,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 	// -1 is sent when there is an error in the client
 	if id == -1 {
 		si.errorLog.Println("socketio onLogin: id is -1")
+		// TODO: possibly kill the connection
 		return
 	}
 
