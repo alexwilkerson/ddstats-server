@@ -289,23 +289,23 @@ func (app *application) getGame(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("pagesize"))
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
 	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, "pagesize must be an integer")
+		app.clientMessage(w, http.StatusBadRequest, "page_size must be an integer")
 		return
 	}
 	if pageSize < 1 || pageSize > 100 {
-		app.clientMessage(w, http.StatusBadRequest, "pagesize must be between 1 and 100")
+		app.clientMessage(w, http.StatusBadRequest, "page_size must be between 1 and 100")
 		return
 	}
 
-	pageNum, err := strconv.Atoi(r.URL.Query().Get("pagenum"))
+	pageNum, err := strconv.Atoi(r.URL.Query().Get("page_num"))
 	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, "pagenum must be an integer")
+		app.clientMessage(w, http.StatusBadRequest, "page_num must be an integer")
 		return
 	}
 	if pageNum < 1 {
-		app.clientMessage(w, http.StatusBadRequest, "pagenum must be greater than 0")
+		app.clientMessage(w, http.StatusBadRequest, "page_num must be greater than 0")
 		return
 	}
 
@@ -346,35 +346,35 @@ func (app *application) getPlayers(w http.ResponseWriter, r *http.Request) {
 func (app *application) getRecentGames(w http.ResponseWriter, r *http.Request) {
 	var playerID int
 	var err error
-	if _, ok := r.URL.Query()["playerid"]; ok {
-		playerID, err = strconv.Atoi(r.URL.Query().Get("playerid"))
+	if _, ok := r.URL.Query()["player_id"]; ok {
+		playerID, err = strconv.Atoi(r.URL.Query().Get("player_id"))
 		if err != nil {
-			app.clientMessage(w, http.StatusBadRequest, "playerid must be an integer")
+			app.clientMessage(w, http.StatusBadRequest, "player_id must be an integer")
 			return
 		}
 		if playerID < 1 {
-			app.clientMessage(w, http.StatusBadRequest, "playerid must be greater than 0")
+			app.clientMessage(w, http.StatusBadRequest, "player_id must be greater than 0")
 			return
 		}
 	}
 
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("pagesize"))
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
 	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, "pagesize must be an integer")
+		app.clientMessage(w, http.StatusBadRequest, "page_size must be an integer")
 		return
 	}
 	if pageSize < 1 {
-		app.clientMessage(w, http.StatusBadRequest, "pagesize must be greater than 0")
+		app.clientMessage(w, http.StatusBadRequest, "page_size must be greater than 0")
 		return
 	}
 
-	pageNum, err := strconv.Atoi(r.URL.Query().Get("pagenum"))
+	pageNum, err := strconv.Atoi(r.URL.Query().Get("page_num"))
 	if err != nil {
-		app.clientMessage(w, http.StatusBadRequest, "pagenum must be an integer")
+		app.clientMessage(w, http.StatusBadRequest, "page_num must be an integer")
 		return
 	}
 	if pageNum < 1 {
-		app.clientMessage(w, http.StatusBadRequest, "pagenum must be greater than 0")
+		app.clientMessage(w, http.StatusBadRequest, "page_num must be greater than 0")
 		return
 	}
 

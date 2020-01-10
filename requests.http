@@ -1,6 +1,3 @@
-### Local request
-GET http://localhost:5000/
-
 ### ddapi - get user by rank
 GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=77
 ### ddapi - get user by id
@@ -13,7 +10,7 @@ GET http://localhost:5000/api/v2/ddapi/get_scores?offset=1&limit=1
 ### get top games
 GET http://localhost:5000/api/v2/game/top?limit=10
 ### get paginated list of most recent games
-GET http://localhost:5000/api/v2/game/recent?playerid=229&pagesize=10&pagenum=1
+GET http://localhost:5000/api/v2/game/recent?player_id=229&page_size=10&page_num=1
 ### get game by game id
 GET http://localhost:5000/api/v2/game?id=20
 ### get a list of all game states
@@ -37,7 +34,7 @@ GET http://localhost:5000/api/v2/player?id=230
 ###
 GET http://localhost:5000/api/v2/player/update?id=230
 ###
-GET http://localhost:5000/api/v2/player/all?pagesize=9&pagenum=1
+GET http://localhost:5000/api/v2/player/all?page_size=9&page_num=1
 ### get message of the day
 GET http://localhost:5000/api/v2/motd
 ### when client connects, this request responds with motd, valid_version, and update_available
