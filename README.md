@@ -42,6 +42,7 @@ Currently working on possibly converting a lot of the socket-io stuff to websock
 
 #### index
 
+- [x] GET player/live (gets live players from websocket)
 - [x] POST api/v2/client_connect (client sends client version and receives info)
 - [x] GET api/v2/motd
 - [x] create table in database for motd
@@ -50,8 +51,6 @@ Currently working on possibly converting a lot of the socket-io stuff to websock
 - [ ] create database in table for client version/filename
 - [ ] GET api/v2/news?page_size={int}&page_num={int}
 - [ ] create table in database for news
-
-- [ ] GET user/live (idk about this one?)
 
 #### game
 

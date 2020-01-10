@@ -36,6 +36,7 @@ func (app *application) routes(socketioServer *socketio.Server) http.Handler {
 	mux.Get("/api/v2/game/enemies_killed", http.HandlerFunc(app.getGameEnemiesKilled))
 	mux.Get("/api/v2/player", http.HandlerFunc(app.getPlayer))
 	mux.Get("/api/v2/player/update", http.HandlerFunc(app.playerUpdate))
+	mux.Get("/api/v2/player/live", http.HandlerFunc(app.playerLive))
 	mux.Get("/api/v2/player/all", http.HandlerFunc(app.getPlayers))
 	mux.Get("/api/v2/motd", http.HandlerFunc(app.getMOTD))
 

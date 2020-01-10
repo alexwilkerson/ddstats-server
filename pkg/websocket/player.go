@@ -10,6 +10,10 @@ type Player struct {
 	Name string
 }
 
+func (hub *Hub) LivePlayers() []*Player {
+	return toPlayerSlice(hub.Players)
+}
+
 func toPlayerSlice(m *sync.Map) []*Player {
 	players := []*Player{}
 	m.Range(func(k interface{}, v interface{}) bool {

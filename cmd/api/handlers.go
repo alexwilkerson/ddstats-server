@@ -38,6 +38,17 @@ func (app *application) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 	client.Read()
 }
 
+func (app *application) playerLive(w http.ResponseWriter, r *http.Request) {
+	players := app.websocketHub.LivePlayers()
+	app.writeJSON(w, struct {
+		PlayerCount int                 `json:"player_count"`
+		Players     []*websocket.Player `json:"players"`
+	}{
+		PlayerCount: len(players),
+		Players:     players,
+	})
+}
+
 func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
 	var game models.SubmittedGame
 	err := json.NewDecoder(r.Body).Decode(&game)
@@ -63,16 +74,10 @@ func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {
 
 	duplicate, id, err := app.submittedGames.CheckDuplicate(&game)
 	if duplicate {
-		js, err := json.Marshal(struct {
+		app.writeJSON(w, struct {
 			Message string `json:"message"`
 			GameID  int    `json:"game_id"`
 		}{"Replay already recorded.", id})
-		if err != nil {
-			app.clientMessage(w, http.StatusBadRequest, "error retrieving game ID")
-			return
-		}
-		w.Header().Set("Content-Type", "application/json")
-		w.Write(js)
 		return
 	}
 	if err != nil {
