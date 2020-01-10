@@ -1,10 +1,12 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"log"
 	"net/http"
 	"os"
+	"os/signal"
 	"time"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/discord"
@@ -89,11 +91,36 @@ func main() {
 	}
 	defer discordSession.Close()
 	go app.websocketHub.Start()
+	defer app.websocketHub.Close()
 	go socketioServer.Serve()
 	defer socketioServer.Close()
 
+	done := make(chan bool)
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, os.Interrupt)
+
+	go func() {
+		<-quit
+		infoLog.Println("Server shutting down...")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+
+		srv.SetKeepAlivesEnabled(false)
+		err := srv.Shutdown(ctx)
+		if err != nil {
+			errorLog.Fatal("Could not gracefully shut down the server: %w", err)
+		}
+		close(done)
+	}()
+
 	infoLog.Printf("Starting server on %s", *addr)
-	errorLog.Fatal(srv.ListenAndServe())
+	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
+		errorLog.Fatalf("could not listen on %s: %w", *addr, err)
+	}
+
+	<-done
+	infoLog.Println("Server stopped")
 }
 
 func openDB(dsn string) (*sqlx.DB, error) {

@@ -16,7 +16,7 @@ const (
 
 func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	// ignore all messages by bot
-	if m.Author.Bot {
+	if m.Author.Bot || !d.ddstatsChannels.contains(m.ChannelID) {
 		return
 	}
 	contentTokens := strings.Split(strings.TrimSpace(m.Content), " ")
