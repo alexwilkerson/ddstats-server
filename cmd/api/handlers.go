@@ -9,10 +9,33 @@ import (
 	"strconv"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
 )
 
-func (app *application) helloWorld(w http.ResponseWriter, r *http.Request) {
-	w.Write([]byte("Hello, Amer!"))
+func (app *application) serveWebsocket(w http.ResponseWriter, r *http.Request) {
+	fmt.Println("WebSocket endpoint hit")
+	if _, ok := r.URL.Query()["room"]; !ok {
+		app.clientError(w, http.StatusNotFound)
+		return
+	}
+
+	room := r.URL.Query().Get("room")
+
+	// upgrade this connection to a Websocket connection
+	conn, err := websocket.Upgrade(w, r)
+	if err != nil {
+		fmt.Fprintf(w, "%+v", err)
+		return
+	}
+
+	client := &websocket.Client{
+		Conn: conn,
+		Hub:  app.websocketHub,
+		Room: room,
+	}
+
+	app.websocketHub.Register <- client
+	client.Read()
 }
 
 func (app *application) submitGame(w http.ResponseWriter, r *http.Request) {

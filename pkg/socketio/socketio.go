@@ -4,13 +4,14 @@
 package socketio
 
 import (
-	"encoding/json"
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 
@@ -19,13 +20,16 @@ import (
 )
 
 type sio struct {
-	server      *socketio.Server
-	client      *http.Client
-	db          *sqlx.DB
-	ddAPI       *ddapi.API
-	games       *postgres.GameModel
-	players     *postgres.PlayerModel
-	livePlayers map[string]*player
+	server       *socketio.Server
+	client       *http.Client
+	infoLog      *log.Logger
+	errorLog     *log.Logger
+	db           *sqlx.DB
+	websocketHub *websocket.Hub
+	ddAPI        *ddapi.API
+	games        *postgres.GameModel
+	players      *postgres.PlayerModel
+	livePlayers  *sync.Map
 }
 
 const (
@@ -33,44 +37,50 @@ const (
 )
 
 type player struct {
-	PlayerID   int     `json:"player_id"`
-	PlayerName string  `json:"player_name"`
-	GameTime   float64 `json:"game_time"`
-	DeathType  int     `json:"death_type"`
-	IsReplay   bool    `json:"is_replay"`
+	websocketPlayer *websocket.Player
+	PlayerID        int     `json:"player_id"`
+	PlayerName      string  `json:"player_name"`
+	GameTime        float64 `json:"game_time"`
+	DeathType       int     `json:"death_type"`
+	IsReplay        bool    `json:"is_replay"`
 }
 
 type state struct {
-	PlayerID         int
-	GameTime         float64
-	Gems             int
-	HomingDaggers    int
-	EnemiesAlive     int
-	EnemiesKilled    int
-	DaggersHit       int
-	DaggersFired     int
-	LevelTwoTime     float64
-	LevelThreeTime   float64
-	LevelFourTime    float64
-	DeathType        int
-	IsReplay         bool
-	NotifyPlayerBest bool
-	NotifyAbove1000  bool
+	PlayerID         int     `json:"player_id"`
+	GameTime         float64 `json:"game_time"`
+	Gems             int     `json:"gems"`
+	HomingDaggers    int     `json:"homing_daggers"`
+	EnemiesAlive     int     `json:"enemies_alive"`
+	EnemiesKilled    int     `json:"enemies_killed"`
+	DaggersHit       int     `json:"daggers_hit"`
+	DaggersFired     int     `json:"daggers_fired"`
+	LevelTwoTime     float64 `json:"level_two_time"`
+	LevelThreeTime   float64 `json:"level_three_time"`
+	LevelFourTime    float64 `json:"level_four_time"`
+	DeathType        int     `json:"death_type"`
+	IsReplay         bool    `json:"is_replay"`
+	NotifyPlayerBest bool    `json:"notify_player_best"`
+	NotifyAbove1000  bool    `json:"notify_above_1000"`
 }
 
-func NewServer(client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
+// NewServer returns a Server from the go-socket.io package with all of the routes already
+// set up to handle ddstats clients
+func NewServer(infoLog, errorLog *log.Logger, websocketHub *websocket.Hub, client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		return nil, err
 	}
 	s := sio{
-		server:      server,
-		client:      client,
-		db:          db,
-		ddAPI:       &ddapi.API{Client: client},
-		games:       &postgres.GameModel{DB: db},
-		players:     &postgres.PlayerModel{DB: db},
-		livePlayers: map[string]*player{},
+		server:       server,
+		client:       client,
+		infoLog:      infoLog,
+		errorLog:     errorLog,
+		db:           db,
+		websocketHub: websocketHub,
+		ddAPI:        &ddapi.API{Client: client},
+		games:        &postgres.GameModel{DB: db},
+		players:      &postgres.PlayerModel{DB: db},
+		livePlayers:  &sync.Map{},
 	}
 	s.routes(server)
 	return server, nil
@@ -79,32 +89,27 @@ func NewServer(client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
 func (si *sio) routes(server *socketio.Server) {
 	server.OnConnect(defaultNamespace, si.onConnect)
 	server.OnDisconnect(defaultNamespace, si.onDisconnect)
+	server.OnError(defaultNamespace, si.onError)
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
 }
 
+// i don't know what this function should do
 func (si *sio) onConnect(s socketio.Conn) error {
 	s.SetContext("")
-	// TODO: update using websockets
-	fmt.Println("connected:", s.ID())
+	si.infoLog.Println("connected:", s.ID())
 	return nil
 }
 
 func (si *sio) onDisconnect(s socketio.Conn, msg string) {
-	if _, ok := si.livePlayers[s.ID()]; !ok {
-		fmt.Println("this")
+	p, ok := si.livePlayers.Load(s.ID())
+	if !ok {
+		si.errorLog.Println("socketio onDisconnect: could not load player from livePlayers map")
 		return
 	}
-	player := si.livePlayers[s.ID()]
-	delete(si.livePlayers, s.ID())
-	js, err := json.Marshal(si.livePlayers)
-	if err != nil {
-		fmt.Println("that")
-		return
-	}
-	fmt.Println(s.ID(), "disconnected")
-	s.Emit("live_users_update", string(js))
-	si.server.BroadcastToRoom(strconv.Itoa(player.PlayerID), "offline")
+	si.livePlayers.Delete(s.ID())
+	si.websocketHub.UnregisterPlayer <- p.(*player).websocketPlayer
+	si.infoLog.Println(s.ID(), "disconnected")
 	return
 }
 
@@ -112,32 +117,37 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 	start := time.Now()
 	// -1 is sent when there is an error in the client
 	if id == -1 {
-		// todo: handle error, print?
+		si.errorLog.Println("socketio onLogin: id is -1")
 		return
 	}
 
 	p, err := si.ddAPI.UserByID(id)
 	if err != nil {
-		// todo: handle error, print?
+		si.errorLog.Printf("socketio onLogin: %w", err)
 		return
 	}
 
-	si.livePlayers[s.ID()] = &player{
-		PlayerID:   int(p.PlayerID),
-		PlayerName: p.PlayerName,
-		GameTime:   0,
-		DeathType:  -2, // IN MENU
-		IsReplay:   false,
-	}
+	websocketPlayer := websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName}
+
+	si.livePlayers.Store(s.ID(), &player{
+		websocketPlayer: &websocketPlayer,
+		PlayerID:        int(p.PlayerID),
+		PlayerName:      p.PlayerName,
+		GameTime:        0,
+		DeathType:       -2, // IN MENU
+		IsReplay:        false,
+	})
 
 	err = si.players.UpsertDDPlayer(p)
 	if err != nil {
-		// todo: handle error, print?
+		si.errorLog.Printf("socketio onLogin: %w", err)
 		return
 	}
 
-	fmt.Println(id)
-	fmt.Println("duration:", time.Since(start))
+	si.websocketHub.RegisterPlayer <- &websocketPlayer
+
+	si.infoLog.Println(id)
+	si.infoLog.Println("duration:", time.Since(start))
 }
 
 func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired int, levelTwoTime, levelThreeTime, levelFourTime float64, isReplay bool, deathType int, notifyPlayerBest, notifyAbove1000 bool) {
@@ -158,8 +168,18 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		NotifyPlayerBest: notifyPlayerBest,
 		NotifyAbove1000:  notifyAbove1000,
 	}
-	if playerID == -1 {
+	if playerID < 1 {
 		return
 	}
-	fmt.Printf("%+v\n", state)
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "submit", state)
+	if err != nil {
+		si.errorLog.Println("socketio onSubmit: %w", err)
+		return
+	}
+	si.websocketHub.Broadcast <- websocketMessage
+	si.infoLog.Printf("%+v\n", state)
+}
+
+func (si *sio) onError(s socketio.Conn, err error) {
+	si.errorLog.Printf("socketio onError: %w", err)
 }
