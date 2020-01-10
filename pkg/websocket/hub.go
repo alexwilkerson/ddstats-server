@@ -33,6 +33,7 @@ func NewHub() *Hub {
 		Unregister:       make(chan *Client),
 		RegisterPlayer:   make(chan *Player),
 		UnregisterPlayer: make(chan *Player),
+		Players:          &sync.Map{},
 		Rooms:            rooms,
 		Broadcast:        make(chan *Message),
 	}

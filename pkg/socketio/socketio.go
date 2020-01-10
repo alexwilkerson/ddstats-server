@@ -80,6 +80,7 @@ func NewServer(infoLog, errorLog *log.Logger, websocketHub *websocket.Hub, clien
 		ddAPI:        &ddapi.API{Client: client},
 		games:        &postgres.GameModel{DB: db},
 		players:      &postgres.PlayerModel{DB: db},
+		livePlayers:  &sync.Map{},
 	}
 	s.routes(server)
 	return server, nil

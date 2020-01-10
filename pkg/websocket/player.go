@@ -11,13 +11,9 @@ type Player struct {
 }
 
 func toPlayerSlice(m *sync.Map) []*Player {
-	var players []*Player
+	players := []*Player{}
 	m.Range(func(k interface{}, v interface{}) bool {
-		player, ok := m.Load(k)
-		if !ok {
-			return false
-		}
-		players = append(players, player.(*Player))
+		players = append(players, k.(*Player))
 		return true
 	})
 	return players
