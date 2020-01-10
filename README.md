@@ -45,10 +45,10 @@ Currently working on possibly converting a lot of the socket-io stuff to websock
 - [x] POST api/v2/client_connect (client sends client version and receives info)
 - [x] GET api/v2/motd
 - [x] create table in database for motd
-- [ ] GET api/v2/client/releases?pagesize={int}&pagenum={int}
+- [ ] GET api/v2/client/releases?page_size={int}&page_num={int}
 - [ ] GET api/v2/client/download?version={string}
 - [ ] create database in table for client version/filename
-- [ ] GET api/v2/news?pagesize={int}&pagenum={int}
+- [ ] GET api/v2/news?page_size={int}&page_num={int}
 - [ ] create table in database for news
 
 - [ ] GET user/live (idk about this one?)
@@ -57,7 +57,7 @@ Currently working on possibly converting a lot of the socket-io stuff to websock
 
 - [x] POST api/v2/game/submit
 - [x] GET api/v2/game/top
-- [x] GET api/v2/game/recent?pagesize={int}&pagenum={int} (optional: playerid={int} will give most recent for given player)
+- [x] GET api/v2/game/recent?page_size={int}&page_num={int} (optional: player_id={int} will give most recent for given player)
 - [x] GET api/v2/game?id={int} (info)
 - [x] GET api/v2/game/all?id={int}
 - [x] GET api/v2/game/gems?id={int}
@@ -69,9 +69,9 @@ Currently working on possibly converting a lot of the socket-io stuff to websock
 #### player
 
 - [x] GET api/v2/player/update?id={int} (updates or creates user in database from dd backend)
-- [x] GET api/v2/player/all?pagesize={int}&pagenum={int} (list all users)
+- [x] GET api/v2/player/all?page_size={int}&page_num={int} (list all users)
 - [x] GET api/v2/player?id={int}
-- [x] ~GET api/v2/player/games?id={int}pagesize={int}&pagenum={int} (paginated list of games by player id)~
+- [x] ~GET api/v2/player/games?id={int}page_size={int}&page_num={int} (paginated list of games by player id)~
       (see api/v2/game/recent)
 
 #### dd backend
