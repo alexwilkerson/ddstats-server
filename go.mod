@@ -4,7 +4,7 @@ go 1.13
 
 require (
 	github.com/bmizerany/pat v0.0.0-20170815010413-6226ea591a40
-	github.com/bwmarrin/discordgo v0.20.2 // indirect
+	github.com/bwmarrin/discordgo v0.20.2
 	github.com/googollee/go-engine.io v1.4.2 // indirect
 	github.com/googollee/go-socket.io v1.4.3-0.20191220165003-799291763859
 	github.com/gorilla/websocket v1.4.1
