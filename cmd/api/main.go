@@ -7,11 +7,13 @@ import (
 	"os"
 	"time"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/socketio"
-	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
+	"github.com/alexwilkerson/ddstats-api/pkg/discord"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+	"github.com/alexwilkerson/ddstats-api/pkg/socketio"
+	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
+
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
@@ -36,6 +38,7 @@ type application struct {
 func main() {
 	addr := flag.String("addr", ":5000", "HTTP Network Address")
 	dsn := flag.String("dsn", "host=localhost port=5432 user=ddstats password=ddstats dbname=ddstats sslmode=disable", "PostgreSQL data source name")
+	discordToken := flag.String("discord-token", "NjY1MDY4MDcwOTQ3MTI3MzA3.XhgWNQ.W60yL9JnPbKNFUSz1XEbNpuoYs8", "Discord Bot Token")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -76,6 +79,15 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
+	discordSession, err := discord.New(*discordToken, infoLog, errorLog)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	err = discordSession.Start()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+	defer discordSession.Close()
 	go app.websocketHub.Start()
 	go socketioServer.Serve()
 	defer socketioServer.Close()
