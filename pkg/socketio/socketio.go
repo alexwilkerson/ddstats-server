@@ -4,7 +4,7 @@
 package socketio
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"strconv"
 	"sync"
@@ -22,6 +22,8 @@ import (
 type sio struct {
 	server       *socketio.Server
 	client       *http.Client
+	infoLog      *log.Logger
+	errorLog     *log.Logger
 	db           *sqlx.DB
 	websocketHub *websocket.Hub
 	ddAPI        *ddapi.API
@@ -63,7 +65,7 @@ type state struct {
 
 // NewServer returns a Server from the go-socket.io package with all of the routes already
 // set up to handle ddstats clients
-func NewServer(websocketHub *websocket.Hub, client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
+func NewServer(infoLog, errorLog *log.Logger, websocketHub *websocket.Hub, client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		return nil, err
@@ -71,6 +73,8 @@ func NewServer(websocketHub *websocket.Hub, client *http.Client, db *sqlx.DB) (*
 	s := sio{
 		server:       server,
 		client:       client,
+		infoLog:      infoLog,
+		errorLog:     errorLog,
 		db:           db,
 		websocketHub: websocketHub,
 		ddAPI:        &ddapi.API{Client: client},
@@ -84,29 +88,27 @@ func NewServer(websocketHub *websocket.Hub, client *http.Client, db *sqlx.DB) (*
 func (si *sio) routes(server *socketio.Server) {
 	server.OnConnect(defaultNamespace, si.onConnect)
 	server.OnDisconnect(defaultNamespace, si.onDisconnect)
-	server.OnError(defaultNamespace, func(s socketio.Conn, err error) {
-		// TODO: handle errors
-	})
+	server.OnError(defaultNamespace, si.onError)
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
 }
 
+// i don't know what this function should do
 func (si *sio) onConnect(s socketio.Conn) error {
 	s.SetContext("")
-	// TODO: update using websockets
-	fmt.Println("connected:", s.ID())
+	si.infoLog.Println("connected:", s.ID())
 	return nil
 }
 
 func (si *sio) onDisconnect(s socketio.Conn, msg string) {
 	p, ok := si.livePlayers.Load(s.ID())
 	if !ok {
-		fmt.Println("this")
+		si.errorLog.Println("socketio onDisconnect: could not load player from livePlayers map")
 		return
 	}
 	si.livePlayers.Delete(s.ID())
 	si.websocketHub.UnregisterPlayer <- p.(*player).websocketPlayer
-	fmt.Println(s.ID(), "disconnected")
+	si.infoLog.Println(s.ID(), "disconnected")
 	return
 }
 
@@ -114,13 +116,13 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 	start := time.Now()
 	// -1 is sent when there is an error in the client
 	if id == -1 {
-		// todo: handle error, print?
+		si.errorLog.Println("socketio onLogin: id is -1")
 		return
 	}
 
 	p, err := si.ddAPI.UserByID(id)
 	if err != nil {
-		// todo: handle error, print?
+		si.errorLog.Printf("socketio onLogin: %w", err)
 		return
 	}
 
@@ -137,14 +139,14 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 
 	err = si.players.UpsertDDPlayer(p)
 	if err != nil {
-		// todo: handle error, print?
+		si.errorLog.Printf("socketio onLogin: %w", err)
 		return
 	}
 
 	si.websocketHub.RegisterPlayer <- &websocketPlayer
 
-	fmt.Println(id)
-	fmt.Println("duration:", time.Since(start))
+	si.infoLog.Println(id)
+	si.infoLog.Println("duration:", time.Since(start))
 }
 
 func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired int, levelTwoTime, levelThreeTime, levelFourTime float64, isReplay bool, deathType int, notifyPlayerBest, notifyAbove1000 bool) {
@@ -165,14 +167,18 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		NotifyPlayerBest: notifyPlayerBest,
 		NotifyAbove1000:  notifyAbove1000,
 	}
-	if playerID == -1 {
+	if playerID < 1 {
 		return
 	}
 	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "submit", state)
 	if err != nil {
-		fmt.Println("socketio: onSubmit error: %w", err)
+		si.errorLog.Println("socketio onSubmit: %w", err)
 		return
 	}
 	si.websocketHub.Broadcast <- websocketMessage
-	fmt.Printf("%+v\n", state)
+	si.infoLog.Printf("%+v\n", state)
+}
+
+func (si *sio) onError(s socketio.Conn, err error) {
+	si.errorLog.Printf("socketio onError: %w", err)
 }

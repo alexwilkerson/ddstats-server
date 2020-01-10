@@ -62,7 +62,7 @@ func main() {
 		motd:           &postgres.MOTDModel{DB: db},
 	}
 
-	socketioServer, err := socketio.NewServer(app.websocketHub, client, db)
+	socketioServer, err := socketio.NewServer(infoLog, errorLog, app.websocketHub, client, db)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
