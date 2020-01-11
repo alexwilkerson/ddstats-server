@@ -23,12 +23,12 @@ reflex -d none -c reflex.conf
 - [ ] global https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/global.js
 - [ ] help https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/help.js
 - [ ] id https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/id.js
-- [ ] live https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/live.js
+- [x] live https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/live.js
 - [ ] me https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/me.js
 - [ ] rank https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/rank.js
 - [ ] register https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/register.js
 - [ ] search https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/search.js
-- [ ] top https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/top.js
+- [x] top https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/top.js
 
 #### socket-io stuff
 

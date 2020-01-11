@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"fmt"
 	"strings"
 	"time"
 
@@ -28,7 +29,12 @@ func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 		return
 	}
 	command := c.(*Command)
-	if time.Since(command.lastUsed) < command.cooldown {
+	since := time.Since(command.lastUsed)
+	if since < command.cooldown {
+		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("The %s%s command is on cooldown. Please wait %s to use it. %s", prefix, command.name, command.cooldown-since, m.Author.Mention()))
+		if err != nil {
+			d.errorLog.Printf("%w", err)
+		}
 		return
 	}
 	var args []string
