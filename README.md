@@ -1,5 +1,7 @@
 # ddstats-api
 
+![DDSTATS Server v2](../blob/master/server_diagram.png?raw=true)
+
 ## Automatically restarting server during dev
 
 Go 1.11+ installation required

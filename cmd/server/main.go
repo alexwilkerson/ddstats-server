@@ -52,9 +52,9 @@ func main() {
 
 	postgresDB := postgres.NewPostgres(client, db)
 
-	ddAPI := ddapi.API{Client: client}
+	ddAPI := ddapi.NewAPI(client)
 
-	api := api.NewAPI(client, postgresDB, websocketHub, &ddAPI, infoLog, errorLog)
+	api := api.NewAPI(client, postgresDB, websocketHub, ddAPI, infoLog, errorLog)
 
 	socketioServer, err := socketio.NewServer(infoLog, errorLog, websocketHub, client, db)
 	if err != nil {
@@ -79,6 +79,9 @@ func main() {
 		errorLog.Fatal(err)
 	}
 	defer discordSession.Close()
+
+	go ddAPI.Watcher.Start()
+	defer ddAPI.Watcher.Close()
 	go websocketHub.Start()
 	defer websocketHub.Close()
 	go socketioServer.Serve()
