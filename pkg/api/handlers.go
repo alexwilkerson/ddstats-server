@@ -41,8 +41,8 @@ func (api *API) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 func (api *API) playerLive(w http.ResponseWriter, r *http.Request) {
 	players := api.websocketHub.LivePlayers()
 	api.writeJSON(w, struct {
-		PlayerCount int                 `json:"player_count"`
-		Players     []*websocket.Player `json:"players"`
+		PlayerCount int                `json:"player_count"`
+		Players     []websocket.Player `json:"players"`
 	}{
 		PlayerCount: len(players),
 		Players:     players,

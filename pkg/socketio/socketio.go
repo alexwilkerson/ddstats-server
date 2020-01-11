@@ -37,12 +37,28 @@ const (
 )
 
 type player struct {
+	sync.Mutex
 	websocketPlayer *websocket.Player
 	PlayerID        int     `json:"player_id"`
 	PlayerName      string  `json:"player_name"`
 	GameTime        float64 `json:"game_time"`
 	DeathType       int     `json:"death_type"`
 	IsReplay        bool    `json:"is_replay"`
+}
+
+func (p *player) getStatus() string {
+	var status string
+	switch {
+	case p.DeathType >= 0:
+		status = "Dead"
+	case p.DeathType == -2:
+		status = "In Menu"
+	case p.DeathType == -1 && p.IsReplay == true:
+		status = "Watching a Replay"
+	default:
+		status = "Alive"
+	}
+	return status
 }
 
 type state struct {
@@ -92,6 +108,7 @@ func (si *sio) routes(server *socketio.Server) {
 	server.OnError(defaultNamespace, si.onError)
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
+	server.OnEvent(defaultNamespace, "status_update", si.onStatusUpdate)
 }
 
 // i don't know what this function should do
@@ -113,6 +130,37 @@ func (si *sio) onDisconnect(s socketio.Conn, msg string) {
 	return
 }
 
+func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
+	var status string
+	switch statusID {
+	case 0:
+		status = "Not Connected"
+	case 1:
+		status = "Connecting"
+	case 2:
+		status = "Alive"
+	case 3:
+		status = "Watching a Replay"
+	case 4:
+		status = "In Main Menu"
+	case 5:
+		status = "In Dagger Lobby"
+	case 6:
+		status = "Dead"
+	}
+	p, ok := si.livePlayers.Load(s.ID())
+	if !ok {
+		si.errorLog.Printf("player with s.ID() %s not found in livePlayers map", s.ID())
+		return
+	}
+	player := p.(*player)
+	player.Lock()
+	player.websocketPlayer.Lock()
+	player.websocketPlayer.Status = status
+	player.websocketPlayer.Unlock()
+	player.Unlock()
+}
+
 func (si *sio) onLogin(s socketio.Conn, id int) {
 	start := time.Now()
 	// -1 is sent when there is an error in the client
@@ -129,7 +177,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 		return
 	}
 
-	websocketPlayer := websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName}
+	websocketPlayer := websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName, Status: "Logged In"}
 
 	si.livePlayers.Store(s.ID(), &player{
 		websocketPlayer: &websocketPlayer,
@@ -174,13 +222,28 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	if playerID < 1 {
 		return
 	}
+	p, ok := si.livePlayers.Load(s.ID())
+	if !ok {
+		si.errorLog.Printf("player with s.ID() %s not found in livePlayers map", s.ID())
+		return
+	}
+	player := p.(*player)
+	player.Lock()
+	player.GameTime = state.GameTime
+	player.DeathType = state.DeathType
+	player.IsReplay = state.IsReplay
+	status := player.getStatus()
+	player.websocketPlayer.Lock()
+	player.websocketPlayer.GameTime = state.GameTime
+	player.websocketPlayer.Status = status
+	player.websocketPlayer.Unlock()
+	player.Unlock()
 	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "submit", state)
 	if err != nil {
 		si.errorLog.Println("socketio onSubmit: %w", err)
 		return
 	}
 	si.websocketHub.Broadcast <- websocketMessage
-	si.infoLog.Printf("%+v\n", state)
 }
 
 func (si *sio) onError(s socketio.Conn, err error) {

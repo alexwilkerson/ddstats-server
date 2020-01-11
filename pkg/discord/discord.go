@@ -5,6 +5,10 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
+
+	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
+
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -14,23 +18,30 @@ const (
 
 type Discord struct {
 	Session         *discordgo.Session
+	ddAPI           *ddapi.API
+	websocketHub    *websocket.Hub
+	commands        *sync.Map
 	ddstatsChannels *ddstatsChannels
 	infoLog         *log.Logger
 	errorLog        *log.Logger
 }
 
-func New(token string, infoLog, errorLog *log.Logger) (*Discord, error) {
+func New(token string, ddAPI *ddapi.API, websocketHub *websocket.Hub, infoLog, errorLog *log.Logger) (*Discord, error) {
 	session, err := discordgo.New("Bot " + token)
 	if err != nil {
 		return nil, err
 	}
 	discord := Discord{
 		Session:         session,
+		ddAPI:           ddAPI,
+		websocketHub:    websocketHub,
+		commands:        &sync.Map{},
 		ddstatsChannels: &ddstatsChannels{},
 		infoLog:         infoLog,
 		errorLog:        errorLog,
 	}
-	discord.Session.AddHandler(discord.messageCreate)
+	session.AddHandler(discord.messageCreate)
+	discord.registerCommands()
 	return &discord, nil
 }
 
