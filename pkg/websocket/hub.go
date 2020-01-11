@@ -50,7 +50,7 @@ func (hub *Hub) Start() {
 			hub.Players.Store(player, true)
 			for client := range hub.Rooms[liveRoom] {
 				message, err := NewMessage(client.Room, "player_logged_in", struct {
-					Players []*Player `json:"players"`
+					Players []Player `json:"players"`
 				}{
 					Players: toPlayerSlice(hub.Players),
 				})
@@ -68,7 +68,7 @@ func (hub *Hub) Start() {
 			hub.Players.Delete(player)
 			for client := range hub.Rooms[liveRoom] {
 				message, err := NewMessage(liveRoom, "player_logged_off", struct {
-					Players []*Player `json:"players"`
+					Players []Player `json:"players"`
 				}{
 					Players: toPlayerSlice(hub.Players),
 				})
@@ -92,7 +92,7 @@ func (hub *Hub) Start() {
 			fmt.Printf("Size of room %q connections: %d\n", client.Room, len(hub.Rooms[client.Room]))
 			if client.Room == liveRoom {
 				message, err := NewMessage(liveRoom, "player_list", struct {
-					Players []*Player `json:"players"`
+					Players []Player `json:"players"`
 				}{
 					Players: toPlayerSlice(hub.Players),
 				})
