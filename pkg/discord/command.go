@@ -19,7 +19,7 @@ type Command struct {
 	lastUsed    time.Time
 	aliases     []string
 	args        bool
-	getEmbed    func(...string) *discordgo.MessageEmbed
+	getEmbed    func(*discordgo.MessageCreate, ...string) *discordgo.MessageEmbed
 }
 
 func (c *Command) register(d *Discord) {
@@ -32,4 +32,25 @@ func (c *Command) register(d *Discord) {
 func (d *Discord) registerCommands() {
 	d.commandTop()
 	d.commandLive()
+	d.commandSearch()
+}
+
+func newEmbedField(name, value string, inline bool) *discordgo.MessageEmbedField {
+	return &discordgo.MessageEmbedField{
+		Name:   name,
+		Value:  value,
+		Inline: inline,
+	}
+}
+
+func errorEmbed(e string) *discordgo.MessageEmbed {
+	return &discordgo.MessageEmbed{
+		Title:       "Error",
+		Description: e,
+		Color:       defaultColor,
+		Footer: &discordgo.MessageEmbedFooter{
+			Text:    "ddstats.com",
+			IconURL: iconURL,
+		},
+	}
 }

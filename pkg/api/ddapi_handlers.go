@@ -55,6 +55,7 @@ func (api *API) ddUserSearch(w http.ResponseWriter, r *http.Request) {
 		api.clientMessage(w, http.StatusBadRequest, "no 'name' query parameter set")
 		return
 	}
+	api.infoLog.Println("name:", name)
 
 	players, err := api.ddAPI.UserSearch(name)
 	if err != nil {
