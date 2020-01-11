@@ -9,10 +9,12 @@ import (
 	"os/signal"
 	"time"
 
+	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+
+	"github.com/alexwilkerson/ddstats-api/pkg/api"
 	"github.com/alexwilkerson/ddstats-api/pkg/discord"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
-	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
 	"github.com/alexwilkerson/ddstats-api/pkg/socketio"
 	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
 
@@ -20,21 +22,12 @@ import (
 	_ "github.com/lib/pq"
 )
 
-const (
-	oldestValidClientVersion = "0.3.1"
-	currentClientVersion     = "0.4.5"
-)
-
 type application struct {
-	errorLog       *log.Logger
-	infoLog        *log.Logger
-	client         *http.Client
-	websocketHub   *websocket.Hub
-	ddAPI          *ddapi.API
-	games          *postgres.GameModel
-	players        *postgres.PlayerModel
-	submittedGames *postgres.SubmittedGameModel
-	motd           *postgres.MOTDModel
+	errorLog     *log.Logger
+	infoLog      *log.Logger
+	client       *http.Client
+	websocketHub *websocket.Hub
+	ddAPI        *ddapi.API
 }
 
 func main() {
@@ -55,19 +48,15 @@ func main() {
 	// TODO: set up client appropriately
 	client := &http.Client{}
 
-	app := &application{
-		errorLog:       errorLog,
-		infoLog:        infoLog,
-		client:         client,
-		websocketHub:   websocket.NewHub(),
-		ddAPI:          &ddapi.API{Client: client},
-		games:          &postgres.GameModel{DB: db},
-		players:        &postgres.PlayerModel{DB: db},
-		submittedGames: &postgres.SubmittedGameModel{DB: db, Client: client},
-		motd:           &postgres.MOTDModel{DB: db},
-	}
+	websocketHub := websocket.NewHub()
 
-	socketioServer, err := socketio.NewServer(infoLog, errorLog, app.websocketHub, client, db)
+	postgresDB := postgres.NewPostgres(client, db)
+
+	ddAPI := ddapi.API{Client: client}
+
+	api := api.NewAPI(client, postgresDB, websocketHub, &ddAPI, infoLog, errorLog)
+
+	socketioServer, err := socketio.NewServer(infoLog, errorLog, websocketHub, client, db)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
@@ -75,7 +64,7 @@ func main() {
 	srv := &http.Server{
 		Addr:         *addr,
 		ErrorLog:     errorLog,
-		Handler:      app.routes(socketioServer),
+		Handler:      api.Routes(socketioServer),
 		IdleTimeout:  time.Minute,
 		ReadTimeout:  5 * time.Second,
 		WriteTimeout: 10 * time.Second,
@@ -90,8 +79,8 @@ func main() {
 		errorLog.Fatal(err)
 	}
 	defer discordSession.Close()
-	go app.websocketHub.Start()
-	defer app.websocketHub.Close()
+	go websocketHub.Start()
+	defer websocketHub.Close()
 	go socketioServer.Serve()
 	defer socketioServer.Close()
 
