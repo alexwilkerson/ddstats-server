@@ -42,7 +42,7 @@ func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 		args = contentTokens[1:]
 	}
 	command.lastUsed = time.Now()
-	_, err := s.ChannelMessageSendEmbed(m.ChannelID, command.getEmbed(args...))
+	_, err := s.ChannelMessageSendEmbed(m.ChannelID, command.getEmbed(m, args...))
 	if err != nil {
 		d.errorLog.Printf("%w", err)
 	}

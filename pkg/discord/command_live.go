@@ -13,7 +13,7 @@ func (d *Discord) commandLive() {
 		cooldown:    5 * time.Second,
 		description: "Display list of users currently using ddstats.",
 		args:        false,
-		getEmbed: func(args ...string) *discordgo.MessageEmbed {
+		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
 			livePlayers := d.websocketHub.LivePlayers()
 			var fields []*discordgo.MessageEmbedField
 			for _, player := range livePlayers {

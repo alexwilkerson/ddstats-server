@@ -14,7 +14,7 @@ func (d *Discord) commandTop() {
 		description: "Show the top 10 players of the Devil Daggers leaderboard.",
 		aliases:     []string{"top10", "top-ten"},
 		args:        false,
-		getEmbed: func(args ...string) *discordgo.MessageEmbed {
+		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
 			leaderboard, err := d.ddAPI.GetLeaderboard(10, 0)
 			if err != nil {
 				// TODO: return MessageEmbed error
