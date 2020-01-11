@@ -18,6 +18,18 @@ reflex -d none -c reflex.conf
 
 ## Things Left to Do...
 
+#### discord-bot commands
+
+- [ ] global https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/global.js
+- [ ] help https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/help.js
+- [ ] id https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/id.js
+- [x] live https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/live.js
+- [ ] me https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/me.js
+- [ ] rank https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/rank.js
+- [ ] register https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/register.js
+- [ ] search https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/search.js
+- [x] top https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/top.js
+
 #### socket-io stuff
 
 Currently working on possibly converting a lot of the socket-io stuff to websockets. In order to stay backward-compatible with older clients, socket.io may still have to be used for client and login. Ideally, we could have the client functioning with socket.io and everything else will be running with websockets. The only thing that needs to be updated at that point would be the Discord bot which is currently receiving information via socket.io. The website could then strictly use websockets. Then at a later date, the client could be updated to use websockets as that's going to be a lot of updates to the client, I'd rather not hinder this project with that work.

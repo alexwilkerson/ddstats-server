@@ -70,7 +70,7 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	discordSession, err := discord.New(*discordToken, infoLog, errorLog)
+	discordSession, err := discord.New(*discordToken, ddAPI, websocketHub, infoLog, errorLog)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
