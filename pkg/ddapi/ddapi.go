@@ -11,6 +11,24 @@ import (
 	"strconv"
 )
 
+const (
+	// EndpointGetUserByID is the endpoint to get a user by ID
+	EndpointGetUserByID = "http://dd.hasmodai.com/backend16/get_user_by_id_public.php"
+	// EndpointGetUserByRank is the endpoint to get a user by rank
+	EndpointGetUserByRank = "http://dd.hasmodai.com/backend16/get_user_by_rank_public.php"
+	// EndpointGetScores is the endpoint to get the leaderboard
+	EndpointGetScores = "http://dd.hasmodai.com/backend16/get_scores.php"
+	// EndpointGetUserSearch is the endpoint to get search for users
+	EndpointGetUserSearch = "http://dd.hasmodai.com/backend16/get_user_search_public.php"
+)
+
+var (
+	// ErrPlayerNotFound returned when player not found from the DD API
+	ErrPlayerNotFound = errors.New("player not found")
+	// ErrNoPlayersFound is returned when user search produces no users
+	ErrNoPlayersFound = errors.New("no players found")
+)
+
 // API is used as an abstraction and to inject the client into the ddapi package
 type API struct {
 	Client *http.Client
@@ -35,12 +53,6 @@ var DeathTypes = []string{
 	"DISCARNATED",
 	"BARBED",
 }
-
-// ErrPlayerNotFound returned when player not found from the DD API
-var ErrPlayerNotFound = errors.New("player not found")
-
-// ErrNoPlayersFound is returned when user search produces no users
-var ErrNoPlayersFound = errors.New("no players found")
 
 // Player is the struct returned after parsing the binary data
 // blob returned from the DD API.
@@ -80,9 +92,8 @@ type Leaderboard struct {
 
 // UserByID hits the backend DD API and returns a Player
 func (api *API) UserByID(id int) (*Player, error) {
-	u := "http://dd.hasmodai.com/backend16/get_user_by_id_public.php"
 	form := url.Values{"uid": {strconv.Itoa(id)}}
-	resp, err := api.Client.PostForm(u, form)
+	resp, err := api.Client.PostForm(EndpointGetUserByID, form)
 	if err != nil {
 		return nil, err
 	}
@@ -107,9 +118,8 @@ func (api *API) UserByID(id int) (*Player, error) {
 
 // UserByRank hits the backend DD API and returns a Player
 func (api *API) UserByRank(rank int) (*Player, error) {
-	u := "http://dd.hasmodai.com/backend16/get_user_by_rank_public.php"
 	form := url.Values{"rank": {strconv.Itoa(rank)}}
-	resp, err := api.Client.PostForm(u, form)
+	resp, err := api.Client.PostForm(EndpointGetUserByRank, form)
 	if err != nil {
 		return nil, err
 	}
@@ -141,9 +151,8 @@ func (api *API) GetLeaderboard(limit, offset int) (*Leaderboard, error) {
 		offset--
 	}
 
-	u := "http://dd.hasmodai.com/backend16/get_scores.php"
 	form := url.Values{"user": {"0"}, "level": {"survival"}, "offset": {strconv.Itoa(offset)}}
-	resp, err := api.Client.PostForm(u, form)
+	resp, err := api.Client.PostForm(EndpointGetScores, form)
 	if err != nil {
 		return nil, err
 	}
@@ -168,9 +177,8 @@ func (api *API) GetLeaderboard(limit, offset int) (*Leaderboard, error) {
 
 // UserSearch takes a user name and hits the backend DD API and returns a slice of Players
 func (api *API) UserSearch(name string) ([]*Player, error) {
-	u := "http://dd.hasmodai.com/backend16/get_user_search_public.php"
 	form := url.Values{"search": {name}}
-	resp, err := api.Client.PostForm(u, form)
+	resp, err := api.Client.PostForm(EndpointGetUserSearch, form)
 	if err != nil {
 		return nil, err
 	}

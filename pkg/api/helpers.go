@@ -1,4 +1,4 @@
-package main
+package api
 
 import (
 	"encoding/json"
@@ -7,25 +7,25 @@ import (
 	"runtime/debug"
 )
 
-func (app *application) serverError(w http.ResponseWriter, err error) {
+func (api *API) serverError(w http.ResponseWriter, err error) {
 	trace := fmt.Sprintf("%s\n%s", err.Error(), debug.Stack())
-	app.errorLog.Output(2, trace)
+	api.errorLog.Output(2, trace)
 
 	http.Error(w, http.StatusText(http.StatusInternalServerError), http.StatusInternalServerError)
 }
 
-func (app *application) clientError(w http.ResponseWriter, status int) {
+func (api *API) clientError(w http.ResponseWriter, status int) {
 	http.Error(w, http.StatusText(status), status)
 }
 
-func (app *application) clientMessage(w http.ResponseWriter, status int, message string) {
+func (api *API) clientMessage(w http.ResponseWriter, status int, message string) {
 	data := struct {
 		Message string `json:"message"`
 	}{message}
 
 	js, err := json.Marshal(data)
 	if err != nil {
-		app.serverError(w, err)
+		api.serverError(w, err)
 		return
 	}
 
@@ -34,14 +34,14 @@ func (app *application) clientMessage(w http.ResponseWriter, status int, message
 	w.Write(js)
 }
 
-func (app *application) notFound(w http.ResponseWriter) {
-	app.clientError(w, http.StatusNotFound)
+func (api *API) notFound(w http.ResponseWriter) {
+	api.clientError(w, http.StatusNotFound)
 }
 
-func (app *application) writeJSON(w http.ResponseWriter, v interface{}) {
+func (api *API) writeJSON(w http.ResponseWriter, v interface{}) {
 	js, err := json.Marshal(v)
 	if err != nil {
-		app.serverError(w, err)
+		api.serverError(w, err)
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
