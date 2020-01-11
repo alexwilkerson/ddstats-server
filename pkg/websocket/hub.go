@@ -21,6 +21,7 @@ type Hub struct {
 	Players          *sync.Map
 	Rooms            map[string]map[*Client]bool
 	Broadcast        chan *Message
+	quit             chan struct{}
 }
 
 // NewHub returns a Hub
@@ -36,6 +37,7 @@ func NewHub() *Hub {
 		Players:          &sync.Map{},
 		Rooms:            rooms,
 		Broadcast:        make(chan *Message),
+		quit:             make(chan struct{}),
 	}
 }
 
@@ -158,8 +160,14 @@ func (hub *Hub) Start() {
 					break
 				}
 			}
+		case <-hub.quit:
+			return
 		}
 	}
+}
+
+func (hub *Hub) Close() {
+	hub.quit <- struct{}{}
 }
 
 func toJSONString(v interface{}) (string, error) {

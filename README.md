@@ -2,7 +2,7 @@
 
 ## Automatically restarting server during dev
 
-Go 1.11+ installation required\
+Go 1.11+ installation required
 
 ```
 go get github.com/cespare/reflex
