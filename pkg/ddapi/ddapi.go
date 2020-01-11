@@ -31,7 +31,15 @@ var (
 
 // API is used as an abstraction and to inject the client into the ddapi package
 type API struct {
-	Client *http.Client
+	Client  *http.Client
+	Watcher *Watcher
+}
+
+func NewAPI(client *http.Client) *API {
+	return &API{
+		Client:  client,
+		Watcher: NewWatcher(),
+	}
 }
 
 // DeathTypes as defined by the DD API
