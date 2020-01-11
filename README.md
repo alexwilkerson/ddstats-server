@@ -1,4 +1,4 @@
-# ddstats-api
+# ddstats-server
 
 ![DDSTATS Server v2](/server_diagram.png)
 
