@@ -1,6 +1,6 @@
 # ddstats-api
 
-![DDSTATS Server v2](../blob/master/server_diagram.png?raw=true)
+![DDSTATS Server v2](/server_diagram.png)
 
 ## Automatically restarting server during dev
 
