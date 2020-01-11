@@ -121,6 +121,10 @@ func (api *API) UserByID(id int) (*Player, error) {
 		return nil, err
 	}
 
+	if player.PlayerName == "" {
+		return nil, ErrPlayerNotFound
+	}
+
 	return player, nil
 }
 
@@ -185,6 +189,13 @@ func (api *API) GetLeaderboard(limit, offset int) (*Leaderboard, error) {
 
 // UserSearch takes a user name and hits the backend DD API and returns a slice of Players
 func (api *API) UserSearch(name string) ([]*Player, error) {
+	// The Devil Daggers API responds with no users found if the user name is
+	// longer than 16 characters. This truncates the name to 16 characters and
+	// does a partial match, hopefully finding the intended user. If not, will
+	// return the intended user and any other user which matches the substring.
+	if len(name) > 16 {
+		name = name[:16]
+	}
 	form := url.Values{"search": {name}}
 	resp, err := api.Client.PostForm(EndpointGetUserSearch, form)
 	if err != nil {
