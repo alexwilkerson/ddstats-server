@@ -118,13 +118,14 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 	// -1 is sent when there is an error in the client
 	if id == -1 {
 		si.errorLog.Println("socketio onLogin: id is -1")
-		// TODO: possibly kill the connection
+		s.Close()
 		return
 	}
 
 	p, err := si.ddAPI.UserByID(id)
 	if err != nil {
 		si.errorLog.Printf("socketio onLogin: %w", err)
+		s.Close()
 		return
 	}
 
@@ -142,6 +143,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 	err = si.players.UpsertDDPlayer(p)
 	if err != nil {
 		si.errorLog.Printf("socketio onLogin: %w", err)
+		s.Close()
 		return
 	}
 
