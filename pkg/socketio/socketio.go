@@ -38,7 +38,7 @@ const (
 
 type player struct {
 	sync.Mutex
-	websocketPlayer *websocket.Player
+	websocketPlayer *websocket.PlayerWithLock
 	PlayerID        int     `json:"player_id"`
 	PlayerName      string  `json:"player_name"`
 	GameTime        float64 `json:"game_time"`
@@ -177,7 +177,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 		return
 	}
 
-	websocketPlayer := websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName, Status: "Logged In"}
+	websocketPlayer := websocket.PlayerWithLock{Player: websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName, Status: "Logged In"}}
 
 	si.livePlayers.Store(s.ID(), &player{
 		websocketPlayer: &websocketPlayer,

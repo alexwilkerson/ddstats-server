@@ -16,8 +16,8 @@ type Hub struct {
 	CurrentID        uint
 	Register         chan *Client
 	Unregister       chan *Client
-	RegisterPlayer   chan *Player
-	UnregisterPlayer chan *Player
+	RegisterPlayer   chan *PlayerWithLock
+	UnregisterPlayer chan *PlayerWithLock
 	Players          *sync.Map
 	Rooms            map[string]map[*Client]bool
 	Broadcast        chan *Message
@@ -32,8 +32,8 @@ func NewHub() *Hub {
 		CurrentID:        1,
 		Register:         make(chan *Client),
 		Unregister:       make(chan *Client),
-		RegisterPlayer:   make(chan *Player),
-		UnregisterPlayer: make(chan *Player),
+		RegisterPlayer:   make(chan *PlayerWithLock),
+		UnregisterPlayer: make(chan *PlayerWithLock),
 		Players:          &sync.Map{},
 		Rooms:            rooms,
 		Broadcast:        make(chan *Message),
