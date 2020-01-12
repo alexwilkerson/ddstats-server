@@ -18,6 +18,8 @@ reflex -d none -c reflex.conf
 
 ## Things Left to Do...
 
+- [ ] authorization
+
 #### discord-bot commands
 
 _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
@@ -99,7 +101,7 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
       - daggers hit
       - enemies killed
       - accuracy
-    -
+      - etc, etc, etc... basically all of the player data
 - a function which runs every day at midnight which goes through the entire devil daggers backend, retrieves user information, stores it to the database. during the process of data collection, the function will analyze the informatiod and store the data to the database. it's possible that this function will be too expensive to process or take too much time, but hopefully it would work.
   - the function would run daily
   - possible daily data:
@@ -107,7 +109,6 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
     - how many players got a new score
     - how many new players
     - average improvement among players who got new scores
-    -
 
 ## Exporting data from SQLite3 database to PostgreSQL database
 

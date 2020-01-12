@@ -18,7 +18,6 @@ func (d *Discord) commandMe() {
 		cooldown:    5 * time.Second,
 		description: fmt.Sprintf("Get your personal stats. You must use %sregister [player id] before using the %sme command.", prefix, prefix),
 		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
-			d.infoLog.Println(m.Author.ID)
 			discordUser, err := d.DB.DiscordUsers.Select(m.Author.ID)
 			if err != nil {
 				if errors.Is(err, models.ErrNoDiscordUserFound) {
