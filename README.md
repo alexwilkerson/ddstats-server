@@ -155,3 +155,14 @@ select id, username as player_name, rank, game_time, death_type, gems, daggers_f
 .output live.csv
 select * from live;
 ```
+
+### importing csvs from app.db
+
+#### discord_users
+
+```sql
+.headers on
+.mode csv
+.output discord_users.csv
+select * from users;
+```
