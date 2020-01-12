@@ -10,7 +10,6 @@ import (
 
 const (
 	numTokensMinimum = 1
-	prefix           = "."
 )
 
 func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
