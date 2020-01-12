@@ -171,7 +171,7 @@ add overall_game_time: `UPDATE player SET overall_average_game_time=TRUNC(DIVZER
 select * from live;
 ```
 
-### importing csvs from app.db
+### discord bot database
 
 #### discord_users
 
