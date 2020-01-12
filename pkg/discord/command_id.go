@@ -20,6 +20,9 @@ func (d *Discord) commandID() {
 		args:        true,
 		aliases:     []string{"score", "pb"},
 		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
+			if len(args) == 0 {
+				return errorEmbed(fmt.Sprintf("Player ID must be an integer. %s", m.Author.Mention()))
+			}
 			id, err := strconv.Atoi(args[0])
 			if err != nil {
 				return errorEmbed(fmt.Sprintf("Player ID must be an integer. %s", m.Author.Mention()))

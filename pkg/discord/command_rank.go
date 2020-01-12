@@ -20,6 +20,9 @@ func (d *Discord) commandRank() {
 		args:        true,
 		aliases:     []string{"stats"},
 		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
+			if len(args) == 0 {
+				return errorEmbed(fmt.Sprintf("No Rank included. %s", m.Author.Mention()))
+			}
 			rank, err := strconv.Atoi(args[0])
 			if err != nil {
 				return errorEmbed(fmt.Sprintf("Player Rank must be an integer. %s", m.Author.Mention()))
