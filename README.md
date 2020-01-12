@@ -33,24 +33,6 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 - [x] search https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/search.js
 - [x] top https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/top.js
 
-#### socket-io stuff
-
-Currently working on possibly converting a lot of the socket-io stuff to websockets. In order to stay backward-compatible with older clients, socket.io may still have to be used for client and login. Ideally, we could have the client functioning with socket.io and everything else will be running with websockets. The only thing that needs to be updated at that point would be the Discord bot which is currently receiving information via socket.io. The website could then strictly use websockets. Then at a later date, the client could be updated to use websockets as that's going to be a lot of updates to the client, I'd rather not hinder this project with that work.
-
-- [ ] clear live table func
-- [ ] create get_live_users in /ddstats-bot namespace https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L344-L354
-- [ ] create on get_status in namespace /stats https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L331-L337
-- [ ] create game_submitted in namespace /stats https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L311-L328
-- [ ] create submit in namespace /stats https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L279-L308
-- [ ] create status_update https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L217-L222
-- [ ] create submit https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L224-L253
-- [ ] create game_submitted https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L255-L272
-- [ ] create disconnect https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L197-L206
-- [ ] create login https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L175-L194
-- [ ] create join in namespace /user-page https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L160-L172
-- [ ] create disconnect in namespace /user-page https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L138-L152
-- [ ] create a userList and playerDict https://github.com/alexwilkerson/ddstats/blob/master/socketio_main.py#L116-L118
-
 #### submission stuff
 
 - [x] finish the logic behind game submissions and filtering (i think this is done)
