@@ -47,23 +47,24 @@ type GameWithName struct {
 
 // Player struct is for players
 type Player struct {
-	ID                   int     `json:"player_id" db:"id"`
-	PlayerName           string  `json:"player_name" db:"player_name"`
-	Rank                 int     `json:"rank" db:"rank"`
-	GameTime             float64 `json:"game_time" db:"game_time"`
-	DeathType            string  `json:"death_type" db:"death_type"`
-	Gems                 int     `json:"gems" db:"gems"`
-	DaggersHit           int     `json:"daggers_hit" db:"daggers_hit"`
-	DaggersFired         int     `json:"daggers_fired" db:"daggers_fired"`
-	EnemiesKilled        int     `json:"enemies_killed" db:"enemies_killed"`
-	Accuracy             float64 `json:"accuracy" db:"accuracy"`
-	OverallTime          float64 `json:"overall_time" db:"overall_time"`
-	OverallDeaths        int     `json:"overall_deaths" db:"overall_deaths"`
-	OverallGems          int     `json:"overall_gems" db:"overall_gems"`
-	OverallEnemiesKilled int     `json:"overall_enemies_killed" db:"overall_enemies_killed"`
-	OverallDaggersHit    int     `json:"overall_daggers_hit" db:"overall_daggers_hit"`
-	OverallDaggersFired  int     `json:"overall_daggers_fired" db:"overall_daggers_fired"`
-	OverallAccuracy      float64 `json:"overall_accuracy" db:"overall_accuracy"`
+	ID                     int     `json:"player_id" db:"id"`
+	PlayerName             string  `json:"player_name" db:"player_name"`
+	Rank                   int     `json:"rank" db:"rank"`
+	GameTime               float64 `json:"game_time" db:"game_time"`
+	DeathType              string  `json:"death_type" db:"death_type"`
+	Gems                   int     `json:"gems" db:"gems"`
+	DaggersHit             int     `json:"daggers_hit" db:"daggers_hit"`
+	DaggersFired           int     `json:"daggers_fired" db:"daggers_fired"`
+	EnemiesKilled          int     `json:"enemies_killed" db:"enemies_killed"`
+	Accuracy               float64 `json:"accuracy" db:"accuracy"`
+	OverallGameTime        float64 `json:"overall_game_time" db:"overall_game_time"`
+	OverallAverageGameTime float64 `json:"overall_average_game_time" db:"overall_average_game_time"`
+	OverallDeaths          int     `json:"overall_deaths" db:"overall_deaths"`
+	OverallGems            int     `json:"overall_gems" db:"overall_gems"`
+	OverallEnemiesKilled   int     `json:"overall_enemies_killed" db:"overall_enemies_killed"`
+	OverallDaggersHit      int     `json:"overall_daggers_hit" db:"overall_daggers_hit"`
+	OverallDaggersFired    int     `json:"overall_daggers_fired" db:"overall_daggers_fired"`
+	OverallAccuracy        float64 `json:"overall_accuracy" db:"overall_accuracy"`
 }
 
 // State struct is for State
