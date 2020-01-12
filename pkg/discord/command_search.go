@@ -39,7 +39,7 @@ func (d *Discord) commandSearch() {
 			if len(players) == 1 {
 				return &discordgo.MessageEmbed{
 					Title:       fmt.Sprintf("%s (%d)", player.PlayerName, player.PlayerID),
-					Description: fmt.Sprintf("Rank %d", player.Rank),
+					Description: fmt.Sprintf("`Rank %d`", player.Rank),
 					Color:       defaultColor,
 					Footer: &discordgo.MessageEmbedFooter{
 						Text:    "ddstats.com",

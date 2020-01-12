@@ -87,7 +87,7 @@ CREATE TABLE IF NOT EXISTS message_of_the_day (
 );
 
 CREATE TABLE IF NOT EXISTS discord_user (
-  discord_id INTEGER PRIMARY KEY,
+  discord_id TEXT PRIMARY KEY,
   dd_id INTEGER NOT NULL DEFAULT 0,
   verified BOOLEAN NOT NULL DEFAULT FALSE
 );

@@ -54,7 +54,7 @@ func (d *Discord) commandMe() {
 					Text:    "ddstats.com",
 					IconURL: iconURL,
 				},
-				Description: fmt.Sprintf("Rank %d", player.Rank),
+				Description: fmt.Sprintf("`Rank %d`", player.Rank),
 				Fields:      fieldsFromPlayer(player),
 			}
 		},
