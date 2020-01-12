@@ -16,6 +16,7 @@ import (
 
 const (
 	ddstatsChannelName = "ddstats"
+	prefix             = "."
 )
 
 type Discord struct {
