@@ -23,7 +23,7 @@ reflex -d none -c reflex.conf
 _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 - [ ] make notification function
-- [ ] global https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/global.js
+- [x] global https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/global.js
 - [ ] help https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/help.js
 - [x] id https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/id.js
 - [x] live https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/live.js

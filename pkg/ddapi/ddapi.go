@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"sort"
 	"strconv"
+	"strings"
 )
 
 const (
@@ -27,6 +28,8 @@ var (
 	ErrPlayerNotFound = errors.New("player not found")
 	// ErrNoPlayersFound is returned when user search produces no users
 	ErrNoPlayersFound = errors.New("no players found")
+	// ErrStatusCode is returned when the Devil Daggers server responds with an error
+	ErrStatusCode = errors.New("error getting a response from the Devil Daggers API")
 )
 
 // API is used as an abstraction and to inject the client into the ddapi package
@@ -35,6 +38,7 @@ type API struct {
 	Watcher *Watcher
 }
 
+// NewAPI returns an API struct
 func NewAPI(client *http.Client) *API {
 	return &API{
 		Client:  client,
@@ -108,7 +112,7 @@ func (api *API) UserByID(id int) (*Player, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, err
+		return nil, ErrStatusCode
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -138,7 +142,7 @@ func (api *API) UserByRank(rank int) (*Player, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, err
+		return nil, ErrStatusCode
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -171,7 +175,7 @@ func (api *API) GetLeaderboard(limit, offset int) (*Leaderboard, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, err
+		return nil, ErrStatusCode
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -193,6 +197,7 @@ func (api *API) UserSearch(name string) ([]*Player, error) {
 	// longer than 16 characters. This truncates the name to 16 characters and
 	// does a partial match, hopefully finding the intended user. If not, will
 	// return the intended user and any other user which matches the substring.
+	name = strings.TrimSpace(name)
 	if len(name) > 16 {
 		name = name[:16]
 	}
@@ -204,7 +209,7 @@ func (api *API) UserSearch(name string) ([]*Player, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, err
+		return nil, ErrStatusCode
 	}
 
 	bodyBytes, err := ioutil.ReadAll(resp.Body)
@@ -274,7 +279,7 @@ func bytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
 	leaderboard.GlobalDaggersHit = toUint64(b, 51)
 	leaderboard.GlobalDaggersFired = toUint64(b, 27)
 	if leaderboard.GlobalDaggersFired > 0 {
-		leaderboard.GlobalAccuracy = float64(leaderboard.GlobalDaggersHit) / float64(leaderboard.GlobalDaggersFired)
+		leaderboard.GlobalAccuracy = float64(leaderboard.GlobalDaggersHit) / float64(leaderboard.GlobalDaggersFired) * 100
 	}
 	leaderboard.GlobalPlayerCount = toInt32(b, 75)
 

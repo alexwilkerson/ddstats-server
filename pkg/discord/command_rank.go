@@ -28,6 +28,10 @@ func (d *Discord) commandRank() {
 			// API won't find users if the there are more than 2 spaces in their name
 			player, err := d.ddAPI.UserByRank(rank)
 			if err != nil {
+				if errors.Is(err, ddapi.ErrStatusCode) {
+					d.errorLog.Printf("%w", err)
+					return errorEmbed(fmt.Sprintf("Unable to access the Devil Daggers API. %s", m.Author.Mention()))
+				}
 				if errors.Is(err, ddapi.ErrPlayerNotFound) {
 					return errorEmbed(fmt.Sprintf("No players were found for Player Rank %d. %s", rank, m.Author.Mention()))
 				}

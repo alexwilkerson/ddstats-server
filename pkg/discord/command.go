@@ -42,6 +42,7 @@ func (d *Discord) registerCommands() {
 	d.commandSearch()
 	d.commandID()
 	d.commandRank()
+	d.commandGlobal()
 }
 
 func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {

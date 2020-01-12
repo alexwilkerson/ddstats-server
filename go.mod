@@ -13,5 +13,6 @@ require (
 	github.com/lib/pq v1.3.0
 	golang.org/x/crypto v0.0.0-20200109152110-61a87790db17 // indirect
 	golang.org/x/sys v0.0.0-20200107162124-548cf772de50 // indirect
+	golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2
 	gopkg.in/guregu/null.v3 v3.4.0
 )

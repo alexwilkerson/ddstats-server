@@ -55,7 +55,7 @@ func (d *Discord) Start() error {
 	if err != nil {
 		return err
 	}
-	err = d.Session.UpdateListeningStatus("666")
+	err = d.Session.UpdateStatusComplex(discordgo.UpdateStatusData{Game: &discordgo.Game{Name: ".help | ddstats.com"}})
 	if err != nil {
 		return err
 	}

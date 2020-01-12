@@ -24,10 +24,12 @@ func (d *Discord) commandID() {
 			if err != nil {
 				return errorEmbed(fmt.Sprintf("Player ID must be an integer. %s", m.Author.Mention()))
 			}
-			// This clips the args down to a length of 3 because for whatever reason the Devil Daggers
-			// API won't find users if the there are more than 2 spaces in their name
 			player, err := d.ddAPI.UserByID(id)
 			if err != nil {
+				if errors.Is(err, ddapi.ErrStatusCode) {
+					d.errorLog.Printf("%w", err)
+					return errorEmbed(fmt.Sprintf("Unable to access the Devil Daggers API. %s", m.Author.Mention()))
+				}
 				if errors.Is(err, ddapi.ErrPlayerNotFound) {
 					return errorEmbed(fmt.Sprintf("No players were found for Player ID %d. %s", id, m.Author.Mention()))
 				}
@@ -36,6 +38,7 @@ func (d *Discord) commandID() {
 			}
 			return &discordgo.MessageEmbed{
 				Title: fmt.Sprintf("%s (%d)", player.PlayerName, player.PlayerID),
+				Color: defaultColor,
 				Footer: &discordgo.MessageEmbedFooter{
 					Text:    "ddstats.com",
 					IconURL: iconURL,
