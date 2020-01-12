@@ -1,7 +1,6 @@
 package discord
 
 import (
-	"fmt"
 	"sort"
 	"time"
 
@@ -47,6 +46,7 @@ func (d *Discord) registerCommands() {
 	d.commandGlobal()
 	d.commandHelp()
 	d.commandMe()
+	d.commandRegister()
 }
 
 func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {
@@ -55,12 +55,12 @@ func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {
 		newEmbedField("Time", p.Sprintf("%.4fs", player.GameTime), true),
 		newEmbedField("Enemies Killed", p.Sprintf("%d", int(player.EnemiesKilled)), true),
 		newEmbedField("Gems", p.Sprintf("%d", int(player.Gems)), true),
-		newEmbedField("Accuracy", fmt.Sprintf("%.2f%%", player.Accuracy), true),
+		newEmbedField("Accuracy", p.Sprintf("%.2f%%", player.Accuracy), true),
 		newEmbedField("Death Type", player.DeathType, true),
 		newEmbedField("Overall Time", p.Sprintf("%.4fs", player.OverallTime), true),
 		newEmbedField("Overall Time (in days)", p.Sprintf("%.1f days", player.OverallTime/secondsInDay), true),
 		newEmbedField("Overall Enemies Killed", p.Sprintf("%d", int(player.OverallEnemiesKilled)), true),
-		newEmbedField("Overall Accuracy", fmt.Sprintf("%.2f%%", player.OverallAccuracy), true),
+		newEmbedField("Overall Accuracy", p.Sprintf("%.2f%%", player.OverallAccuracy), true),
 		newEmbedField("Overall Deaths", p.Sprintf("%d", int(player.OverallDeaths)), true),
 	}
 }

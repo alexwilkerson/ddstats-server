@@ -42,13 +42,14 @@ func (d *Discord) commandRank() {
 				return errorEmbed(fmt.Sprintf("Some error occurred while calling !id. %s", m.Author.Mention()))
 			}
 			return &discordgo.MessageEmbed{
-				Title: fmt.Sprintf("%s (%d)", player.PlayerName, player.PlayerID),
+				Title:       fmt.Sprintf("%s (%d)", player.PlayerName, player.PlayerID),
+				Description: fmt.Sprintf("`Rank %d`", player.Rank),
+				Color:       defaultColor,
 				Footer: &discordgo.MessageEmbedFooter{
 					Text:    "ddstats.com",
 					IconURL: iconURL,
 				},
-				Description: fmt.Sprintf("Rank %d", player.Rank),
-				Fields:      fieldsFromPlayer(player),
+				Fields: fieldsFromPlayer(player),
 			}
 		},
 	}
