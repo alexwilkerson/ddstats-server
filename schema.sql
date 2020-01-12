@@ -1,8 +1,10 @@
-DROP TABLE game;
-DROP TABLE state;
-DROP TABLE player;
-DROP TABLE live;
+DROP TABLE message_of_the_day
+DROP TABLE death_type;
 DROP TABLE spawnset;
+DROP TABLE live;
+DROP TABLE player;
+DROP TABLE state;
+DROP TABLE game;
 
 CREATE TABLE IF NOT EXISTS game (
   id BIGSERIAL PRIMARY KEY NOT NULL,
@@ -82,6 +84,11 @@ CREATE TABLE IF NOT EXISTS message_of_the_day (
   id SERIAL PRIMARY KEY NOT NULL,
   created TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   message VARCHAR(67)
+);
+
+CREATE TABLE IF NOT EXISTS discord_users (
+  discord_id INTEGER PRIMARY KEY,
+  dd_id INTEGER NOT NULL DEFAULT 0
 );
 
 -- below are POSTGRES helper functions to make dealing with the database easier --
