@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"sort"
 	"strconv"
 	"time"
 
@@ -43,6 +44,7 @@ func (d *Discord) registerCommands() {
 	d.commandID()
 	d.commandRank()
 	d.commandGlobal()
+	d.commandHelp()
 }
 
 func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {
@@ -78,4 +80,16 @@ func errorEmbed(e string) *discordgo.MessageEmbed {
 			IconURL: iconURL,
 		},
 	}
+}
+
+func (d *Discord) getCommands() []string {
+	var commands []string
+	d.commands.Range(func(k interface{}, v interface{}) bool {
+		if k.(string) == (*v.(*Command)).name {
+			commands = append(commands, k.(string))
+		}
+		return true
+	})
+	sort.Strings(commands)
+	return commands
 }
