@@ -21,7 +21,7 @@ func (d *Discord) commandID() {
 		aliases:     []string{"score", "pb"},
 		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
 			if len(args) == 0 {
-				return errorEmbed(fmt.Sprintf("Player ID must be an integer. %s", m.Author.Mention()))
+				return errorEmbed(fmt.Sprintf("No Player ID included. %s", m.Author.Mention()))
 			}
 			id, err := strconv.Atoi(args[0])
 			if err != nil {

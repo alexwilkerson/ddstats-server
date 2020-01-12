@@ -3,11 +3,12 @@ package discord
 import (
 	"fmt"
 	"sort"
-	"strconv"
 	"time"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/bwmarrin/discordgo"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 const (
@@ -45,20 +46,22 @@ func (d *Discord) registerCommands() {
 	d.commandRank()
 	d.commandGlobal()
 	d.commandHelp()
+	d.commandMe()
 }
 
 func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {
+	p := message.NewPrinter(language.English)
 	return []*discordgo.MessageEmbedField{
-		newEmbedField("Time", fmt.Sprintf("%.4fs", player.GameTime), true),
-		newEmbedField("Enemies Killed", strconv.Itoa(int(player.EnemiesKilled)), true),
-		newEmbedField("Gems", strconv.Itoa(int(player.Gems)), true),
+		newEmbedField("Time", p.Sprintf("%.4fs", player.GameTime), true),
+		newEmbedField("Enemies Killed", p.Sprintf("%d", int(player.EnemiesKilled)), true),
+		newEmbedField("Gems", p.Sprintf("%d", int(player.Gems)), true),
 		newEmbedField("Accuracy", fmt.Sprintf("%.2f%%", player.Accuracy), true),
 		newEmbedField("Death Type", player.DeathType, true),
-		newEmbedField("Overall Time", fmt.Sprintf("%.4fs", player.OverallTime), true),
-		newEmbedField("Overall Time (in days)", fmt.Sprintf("%.1f days", player.OverallTime/secondsInDay), true),
-		newEmbedField("Overall Enemies Killed", strconv.Itoa(int(player.OverallEnemiesKilled)), true),
+		newEmbedField("Overall Time", p.Sprintf("%.4fs", player.OverallTime), true),
+		newEmbedField("Overall Time (in days)", p.Sprintf("%.1f days", player.OverallTime/secondsInDay), true),
+		newEmbedField("Overall Enemies Killed", p.Sprintf("%d", int(player.OverallEnemiesKilled)), true),
 		newEmbedField("Overall Accuracy", fmt.Sprintf("%.2f%%", player.OverallAccuracy), true),
-		newEmbedField("Overall Deaths", strconv.Itoa(int(player.OverallDeaths)), true),
+		newEmbedField("Overall Deaths", p.Sprintf("%d", int(player.OverallDeaths)), true),
 	}
 }
 
