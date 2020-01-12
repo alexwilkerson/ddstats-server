@@ -1,9 +1,11 @@
 package discord
 
 import (
+	"errors"
 	"fmt"
 	"time"
 
+	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 	"github.com/bwmarrin/discordgo"
 )
 
@@ -17,7 +19,10 @@ func (d *Discord) commandTop() {
 		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
 			leaderboard, err := d.ddAPI.GetLeaderboard(10, 0)
 			if err != nil {
-				// TODO: return MessageEmbed error
+				if errors.Is(err, ddapi.ErrStatusCode) {
+					d.errorLog.Printf("%w", err)
+					return errorEmbed(fmt.Sprintf("Unable to access the Devil Daggers API. %s", m.Author.Mention()))
+				}
 				d.errorLog.Printf("%w", err)
 				return nil
 			}
