@@ -22,7 +22,6 @@ reflex -d none -c reflex.conf
 
 _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
-- [ ] make notification function
 - [x] global https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/global.js
 - [x] help https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/help.js
 - [x] id https://github.com/alexwilkerson/ddstats-discord-bot/blob/master/commands/id.js
@@ -36,6 +35,13 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 #### submission stuff
 
 - [x] finish the logic behind game submissions and filtering (i think this is done)
+
+#### live notification functionality
+
+- [ ] verify & fix bugs in client that relate to game submissions https://github.com/alexwilkerson/ddstats-go/blob/master/net.go#L80-L86
+- [ ] create socket.io listener for `game_submitted` function which has arguments (`gameID int`, `notifyPlayerBest bool`, `notifyAbove1000 bool`)
+- [ ] create discord bot listener which runs in its own goroutine and has channels for notifying player best and notifying when player is above 1000
+- [ ] create connection between socket.io -> websocket -> discord for player best and above 1000 notifications
 
 ### TODO: endpoints
 
@@ -78,6 +84,30 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 - [x] GET api/v2/ddapi/get_user_by_id?id={int}
 - [x] GET api/v2/ddapi/user_search?user={string}
 - [x] GET api/v2/ddapi/get_scores?offset={int}&limit={int}
+
+## Experimental stuff
+
+- store daily data about ddstats users
+  - each day, download their information to the database
+  - end goal would be to eventually show stats over a period of time so users could continuously track their improvement day-to-day
+  - possible daily data:
+    - all data for that day
+      - play time
+      - number of deaths
+      - gems
+      - daggers fired
+      - daggers hit
+      - enemies killed
+      - accuracy
+    -
+- a function which runs every day at midnight which goes through the entire devil daggers backend, retrieves user information, stores it to the database. during the process of data collection, the function will analyze the informatiod and store the data to the database. it's possible that this function will be too expensive to process or take too much time, but hopefully it would work.
+  - the function would run daily
+  - possible daily data:
+    - users active for that day
+    - how many players got a new score
+    - how many new players
+    - average improvement among players who got new scores
+    -
 
 ## Exporting data from SQLite3 database to PostgreSQL database
 
@@ -126,8 +156,10 @@ select * from spawnset;
 .headers on
 .mode csv
 .output player.csv
-select id, username as player_name, rank, game_time, death_type, gems, daggers_fired, daggers_hit, enemies_killed, accuracy, time_total as overall_time, deaths_total as overall_deaths, gems_total as overall_gems, enemies_killed_total as overall_enemies_killed, daggers_fired_total as overall_daggers_fired, daggers_hit_total as overall_daggers_hit, accuracy_total as overall_accuracy from user;
+select id, username as player_name, rank, game_time, death_type, gems, daggers_fired, daggers_hit, enemies_killed, accuracy, time_total as overall_game_time, deaths_total as overall_deaths, gems_total as overall_gems, enemies_killed_total as overall_enemies_killed, daggers_fired_total as overall_daggers_fired, daggers_hit_total as overall_daggers_hit, accuracy_total as overall_accuracy from user;
 ```
+
+add overall_game_time: `UPDATE player SET overall_average_game_time=TRUNC(DIVZERO(overall_game_time, overall_deaths)::numeric, 4);`
 
 #### live
 
