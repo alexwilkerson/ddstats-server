@@ -9,6 +9,8 @@ import (
 
 //ErrNoRecord will be returned when DB record not found
 var ErrNoRecord = errors.New("no record found")
+var ErrNoDiscordUserFound = errors.New("no entry associated with that discord ID")
+var ErrDiscordUserVerified = errors.New("discord user is verified so cannot update their values")
 
 //Game record representation
 type Game struct {
@@ -158,4 +160,10 @@ type MOTD struct {
 	ID      int       `json:"id" db:"id"`
 	Created time.Time `json:"created" db:"created"`
 	Message string    `json:"motd" db:"message"`
+}
+
+type DiscordUser struct {
+	DiscordID string `db:"discord_id"`
+	DDID      int    `db:"dd_id"`
+	Verified  bool   `db:"verified"`
 }

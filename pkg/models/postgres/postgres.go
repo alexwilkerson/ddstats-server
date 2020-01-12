@@ -12,6 +12,7 @@ type Postgres struct {
 	Players        *PlayerModel
 	SubmittedGames *SubmittedGameModel
 	MOTD           *MOTDModel
+	DiscordUsers   *DiscordUserModel
 }
 
 func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
@@ -21,5 +22,6 @@ func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
 		Players:        &PlayerModel{DB: db},
 		SubmittedGames: &SubmittedGameModel{DB: db, Client: client},
 		MOTD:           &MOTDModel{DB: db},
+		DiscordUsers:   &DiscordUserModel{DB: db},
 	}
 }

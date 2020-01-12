@@ -5,6 +5,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+
 	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
 
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
@@ -18,6 +20,7 @@ const (
 
 type Discord struct {
 	Session         *discordgo.Session
+	DB              *postgres.Postgres
 	ddAPI           *ddapi.API
 	websocketHub    *websocket.Hub
 	commands        *sync.Map
@@ -26,13 +29,14 @@ type Discord struct {
 	errorLog        *log.Logger
 }
 
-func New(token string, ddAPI *ddapi.API, websocketHub *websocket.Hub, infoLog, errorLog *log.Logger) (*Discord, error) {
+func New(token string, db *postgres.Postgres, ddAPI *ddapi.API, websocketHub *websocket.Hub, infoLog, errorLog *log.Logger) (*Discord, error) {
 	session, err := discordgo.New("Bot " + token)
 	if err != nil {
 		return nil, err
 	}
 	discord := Discord{
 		Session:         session,
+		DB:              db,
 		ddAPI:           ddAPI,
 		websocketHub:    websocketHub,
 		commands:        &sync.Map{},
