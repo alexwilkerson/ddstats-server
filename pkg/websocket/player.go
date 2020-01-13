@@ -18,13 +18,12 @@ type PlayerWithLock struct {
 }
 
 func (hub *Hub) LivePlayers() []Player {
-	return toPlayerSlice(hub.Players)
-}
-
-func toPlayerSlice(m *sync.Map) []Player {
 	players := []Player{}
-	m.Range(func(k interface{}, v interface{}) bool {
-		players = append(players, (*k.(*PlayerWithLock)).Player)
+	hub.Players.Range(func(k interface{}, v interface{}) bool {
+		player := k.(*PlayerWithLock)
+		player.Lock()
+		players = append(players, player.Player)
+		player.Unlock()
 		return true
 	})
 	return players
