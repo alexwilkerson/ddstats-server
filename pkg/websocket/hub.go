@@ -112,7 +112,7 @@ func (hub *Hub) Start() {
 				message, err := NewMessage(client.Room, "player_logged_in", struct {
 					Players []Player `json:"players"`
 				}{
-					Players: toPlayerSlice(hub.Players),
+					Players: hub.LivePlayers(),
 				})
 				if err != nil {
 					fmt.Println(err)
@@ -130,7 +130,7 @@ func (hub *Hub) Start() {
 				message, err := NewMessage(liveRoom, "player_logged_off", struct {
 					Players []Player `json:"players"`
 				}{
-					Players: toPlayerSlice(hub.Players),
+					Players: hub.LivePlayers(),
 				})
 				if err != nil {
 					fmt.Println(err)
@@ -154,7 +154,7 @@ func (hub *Hub) Start() {
 				message, err := NewMessage(liveRoom, "player_list", struct {
 					Players []Player `json:"players"`
 				}{
-					Players: toPlayerSlice(hub.Players),
+					Players: hub.LivePlayers(),
 				})
 				if err != nil {
 					fmt.Println(err)
