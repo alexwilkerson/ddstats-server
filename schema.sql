@@ -1,4 +1,5 @@
-DROP TABLE message_of_the_day
+DROP TABLE release;
+DROP TABLE message_of_the_day;
 DROP TABLE death_type;
 DROP TABLE spawnset;
 DROP TABLE live;
@@ -96,9 +97,16 @@ CREATE TABLE IF NOT EXISTS discord_user (
 
 CREATE TABLE IF NOT EXISTS release (
   version TEXT PRIMARY KEY NOT NULL,
-  released TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT TO_TIMESTAMP(0),
-  release_notes TEXT NOT NULL DEFAULT '',
-  file_name TEXT NOT NULL
+  time_stamp TIMESTAMP WITH TIME ZONE,
+  body TEXT NOT NULL DEFAULT '',
+  file_name TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS news (
+  id SERIAL PRIMARY KEY,
+  time_stamp TIMESTAMP WITH TIME ZONE,
+  title TEXT NOT NULL DEFAULT '',
+  body TEXT NOT NULL DEFAULT ''
 );
 
 -- below are POSTGRES helper functions to make dealing with the database easier --
