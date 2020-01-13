@@ -48,9 +48,9 @@ func main() {
 	// TODO: set up client appropriately
 	client := &http.Client{}
 
-	websocketHub := websocket.NewHub()
-
 	postgresDB := postgres.NewPostgres(client, db)
+
+	websocketHub := websocket.NewHub(postgresDB)
 
 	ddAPI := ddapi.NewAPI(client)
 

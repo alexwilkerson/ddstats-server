@@ -38,12 +38,15 @@ const (
 
 type player struct {
 	sync.Mutex
-	websocketPlayer *websocket.PlayerWithLock
-	PlayerID        int     `json:"player_id"`
-	PlayerName      string  `json:"player_name"`
-	GameTime        float64 `json:"game_time"`
-	DeathType       int     `json:"death_type"`
-	IsReplay        bool    `json:"is_replay"`
+	websocketPlayer   *websocket.PlayerWithLock
+	PlayerID          int     `json:"player_id"`
+	PlayerName        string  `json:"player_name"`
+	BestGameTime      float64 `json:"best_game_time"`
+	GameTime          float64 `json:"game_time"`
+	DeathType         int     `json:"death_type"`
+	IsReplay          bool    `json:"is_replay"`
+	bestTimeNotified  bool
+	above1000Notified bool
 }
 
 func (p *player) getStatus() string {
@@ -109,6 +112,7 @@ func (si *sio) routes(server *socketio.Server) {
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
 	server.OnEvent(defaultNamespace, "status_update", si.onStatusUpdate)
+	server.OnEvent(defaultNamespace, "game_submitted", si.onGameSubmitted)
 }
 
 // i don't know what this function should do
@@ -119,13 +123,14 @@ func (si *sio) onConnect(s socketio.Conn) error {
 }
 
 func (si *sio) onDisconnect(s socketio.Conn, msg string) {
-	p, ok := si.livePlayers.Load(s.ID())
+	v, ok := si.livePlayers.Load(s.ID())
 	if !ok {
 		si.errorLog.Println("socketio onDisconnect: could not load player from livePlayers map")
 		return
 	}
+	player := v.(*player)
 	si.livePlayers.Delete(s.ID())
-	si.websocketHub.UnregisterPlayer <- p.(*player).websocketPlayer
+	si.websocketHub.UnregisterPlayer <- player.websocketPlayer
 	si.infoLog.Println(s.ID(), "disconnected")
 	return
 }
@@ -161,6 +166,37 @@ func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
 	player.Unlock()
 }
 
+func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, notifyAbove1000 bool) {
+	v, ok := si.livePlayers.Load(s.ID())
+	if !ok {
+		return
+	}
+	player := v.(*player)
+	game, err := si.games.Get(gameID)
+	if err != nil {
+		si.errorLog.Printf("%+v", err)
+	}
+	if notifyPlayerBest && game.GameTime > player.BestGameTime {
+		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestSubmitted{
+			PlayerName:       player.PlayerName,
+			GameID:           gameID,
+			GameTime:         game.GameTime,
+			PreviousGameTime: player.BestGameTime,
+		}
+	}
+	if notifyAbove1000 && game.GameTime > 1000 {
+		si.websocketHub.DiscordBroadcast <- &websocket.PlayerDied{
+			PlayerName: player.PlayerName,
+			GameID:     gameID,
+			GameTime:   game.GameTime,
+			DeathType:  game.DeathType,
+		}
+	}
+	// reset to false so that new notifications can happen
+	player.bestTimeNotified = false
+	player.above1000Notified = false
+}
+
 func (si *sio) onLogin(s socketio.Conn, id int) {
 	start := time.Now()
 	// -1 is sent when there is an error in the client
@@ -183,6 +219,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 		websocketPlayer: &websocketPlayer,
 		PlayerID:        int(p.PlayerID),
 		PlayerName:      p.PlayerName,
+		BestGameTime:    p.GameTime,
 		GameTime:        0,
 		DeathType:       -2, // IN MENU
 		IsReplay:        false,
@@ -244,6 +281,22 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		return
 	}
 	si.websocketHub.Broadcast <- websocketMessage
+	// if the notification hasn't yet happened and a player beats their previous score,
+	if notifyPlayerBest && !player.bestTimeNotified && gameTime < player.BestGameTime {
+		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestReached{
+			PlayerID:         player.PlayerID,
+			PlayerName:       player.PlayerName,
+			PreviousGameTime: player.BestGameTime,
+		}
+		player.bestTimeNotified = true
+	}
+	if notifyAbove1000 && !player.above1000Notified && gameTime >= 1000 {
+		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAbove1000{
+			PlayerID:   player.PlayerID,
+			PlayerName: player.PlayerName,
+		}
+		player.above1000Notified = true
+	}
 }
 
 func (si *sio) onError(s socketio.Conn, err error) {

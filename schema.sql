@@ -8,6 +8,7 @@ DROP TABLE game;
 
 CREATE TABLE IF NOT EXISTS game (
   id BIGSERIAL PRIMARY KEY NOT NULL,
+  recorded TIMESTAMP WITH TIME ZONE,
   player_id BIGINT NOT NULL,
   granularity INTEGER NOT NULL,
   game_time DOUBLE PRECISION NOT NULL,
@@ -91,6 +92,13 @@ CREATE TABLE IF NOT EXISTS discord_user (
   discord_id TEXT PRIMARY KEY,
   dd_id INTEGER NOT NULL DEFAULT 0,
   verified BOOLEAN NOT NULL DEFAULT FALSE
+);
+
+CREATE TABLE IF NOT EXISTS release (
+  version TEXT PRIMARY KEY NOT NULL,
+  released TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT TO_TIMESTAMP(0),
+  release_notes TEXT NOT NULL DEFAULT '',
+  file_name TEXT NOT NULL
 );
 
 -- below are POSTGRES helper functions to make dealing with the database easier --

@@ -41,9 +41,9 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 #### live notification functionality
 
 - [ ] verify & fix bugs in client that relate to game submissions https://github.com/alexwilkerson/ddstats-go/blob/master/net.go#L80-L86
-- [ ] create socket.io listener for `game_submitted` function which has arguments (`gameID int`, `notifyPlayerBest bool`, `notifyAbove1000 bool`)
-- [ ] create discord bot listener which runs in its own goroutine and has channels for notifying player best and notifying when player is above 1000
-- [ ] create connection between socket.io -> websocket -> discord for player best and above 1000 notifications
+- [x] create socket.io listener for `game_submitted` function which has arguments (`gameID int`, `notifyPlayerBest bool`, `notifyAbove1000 bool`)
+- [x] create discord bot listener which runs in its own goroutine and has channels for notifying player best and notifying when player is above 1000
+- [x] create connection between socket.io -> websocket -> discord for player best and above 1000 notifications
 
 ### TODO: endpoints
 
@@ -55,7 +55,7 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 - [x] create table in database for motd
 - [ ] GET api/v2/client/releases?page_size={int}&page_num={int}
 - [ ] GET api/v2/client/download?version={string}
-- [ ] create database in table for client version/filename
+- [ ] create table for client releases
 - [ ] GET api/v2/news?page_size={int}&page_num={int}
 - [ ] create table in database for news
 

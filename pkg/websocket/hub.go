@@ -4,40 +4,81 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+
+	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
 )
 
 const (
 	liveRoom = "live"
 )
 
+type PlayerBestReached struct {
+	PlayerID         int
+	PlayerName       string
+	PreviousGameTime float64
+}
+
+type PlayerBestSubmitted struct {
+	PlayerName       string
+	GameID           int
+	GameTime         float64
+	PreviousGameTime float64
+}
+
+type PlayerAbove1000 struct {
+	PlayerID   int
+	PlayerName string
+}
+
+type PlayerDied struct {
+	PlayerName string
+	GameID     int
+	GameTime   float64
+	DeathType  string
+}
+
 // Hub is the struct which holds the internal communication channels
 // for communication with websockets
 type Hub struct {
-	CurrentID        uint
-	Register         chan *Client
-	Unregister       chan *Client
-	RegisterPlayer   chan *PlayerWithLock
-	UnregisterPlayer chan *PlayerWithLock
-	Players          *sync.Map
-	Rooms            map[string]map[*Client]bool
-	Broadcast        chan *Message
-	quit             chan struct{}
+	DB                  *postgres.Postgres
+	CurrentID           uint
+	Register            chan *Client
+	Unregister          chan *Client
+	RegisterPlayer      chan *PlayerWithLock
+	UnregisterPlayer    chan *PlayerWithLock
+	SubmitGame          chan int
+	DiscordBroadcast    chan interface{}
+	PlayerBestReached   chan *PlayerBestReached
+	PlayerBestSubmitted chan *PlayerBestSubmitted
+	PlayerAbove1000     chan *PlayerAbove1000
+	PlayerDied          chan *PlayerDied
+	Players             *sync.Map
+	Rooms               map[string]map[*Client]bool
+	Broadcast           chan *Message
+	quit                chan struct{}
 }
 
 // NewHub returns a Hub
-func NewHub() *Hub {
+func NewHub(db *postgres.Postgres) *Hub {
 	rooms := make(map[string]map[*Client]bool)
 	rooms[liveRoom] = make(map[*Client]bool)
 	return &Hub{
-		CurrentID:        1,
-		Register:         make(chan *Client),
-		Unregister:       make(chan *Client),
-		RegisterPlayer:   make(chan *PlayerWithLock),
-		UnregisterPlayer: make(chan *PlayerWithLock),
-		Players:          &sync.Map{},
-		Rooms:            rooms,
-		Broadcast:        make(chan *Message),
-		quit:             make(chan struct{}),
+		DB:                  db,
+		CurrentID:           1,
+		Register:            make(chan *Client),
+		Unregister:          make(chan *Client),
+		RegisterPlayer:      make(chan *PlayerWithLock),
+		UnregisterPlayer:    make(chan *PlayerWithLock),
+		SubmitGame:          make(chan int),
+		DiscordBroadcast:    make(chan interface{}),
+		PlayerBestReached:   make(chan *PlayerBestReached),
+		PlayerBestSubmitted: make(chan *PlayerBestSubmitted),
+		PlayerAbove1000:     make(chan *PlayerAbove1000),
+		PlayerDied:          make(chan *PlayerDied),
+		Players:             &sync.Map{},
+		Rooms:               rooms,
+		Broadcast:           make(chan *Message),
+		quit:                make(chan struct{}),
 	}
 }
 
@@ -46,6 +87,25 @@ func NewHub() *Hub {
 func (hub *Hub) Start() {
 	for {
 		select {
+		case gameID := <-hub.SubmitGame:
+			_ = gameID
+			game, err := hub.DB.Games.Get(gameID)
+			if err != nil {
+				fmt.Println(err)
+				break
+			}
+			for client := range hub.Rooms[liveRoom] {
+				message, err := NewMessage(client.Room, "game_submitted", game)
+				if err != nil {
+					fmt.Println(err)
+					break
+				}
+				err = client.Conn.WriteJSON(message)
+				if err != nil {
+					fmt.Println(err)
+					break
+				}
+			}
 		case player := <-hub.RegisterPlayer:
 			hub.Players.Store(player, true)
 			for client := range hub.Rooms[liveRoom] {
