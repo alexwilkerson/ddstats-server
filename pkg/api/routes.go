@@ -46,6 +46,9 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 
 	mux.Get("/ws", http.HandlerFunc(api.serveWebsocket))
 
+	fileServer := http.FileServer(http.Dir("./ui/static/"))
+	mux.Get("/static/", http.StripPrefix("/static", fileServer))
+
 	// Why? Well, because the pat application only accounts for REST requests,
 	// so if the server receives anything else (such as a websocket request),
 	// there's no way to register it.. these three lines will match the /socket-io/
