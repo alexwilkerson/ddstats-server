@@ -6,8 +6,6 @@
 
 Date : 2020-01-12 21:02:43
 
-Directory /Users/awilkerson/go/src/github.com/alexwilkerson/ddstats-api
-
 Total : 42 files, 3887 codes, 176 comments, 528 blanks, all 4591 lines
 
 ### Languages
