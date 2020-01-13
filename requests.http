@@ -30,7 +30,7 @@ GET http://localhost:5000/api/v2/game/enemies_alive?id=20
 ### get a list of game states with game time and enemies killed
 GET http://localhost:5000/api/v2/game/enemies_killed?id=20
 ###
-GET http://localhost:5000/api/v2/player?id=230
+GET http://localhost:5000/api/v2/player?id=229
 ###
 GET http://localhost:5000/api/v2/player/update?id=230
 ###
@@ -39,6 +39,10 @@ GET http://localhost:5000/api/v2/player/all?page_size=9&page_num=1
 GET http://localhost:5000/api/v2/player/live
 ### get message of the day
 GET http://localhost:5000/api/v2/motd
+###
+GET http://localhost:5000/api/v2/releases?page_size=10&page_num=1
+###
+GET http://localhost:5000/api/v2/news?page_size=10&page_num=1
 ### when client connects, this request responds with motd, valid_version, and update_available
 POST http://localhost:5000/api/v2/client_connect
 content-type: application/json

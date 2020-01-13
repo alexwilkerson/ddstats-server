@@ -39,6 +39,8 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	mux.Get("/api/v2/player/live", http.HandlerFunc(api.playerLive))
 	mux.Get("/api/v2/player/all", http.HandlerFunc(api.getPlayers))
 	mux.Get("/api/v2/motd", http.HandlerFunc(api.getMOTD))
+	mux.Get("/api/v2/releases", http.HandlerFunc(api.getReleases))
+	mux.Get("/api/v2/news", http.HandlerFunc(api.getNews))
 
 	// these are here for now to be backward compatible
 	mux.Post("/api/get_motd", http.HandlerFunc(api.clientConnect))

@@ -12,6 +12,120 @@ import (
 	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
 )
 
+func (api *API) getNews(w http.ResponseWriter, r *http.Request) {
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		api.clientMessage(w, http.StatusBadRequest, "page_size must be an integer")
+		return
+	}
+	if pageSize < 1 || pageSize > 100 {
+		api.clientMessage(w, http.StatusBadRequest, "page_size must be between 1 and 100")
+		return
+	}
+
+	pageNum, err := strconv.Atoi(r.URL.Query().Get("page_num"))
+	if err != nil {
+		api.clientMessage(w, http.StatusBadRequest, "page_num must be an integer")
+		return
+	}
+	if pageNum < 1 {
+		api.clientMessage(w, http.StatusBadRequest, "page_num must be greater than 0")
+		return
+	}
+
+	fmt.Println("pageSize", pageSize, "pageNum", pageNum)
+
+	var news struct {
+		TotalPages     int            `json:"total_pages"`
+		TotalNewsCount int            `json:"total_news_count"`
+		PageNumber     int            `json:"page_number"`
+		PageSize       int            `json:"page_size"`
+		NewsCount      int            `json:"news_count"`
+		News           []*models.News `json:"news"`
+	}
+
+	news.News, err = api.db.News.GetAll(pageSize, pageNum)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	if news.News == nil {
+		api.clientMessage(w, http.StatusNotFound, "no records found in this range")
+		return
+	}
+
+	news.TotalNewsCount, err = api.db.News.GetTotalCount()
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	news.TotalPages = int(math.Ceil(float64(news.TotalNewsCount) / float64(pageSize)))
+	news.PageNumber = pageNum
+	news.PageSize = pageSize
+	news.NewsCount = len(news.News)
+
+	api.writeJSON(w, news)
+}
+
+func (api *API) getReleases(w http.ResponseWriter, r *http.Request) {
+	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
+	if err != nil {
+		api.clientMessage(w, http.StatusBadRequest, "page_size must be an integer")
+		return
+	}
+	if pageSize < 1 || pageSize > 100 {
+		api.clientMessage(w, http.StatusBadRequest, "page_size must be between 1 and 100")
+		return
+	}
+
+	pageNum, err := strconv.Atoi(r.URL.Query().Get("page_num"))
+	if err != nil {
+		api.clientMessage(w, http.StatusBadRequest, "page_num must be an integer")
+		return
+	}
+	if pageNum < 1 {
+		api.clientMessage(w, http.StatusBadRequest, "page_num must be greater than 0")
+		return
+	}
+
+	fmt.Println("pageSize", pageSize, "pageNum", pageNum)
+
+	var releases struct {
+		TotalPages        int               `json:"total_pages"`
+		TotalReleaseCount int               `json:"total_releases_count"`
+		PageNumber        int               `json:"page_number"`
+		PageSize          int               `json:"page_size"`
+		ReleaseCount      int               `json:"release_count"`
+		Releases          []*models.Release `json:"releases"`
+	}
+
+	releases.Releases, err = api.db.Releases.GetAll(pageSize, pageNum)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	if releases.Releases == nil {
+		api.clientMessage(w, http.StatusNotFound, "no records found in this range")
+		return
+	}
+
+	releases.TotalReleaseCount, err = api.db.Releases.GetTotalCount()
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	releases.TotalPages = int(math.Ceil(float64(releases.TotalReleaseCount) / float64(pageSize)))
+	releases.PageNumber = pageNum
+	releases.PageSize = pageSize
+	releases.ReleaseCount = len(releases.Releases)
+
+	api.writeJSON(w, releases)
+}
+
 func (api *API) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("WebSocket endpoint hit")
 	if _, ok := r.URL.Query()["room"]; !ok {
