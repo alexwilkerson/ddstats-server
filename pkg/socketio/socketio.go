@@ -18,6 +18,21 @@ import (
 	socketio "github.com/googollee/go-socket.io"
 )
 
+const (
+	StatusLoggedIn        = "Logged In"
+	StatusNotConnected    = "Not Connected"
+	StatusConnecting      = "Connecting"
+	StatusAlive           = "Alive"
+	StatusWatchingAReplay = "WatchingAReplay"
+	StatusInMainMenu      = "In Main Menu"
+	StatusInDaggerLobby   = "In DaggerLobby"
+	StatusDead            = "Dead"
+)
+
+const (
+	defaultNamespace = "/"
+)
+
 type sio struct {
 	server       *socketio.Server
 	client       *http.Client
@@ -28,10 +43,6 @@ type sio struct {
 	db           *postgres.Postgres
 	livePlayers  *sync.Map
 }
-
-const (
-	defaultNamespace = "/"
-)
 
 type player struct {
 	sync.Mutex
@@ -50,13 +61,13 @@ func (p *player) getStatus() string {
 	var status string
 	switch {
 	case p.DeathType >= 0:
-		status = "Dead"
+		status = StatusDead
 	case p.DeathType == -2:
-		status = "In Menu"
+		status = StatusInMainMenu
 	case p.DeathType == -1 && p.IsReplay == true:
-		status = "Watching a Replay"
+		status = StatusWatchingAReplay
 	default:
-		status = "Alive"
+		status = StatusAlive
 	}
 	return status
 }
@@ -134,19 +145,19 @@ func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
 	var status string
 	switch statusID {
 	case 0:
-		status = "Not Connected"
+		status = StatusNotConnected
 	case 1:
-		status = "Connecting"
+		status = StatusConnecting
 	case 2:
-		status = "Alive"
+		status = StatusAlive
 	case 3:
-		status = "Watching a Replay"
+		status = StatusWatchingAReplay
 	case 4:
-		status = "In Main Menu"
+		status = StatusInMainMenu
 	case 5:
-		status = "In Dagger Lobby"
+		status = StatusInDaggerLobby
 	case 6:
-		status = "Dead"
+		status = StatusDead
 	}
 	p, ok := si.livePlayers.Load(s.ID())
 	if !ok {
@@ -208,16 +219,14 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 		return
 	}
 
-	websocketPlayer := websocket.PlayerWithLock{Player: websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName, Status: "Logged In"}}
+	websocketPlayer := websocket.PlayerWithLock{Player: websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName, Status: StatusLoggedIn}}
 
 	si.livePlayers.Store(s.ID(), &player{
 		websocketPlayer: &websocketPlayer,
 		PlayerID:        int(p.PlayerID),
 		PlayerName:      p.PlayerName,
 		BestGameTime:    p.GameTime,
-		GameTime:        0,
 		DeathType:       -2, // IN MENU
-		IsReplay:        false,
 	})
 
 	err = si.db.Players.UpsertDDPlayer(p)
