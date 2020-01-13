@@ -158,13 +158,27 @@ type SubmittedGame struct {
 // MOTD is Message of the Day and it's used by the client
 // to display the message of the day
 type MOTD struct {
-	ID      int       `json:"id" db:"id"`
-	Created time.Time `json:"created" db:"created"`
-	Message string    `json:"motd" db:"message"`
+	ID        int       `json:"id" db:"id"`
+	TimeStamp time.Time `json:"created" db:"time_stamp"`
+	Message   string    `json:"motd" db:"message"`
 }
 
 type DiscordUser struct {
 	DiscordID string `db:"discord_id"`
 	DDID      int    `db:"dd_id"`
 	Verified  bool   `db:"verified"`
+}
+
+type Release struct {
+	Version   string    `json:"version" db:"version"`
+	TimeStamp time.Time `json:"time_stamp" db:"time_stamp"`
+	Body      string    `json:"body" db:"body"`
+	FileName  string    `json:"file_name" db:"file_name"`
+}
+
+type News struct {
+	ID        int       `json:"id" db:"id"`
+	TimeStamp time.Time `json:"time_stamp" db:"time_stamp"`
+	Title     string    `json:"title" db:"title"`
+	Body      string    `json:"body" db:"body"`
 }

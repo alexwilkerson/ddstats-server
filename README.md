@@ -75,7 +75,7 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 #### live notification functionality
 
-- [ ] verify & fix bugs in client that relate to game submissions https://github.com/alexwilkerson/ddstats-go/blob/master/net.go#L80-L86
+- [x] verify & fix bugs in client that relate to game submissions https://github.com/alexwilkerson/ddstats-go/blob/master/net.go#L80-L86
 - [x] create socket.io listener for `game_submitted` function which has arguments (`gameID int`, `notifyPlayerBest bool`, `notifyAbove1000 bool`)
 - [x] create discord bot listener which runs in its own goroutine and has channels for notifying player best and notifying when player is above 1000
 - [x] create connection between socket.io -> websocket -> discord for player best and above 1000 notifications
@@ -84,14 +84,14 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 #### index
 
-- [ ] set up `/static` endpoint to host static files
+- [x] set up `/static` endpoint to host static files
 - [x] GET player/live (gets live players from websocket)
 - [x] POST api/v2/client_connect (client sends client version and receives info)
 - [x] GET api/v2/motd
 - [x] create table in database for motd
-- [ ] GET api/v2/client/releases?page_size={int}&page_num={int}
+- [x] GET api/v2/client/releases?page_size={int}&page_num={int}
 - [x] create table for client releases
-- [ ] GET api/v2/news?page_size={int}&page_num={int}
+- [x] GET api/v2/news?page_size={int}&page_num={int}
 - [x] create table in database for news
 
 #### game
