@@ -139,8 +139,10 @@ func (si *sio) onDisconnect(s socketio.Conn, msg string) {
 		return
 	}
 	player := v.(*player)
+	player.Lock()
 	si.livePlayers.Delete(s.ID())
 	si.websocketHub.UnregisterPlayer <- player.websocketPlayer
+	player.Unlock()
 	si.infoLog.Println(s.ID(), "disconnected")
 	return
 }
