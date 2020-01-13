@@ -25,7 +25,7 @@ type PlayerBestSubmitted struct {
 	PreviousGameTime float64
 }
 
-type PlayerAbove1000 struct {
+type PlayerAboveThreshold struct {
 	PlayerID   int
 	PlayerName string
 }
@@ -40,22 +40,22 @@ type PlayerDied struct {
 // Hub is the struct which holds the internal communication channels
 // for communication with websockets
 type Hub struct {
-	DB                  *postgres.Postgres
-	CurrentID           uint
-	Register            chan *Client
-	Unregister          chan *Client
-	RegisterPlayer      chan *PlayerWithLock
-	UnregisterPlayer    chan *PlayerWithLock
-	SubmitGame          chan int
-	DiscordBroadcast    chan interface{}
-	PlayerBestReached   chan *PlayerBestReached
-	PlayerBestSubmitted chan *PlayerBestSubmitted
-	PlayerAbove1000     chan *PlayerAbove1000
-	PlayerDied          chan *PlayerDied
-	Players             *sync.Map
-	Rooms               map[string]map[*Client]bool
-	Broadcast           chan *Message
-	quit                chan struct{}
+	DB                   *postgres.Postgres
+	CurrentID            uint
+	Register             chan *Client
+	Unregister           chan *Client
+	RegisterPlayer       chan *PlayerWithLock
+	UnregisterPlayer     chan *PlayerWithLock
+	SubmitGame           chan int
+	DiscordBroadcast     chan interface{}
+	PlayerBestReached    chan *PlayerBestReached
+	PlayerBestSubmitted  chan *PlayerBestSubmitted
+	PlayerAboveThreshold chan *PlayerAboveThreshold
+	PlayerDied           chan *PlayerDied
+	Players              *sync.Map
+	Rooms                map[string]map[*Client]bool
+	Broadcast            chan *Message
+	quit                 chan struct{}
 }
 
 // NewHub returns a Hub
@@ -63,22 +63,22 @@ func NewHub(db *postgres.Postgres) *Hub {
 	rooms := make(map[string]map[*Client]bool)
 	rooms[liveRoom] = make(map[*Client]bool)
 	return &Hub{
-		DB:                  db,
-		CurrentID:           1,
-		Register:            make(chan *Client),
-		Unregister:          make(chan *Client),
-		RegisterPlayer:      make(chan *PlayerWithLock),
-		UnregisterPlayer:    make(chan *PlayerWithLock),
-		SubmitGame:          make(chan int),
-		DiscordBroadcast:    make(chan interface{}),
-		PlayerBestReached:   make(chan *PlayerBestReached),
-		PlayerBestSubmitted: make(chan *PlayerBestSubmitted),
-		PlayerAbove1000:     make(chan *PlayerAbove1000),
-		PlayerDied:          make(chan *PlayerDied),
-		Players:             &sync.Map{},
-		Rooms:               rooms,
-		Broadcast:           make(chan *Message),
-		quit:                make(chan struct{}),
+		DB:                   db,
+		CurrentID:            1,
+		Register:             make(chan *Client),
+		Unregister:           make(chan *Client),
+		RegisterPlayer:       make(chan *PlayerWithLock),
+		UnregisterPlayer:     make(chan *PlayerWithLock),
+		SubmitGame:           make(chan int),
+		DiscordBroadcast:     make(chan interface{}),
+		PlayerBestReached:    make(chan *PlayerBestReached),
+		PlayerBestSubmitted:  make(chan *PlayerBestSubmitted),
+		PlayerAboveThreshold: make(chan *PlayerAboveThreshold),
+		PlayerDied:           make(chan *PlayerDied),
+		Players:              &sync.Map{},
+		Rooms:                rooms,
+		Broadcast:            make(chan *Message),
+		quit:                 make(chan struct{}),
 	}
 }
 

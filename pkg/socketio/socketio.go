@@ -33,6 +33,10 @@ const (
 	defaultNamespace = "/"
 )
 
+const (
+	notifyThreshold = 1000
+)
+
 type sio struct {
 	server       *socketio.Server
 	client       *http.Client
@@ -46,15 +50,15 @@ type sio struct {
 
 type player struct {
 	sync.Mutex
-	websocketPlayer   *websocket.PlayerWithLock
-	PlayerID          int     `json:"player_id"`
-	PlayerName        string  `json:"player_name"`
-	BestGameTime      float64 `json:"best_game_time"`
-	GameTime          float64 `json:"game_time"`
-	DeathType         int     `json:"death_type"`
-	IsReplay          bool    `json:"is_replay"`
-	bestTimeNotified  bool
-	above1000Notified bool
+	websocketPlayer        *websocket.PlayerWithLock
+	PlayerID               int     `json:"player_id"`
+	PlayerName             string  `json:"player_name"`
+	BestGameTime           float64 `json:"best_game_time"`
+	GameTime               float64 `json:"game_time"`
+	DeathType              int     `json:"death_type"`
+	IsReplay               bool    `json:"is_replay"`
+	bestTimeNotified       bool
+	aboveThresholdNotified bool
 }
 
 func (p *player) getStatus() string {
@@ -73,21 +77,21 @@ func (p *player) getStatus() string {
 }
 
 type state struct {
-	PlayerID         int     `json:"player_id"`
-	GameTime         float64 `json:"game_time"`
-	Gems             int     `json:"gems"`
-	HomingDaggers    int     `json:"homing_daggers"`
-	EnemiesAlive     int     `json:"enemies_alive"`
-	EnemiesKilled    int     `json:"enemies_killed"`
-	DaggersHit       int     `json:"daggers_hit"`
-	DaggersFired     int     `json:"daggers_fired"`
-	LevelTwoTime     float64 `json:"level_two_time"`
-	LevelThreeTime   float64 `json:"level_three_time"`
-	LevelFourTime    float64 `json:"level_four_time"`
-	DeathType        int     `json:"death_type"`
-	IsReplay         bool    `json:"is_replay"`
-	NotifyPlayerBest bool    `json:"notify_player_best"`
-	NotifyAbove1000  bool    `json:"notify_above_1000"`
+	PlayerID             int     `json:"player_id"`
+	GameTime             float64 `json:"game_time"`
+	Gems                 int     `json:"gems"`
+	HomingDaggers        int     `json:"homing_daggers"`
+	EnemiesAlive         int     `json:"enemies_alive"`
+	EnemiesKilled        int     `json:"enemies_killed"`
+	DaggersHit           int     `json:"daggers_hit"`
+	DaggersFired         int     `json:"daggers_fired"`
+	LevelTwoTime         float64 `json:"level_two_time"`
+	LevelThreeTime       float64 `json:"level_three_time"`
+	LevelFourTime        float64 `json:"level_four_time"`
+	DeathType            int     `json:"death_type"`
+	IsReplay             bool    `json:"is_replay"`
+	NotifyPlayerBest     bool    `json:"notify_player_best"`
+	NotifyAboveThreshold bool    `json:"notify_above_1000"`
 }
 
 // NewServer returns a Server from the go-socket.io package with all of the routes already
@@ -172,12 +176,14 @@ func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
 	player.Unlock()
 }
 
-func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, notifyAbove1000 bool) {
+func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, notifyAboveThreshold bool) {
 	v, ok := si.livePlayers.Load(s.ID())
 	if !ok {
 		return
 	}
 	player := v.(*player)
+	player.Lock()
+	defer player.Unlock()
 	game, err := si.db.Games.Get(gameID)
 	if err != nil {
 		si.errorLog.Printf("%+v", err)
@@ -190,7 +196,7 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 			PreviousGameTime: player.BestGameTime,
 		}
 	}
-	if notifyAbove1000 && game.GameTime > 1000 {
+	if notifyAboveThreshold && game.GameTime > notifyThreshold {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerDied{
 			PlayerName: player.PlayerName,
 			GameID:     gameID,
@@ -198,9 +204,6 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 			DeathType:  game.DeathType,
 		}
 	}
-	// reset to false so that new notifications can happen
-	player.bestTimeNotified = false
-	player.above1000Notified = false
 }
 
 func (si *sio) onLogin(s socketio.Conn, id int) {
@@ -242,25 +245,26 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 	si.infoLog.Println("duration:", time.Since(start))
 }
 
-func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired int, levelTwoTime, levelThreeTime, levelFourTime float64, isReplay bool, deathType int, notifyPlayerBest, notifyAbove1000 bool) {
+func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired int, levelTwoTime, levelThreeTime, levelFourTime float64, isReplay bool, deathType int, notifyPlayerBest, notifyAboveThreshold bool) {
 	state := state{
-		PlayerID:         playerID,
-		GameTime:         gameTime,
-		Gems:             gems,
-		HomingDaggers:    homingDaggers,
-		EnemiesAlive:     enemiesAlive,
-		EnemiesKilled:    enemiesKilled,
-		DaggersHit:       daggersHit,
-		DaggersFired:     daggersFired,
-		LevelTwoTime:     levelTwoTime,
-		LevelThreeTime:   levelThreeTime,
-		LevelFourTime:    levelFourTime,
-		DeathType:        deathType,
-		IsReplay:         isReplay,
-		NotifyPlayerBest: notifyPlayerBest,
-		NotifyAbove1000:  notifyAbove1000,
+		PlayerID:             playerID,
+		GameTime:             gameTime,
+		Gems:                 gems,
+		HomingDaggers:        homingDaggers,
+		EnemiesAlive:         enemiesAlive,
+		EnemiesKilled:        enemiesKilled,
+		DaggersHit:           daggersHit,
+		DaggersFired:         daggersFired,
+		LevelTwoTime:         levelTwoTime,
+		LevelThreeTime:       levelThreeTime,
+		LevelFourTime:        levelFourTime,
+		DeathType:            deathType,
+		IsReplay:             isReplay,
+		NotifyPlayerBest:     notifyPlayerBest,
+		NotifyAboveThreshold: notifyAboveThreshold,
 	}
 	if playerID < 1 {
+		si.errorLog.Println("playerID less than 1")
 		return
 	}
 	p, ok := si.livePlayers.Load(s.ID())
@@ -270,6 +274,11 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	}
 	player := p.(*player)
 	player.Lock()
+	defer player.Unlock()
+	if state.GameTime < player.GameTime {
+		player.aboveThresholdNotified = false
+		player.bestTimeNotified = false
+	}
 	player.GameTime = state.GameTime
 	player.DeathType = state.DeathType
 	player.IsReplay = state.IsReplay
@@ -278,7 +287,6 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	player.websocketPlayer.GameTime = state.GameTime
 	player.websocketPlayer.Status = status
 	player.websocketPlayer.Unlock()
-	player.Unlock()
 	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "submit", state)
 	if err != nil {
 		si.errorLog.Println("socketio onSubmit: %w", err)
@@ -286,7 +294,7 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	}
 	si.websocketHub.Broadcast <- websocketMessage
 	// if the notification hasn't yet happened and a player beats their previous score,
-	if notifyPlayerBest && !player.bestTimeNotified && gameTime < player.BestGameTime {
+	if notifyPlayerBest && !player.bestTimeNotified && gameTime > player.BestGameTime {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestReached{
 			PlayerID:         player.PlayerID,
 			PlayerName:       player.PlayerName,
@@ -294,15 +302,15 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		}
 		player.bestTimeNotified = true
 	}
-	if notifyAbove1000 && !player.above1000Notified && gameTime >= 1000 {
-		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAbove1000{
+	if notifyAboveThreshold && !player.aboveThresholdNotified && gameTime >= notifyThreshold {
+		player.aboveThresholdNotified = true
+		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAboveThreshold{
 			PlayerID:   player.PlayerID,
 			PlayerName: player.PlayerName,
 		}
-		player.above1000Notified = true
 	}
 }
 
 func (si *sio) onError(s socketio.Conn, err error) {
-	si.errorLog.Printf("socketio onError: %w", err)
+	si.errorLog.Printf("socketio onError: %+v", err)
 }
