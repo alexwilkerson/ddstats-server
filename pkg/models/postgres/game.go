@@ -19,22 +19,6 @@ const (
 	v3SurvivalHashB = "569fead87abf4d30fdee4231a6398051"
 )
 
-func (g *GameModel) GetTime(gameID int) (float64, error) {
-	var gameTime float64
-	stmt := `
-		SELECT game_time
-		FROM game
-		WHERE id=$1`
-	err := g.DB.QueryRow(stmt, gameID).Scan(gameTime)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return 0, models.ErrNoRecord
-		}
-		return 0, err
-	}
-	return gameTime, nil
-}
-
 // GetTop retrieves a slice of the top games in the database with a given limit
 func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 	var games []*models.GameWithName

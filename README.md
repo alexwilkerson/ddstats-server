@@ -49,15 +49,15 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 #### index
 
+- [ ] set up `/static` endpoint to host static files
 - [x] GET player/live (gets live players from websocket)
 - [x] POST api/v2/client_connect (client sends client version and receives info)
 - [x] GET api/v2/motd
 - [x] create table in database for motd
 - [ ] GET api/v2/client/releases?page_size={int}&page_num={int}
-- [ ] GET api/v2/client/download?version={string}
-- [ ] create table for client releases
+- [x] create table for client releases
 - [ ] GET api/v2/news?page_size={int}&page_num={int}
-- [ ] create table in database for news
+- [x] create table in database for news
 
 #### game
 

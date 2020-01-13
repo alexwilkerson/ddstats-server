@@ -16,7 +16,6 @@ import (
 	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
 
 	socketio "github.com/googollee/go-socket.io"
-	"github.com/jmoiron/sqlx"
 )
 
 type sio struct {
@@ -24,11 +23,9 @@ type sio struct {
 	client       *http.Client
 	infoLog      *log.Logger
 	errorLog     *log.Logger
-	db           *sqlx.DB
 	websocketHub *websocket.Hub
 	ddAPI        *ddapi.API
-	games        *postgres.GameModel
-	players      *postgres.PlayerModel
+	db           *postgres.Postgres
 	livePlayers  *sync.Map
 }
 
@@ -84,7 +81,7 @@ type state struct {
 
 // NewServer returns a Server from the go-socket.io package with all of the routes already
 // set up to handle ddstats clients
-func NewServer(infoLog, errorLog *log.Logger, websocketHub *websocket.Hub, client *http.Client, db *sqlx.DB) (*socketio.Server, error) {
+func NewServer(infoLog, errorLog *log.Logger, websocketHub *websocket.Hub, client *http.Client, db *postgres.Postgres) (*socketio.Server, error) {
 	server, err := socketio.NewServer(nil)
 	if err != nil {
 		return nil, err
@@ -97,8 +94,6 @@ func NewServer(infoLog, errorLog *log.Logger, websocketHub *websocket.Hub, clien
 		db:           db,
 		websocketHub: websocketHub,
 		ddAPI:        &ddapi.API{Client: client},
-		games:        &postgres.GameModel{DB: db},
-		players:      &postgres.PlayerModel{DB: db},
 		livePlayers:  &sync.Map{},
 	}
 	s.routes(server)
@@ -172,7 +167,7 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 		return
 	}
 	player := v.(*player)
-	game, err := si.games.Get(gameID)
+	game, err := si.db.Games.Get(gameID)
 	if err != nil {
 		si.errorLog.Printf("%+v", err)
 	}
@@ -225,7 +220,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 		IsReplay:        false,
 	})
 
-	err = si.players.UpsertDDPlayer(p)
+	err = si.db.Players.UpsertDDPlayer(p)
 	if err != nil {
 		si.errorLog.Printf("socketio onLogin: %w", err)
 		s.Close()
