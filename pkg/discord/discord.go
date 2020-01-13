@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"fmt"
 	"log"
 	"strings"
 	"sync"
@@ -28,6 +29,7 @@ type Discord struct {
 	ddstatsChannels *ddstatsChannels
 	infoLog         *log.Logger
 	errorLog        *log.Logger
+	quit            chan struct{}
 }
 
 func New(token string, db *postgres.Postgres, ddAPI *ddapi.API, websocketHub *websocket.Hub, infoLog, errorLog *log.Logger) (*Discord, error) {
@@ -44,6 +46,7 @@ func New(token string, db *postgres.Postgres, ddAPI *ddapi.API, websocketHub *we
 		ddstatsChannels: &ddstatsChannels{},
 		infoLog:         infoLog,
 		errorLog:        errorLog,
+		quit:            make(chan struct{}),
 	}
 	session.AddHandler(discord.messageCreate)
 	discord.registerCommands()
@@ -64,10 +67,71 @@ func (d *Discord) Start() error {
 	if err != nil {
 		return err
 	}
+	go d.listenForNotifications()
+	return nil
+}
+
+func (d *Discord) listenForNotifications() {
+	select {
+	case notification := <-d.websocketHub.DiscordBroadcast:
+		switch v := notification.(type) {
+		case *websocket.PlayerBestReached:
+			err := d.broadcast(&discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("%s just passed their best time of %.4fs!", v.PlayerName, v.PreviousGameTime),
+				Description: fmt.Sprintf("Watch here: https://ddstats.com/user/%d", v.PlayerID),
+			})
+			if err != nil {
+				d.errorLog.Printf("%+v", err)
+			}
+		case *websocket.PlayerBestSubmitted:
+			err := d.broadcast(&discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("%s just got a new score of %.4fs!", v.PlayerName, v.GameTime),
+				Description: fmt.Sprintf("...beating their old high score of %.4fs by %.4f seconds!\nGame log here: https://ddstats.com/game_log/%d", v.PreviousGameTime, v.PreviousGameTime-v.GameTime, v.GameID),
+			})
+			if err != nil {
+				d.errorLog.Printf("%+v", err)
+			}
+		case *websocket.PlayerAbove1000:
+			err := d.broadcast(&discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("%s is above 1000!", v.PlayerName),
+				Description: fmt.Sprintf("Watch here: https://ddstats.com/user/%d", v.PlayerID),
+			})
+			if err != nil {
+				d.errorLog.Printf("%+v", err)
+			}
+		case *websocket.PlayerDied:
+			err := d.broadcast(&discordgo.MessageEmbed{
+				Title:       fmt.Sprintf("%s died at %.4f", v.PlayerName, v.GameTime),
+				Description: fmt.Sprintf("...%s\nGame log: https://ddstats.com/game_log/%d", strings.ToLower(v.DeathType), v.GameID),
+			})
+			if err != nil {
+				d.errorLog.Printf("%+v", err)
+			}
+		default:
+			d.errorLog.Println("invalid type received to discord listener")
+		}
+	case <-d.quit:
+		return
+	}
+}
+
+func (d *Discord) broadcast(embed *discordgo.MessageEmbed) error {
+	embed.Color = defaultColor
+	embed.Footer = &discordgo.MessageEmbedFooter{
+		Text:    "ddstats.com",
+		IconURL: iconURL,
+	}
+	for _, channel := range d.ddstatsChannels.load() {
+		_, err := d.Session.ChannelMessageSendEmbed(channel, embed)
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }
 
 func (d *Discord) Close() {
+	d.quit <- struct{}{}
 	d.Session.Close()
 }
 

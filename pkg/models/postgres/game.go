@@ -19,7 +19,23 @@ const (
 	v3SurvivalHashB = "569fead87abf4d30fdee4231a6398051"
 )
 
-// GetTop retreives a slice of the top games in the database with a given limit
+func (g *GameModel) GetTime(gameID int) (float64, error) {
+	var gameTime float64
+	stmt := `
+		SELECT game_time
+		FROM game
+		WHERE id=$1`
+	err := g.DB.QueryRow(stmt, gameID).Scan(gameTime)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrNoRecord
+		}
+		return 0, err
+	}
+	return gameTime, nil
+}
+
+// GetTop retrieves a slice of the top games in the database with a given limit
 func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 	var games []*models.GameWithName
 
@@ -63,7 +79,7 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 	return games, nil
 }
 
-// GetRecent retreives a slice of users using a specified page size and page num starting at 1
+// GetRecent retrieves a slice of users using a specified page size and page num starting at 1
 func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWithName, error) {
 	var where string
 	if playerID != 0 {
@@ -116,7 +132,7 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 	return games, nil
 }
 
-// Get retreives the entire game obeject
+// Get retrieves the entire game object
 func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 	var game models.GameWithName
 	stmt := `
