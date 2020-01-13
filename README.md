@@ -2,6 +2,41 @@
 
 ![DDSTATS Server v2](/server_diagram.png)
 
+## Summary
+
+Date : 2020-01-12 21:02:43
+
+Directory /Users/awilkerson/go/src/github.com/alexwilkerson/ddstats-api
+
+Total : 42 files, 3887 codes, 176 comments, 528 blanks, all 4591 lines
+
+### Languages
+
+| language   | files |  code | comment | blank | total |
+| :--------- | ----: | ----: | ------: | ----: | ----: |
+| Go         |    37 | 3,597 |     151 |   464 | 4,212 |
+| Markdown   |     1 |   139 |       0 |    45 |   184 |
+| SQL        |     1 |   109 |       3 |    14 |   126 |
+| HTTP       |     1 |    25 |      21 |     2 |    48 |
+| XML        |     1 |    16 |       0 |     3 |    19 |
+| Properties |     1 |     1 |       1 |     0 |     2 |
+
+### Directories
+
+| path                | files |  code | comment | blank | total |
+| :------------------ | ----: | ----: | ------: | ----: | ----: |
+| .                   |    42 | 3,887 |     176 |   528 | 4,591 |
+| cmd                 |     1 |   101 |       1 |    26 |   128 |
+| cmd/server          |     1 |   101 |       1 |    26 |   128 |
+| pkg                 |    36 | 3,496 |     150 |   438 | 4,084 |
+| pkg/api             |     7 |   817 |      16 |   155 |   988 |
+| pkg/ddapi           |     2 |   303 |      34 |    54 |   391 |
+| pkg/discord         |    14 |   888 |      15 |    88 |   991 |
+| pkg/models          |     8 |   915 |      57 |    84 | 1,056 |
+| pkg/models/postgres |     7 |   778 |      41 |    66 |   885 |
+| pkg/socketio        |     1 |   266 |       9 |    25 |   300 |
+| pkg/websocket       |     4 |   307 |      19 |    32 |   358 |
+
 ## Automatically restarting server during dev
 
 Go 1.11+ installation required
