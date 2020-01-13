@@ -56,7 +56,7 @@ func main() {
 
 	api := api.NewAPI(client, postgresDB, websocketHub, ddAPI, infoLog, errorLog)
 
-	socketioServer, err := socketio.NewServer(infoLog, errorLog, websocketHub, client, db)
+	socketioServer, err := socketio.NewServer(infoLog, errorLog, websocketHub, client, postgresDB)
 	if err != nil {
 		errorLog.Fatal(err)
 	}
