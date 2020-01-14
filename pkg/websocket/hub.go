@@ -219,7 +219,7 @@ func (hub *Hub) Start() {
 }
 
 func (hub *Hub) Close() {
-	hub.quit <- struct{}{}
+	close(hub.quit)
 }
 
 func toJSONString(v interface{}) (string, error) {
