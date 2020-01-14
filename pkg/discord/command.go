@@ -4,7 +4,7 @@ import (
 	"sort"
 	"time"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 	"github.com/bwmarrin/discordgo"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"

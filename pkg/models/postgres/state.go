@@ -1,7 +1,7 @@
 package postgres
 
 import (
-	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/alexwilkerson/ddstats-server/pkg/models"
 	"github.com/jmoiron/sqlx"
 )
 

@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/models"
-	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
+	"github.com/alexwilkerson/ddstats-server/pkg/models"
+	"github.com/alexwilkerson/ddstats-server/pkg/websocket"
 )
 
 func (api *API) getNews(w http.ResponseWriter, r *http.Request) {

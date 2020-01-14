@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+	"github.com/alexwilkerson/ddstats-server/pkg/models/postgres"
 )
 
 const (

@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
-	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
+	"github.com/alexwilkerson/ddstats-server/pkg/models"
 	"github.com/jmoiron/sqlx"
 )
 

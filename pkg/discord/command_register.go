@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/models"
+	"github.com/alexwilkerson/ddstats-server/pkg/models"
 
 	"github.com/bwmarrin/discordgo"
 )

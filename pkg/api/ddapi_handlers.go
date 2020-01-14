@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 )
 
 func (api *API) ddGetUserByRank(w http.ResponseWriter, r *http.Request) {
