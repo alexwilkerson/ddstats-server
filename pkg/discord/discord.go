@@ -141,7 +141,7 @@ func (d *Discord) broadcast(embed *discordgo.MessageEmbed) error {
 }
 
 func (d *Discord) Close() {
-	d.quit <- struct{}{}
+	close(d.quit)
 	d.Session.Close()
 }
 
