@@ -4,10 +4,10 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
-	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
+	"github.com/alexwilkerson/ddstats-server/pkg/models/postgres"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
+	"github.com/alexwilkerson/ddstats-server/pkg/websocket"
 )
 
 const (

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 	"github.com/bwmarrin/discordgo"
 )
 

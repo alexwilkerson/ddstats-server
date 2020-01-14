@@ -9,14 +9,14 @@ import (
 	"os/signal"
 	"time"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/models/postgres"
+	"github.com/alexwilkerson/ddstats-server/pkg/models/postgres"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/api"
-	"github.com/alexwilkerson/ddstats-api/pkg/discord"
+	"github.com/alexwilkerson/ddstats-server/pkg/api"
+	"github.com/alexwilkerson/ddstats-server/pkg/discord"
 
-	"github.com/alexwilkerson/ddstats-api/pkg/ddapi"
-	"github.com/alexwilkerson/ddstats-api/pkg/socketio"
-	"github.com/alexwilkerson/ddstats-api/pkg/websocket"
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
+	"github.com/alexwilkerson/ddstats-server/pkg/socketio"
+	"github.com/alexwilkerson/ddstats-server/pkg/websocket"
 
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"

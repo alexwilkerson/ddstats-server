@@ -1,4 +1,4 @@
-module github.com/alexwilkerson/ddstats-api
+module github.com/alexwilkerson/ddstats-server
 
 go 1.13
 
