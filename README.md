@@ -1,6 +1,6 @@
-# ddstats-server
-
 ![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)
+
+# ddstats-server
 
 ![DDSTATS Server v2](/server_diagram.png)
 
