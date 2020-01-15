@@ -201,10 +201,10 @@ func (hub *Hub) Start() {
 				}
 			}
 		case message := <-hub.Broadcast:
+			// a room only exists if a website user is connected to the server
 			if _, ok := hub.Rooms[message.Room]; !ok {
 				break
 			}
-			fmt.Println("Sending message to all clients in room:", message.Room)
 			for client := range hub.Rooms[message.Room] {
 				err := client.Conn.WriteJSON(message)
 				if err != nil {
