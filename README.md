@@ -1,5 +1,3 @@
-<center>![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)</center>
-
 # ddstats-server
 
 ![DDSTATS Server v2](/server_diagram.png)
@@ -216,3 +214,5 @@ select * from live;
 .output discord_users.csv
 select * from users;
 ```
+
+![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)
