@@ -1,4 +1,4 @@
-![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)
+<center>![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)</center>
 
 # ddstats-server
 
