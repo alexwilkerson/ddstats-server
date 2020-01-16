@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"errors"
 	"time"
 
@@ -47,24 +48,25 @@ type GameWithName struct {
 
 // Player struct is for players
 type Player struct {
-	ID                     int     `json:"player_id" db:"id"`
-	PlayerName             string  `json:"player_name" db:"player_name"`
-	Rank                   int     `json:"rank" db:"rank"`
-	GameTime               float64 `json:"game_time" db:"game_time"`
-	DeathType              string  `json:"death_type" db:"death_type"`
-	Gems                   int     `json:"gems" db:"gems"`
-	DaggersHit             int     `json:"daggers_hit" db:"daggers_hit"`
-	DaggersFired           int     `json:"daggers_fired" db:"daggers_fired"`
-	EnemiesKilled          int     `json:"enemies_killed" db:"enemies_killed"`
-	Accuracy               float64 `json:"accuracy" db:"accuracy"`
-	OverallGameTime        float64 `json:"overall_game_time" db:"overall_game_time"`
-	OverallAverageGameTime float64 `json:"overall_average_game_time" db:"overall_average_game_time"`
-	OverallDeaths          int     `json:"overall_deaths" db:"overall_deaths"`
-	OverallGems            int     `json:"overall_gems" db:"overall_gems"`
-	OverallEnemiesKilled   int     `json:"overall_enemies_killed" db:"overall_enemies_killed"`
-	OverallDaggersHit      int     `json:"overall_daggers_hit" db:"overall_daggers_hit"`
-	OverallDaggersFired    int     `json:"overall_daggers_fired" db:"overall_daggers_fired"`
-	OverallAccuracy        float64 `json:"overall_accuracy" db:"overall_accuracy"`
+	ID                     int          `json:"player_id" db:"id"`
+	LastActive             sql.NullTime `json:"last_active,omitempty" db:"last_active"`
+	PlayerName             string       `json:"player_name" db:"player_name"`
+	Rank                   int          `json:"rank" db:"rank"`
+	GameTime               float64      `json:"game_time" db:"game_time"`
+	DeathType              string       `json:"death_type" db:"death_type"`
+	Gems                   int          `json:"gems" db:"gems"`
+	DaggersHit             int          `json:"daggers_hit" db:"daggers_hit"`
+	DaggersFired           int          `json:"daggers_fired" db:"daggers_fired"`
+	EnemiesKilled          int          `json:"enemies_killed" db:"enemies_killed"`
+	Accuracy               float64      `json:"accuracy" db:"accuracy"`
+	OverallGameTime        float64      `json:"overall_game_time" db:"overall_game_time"`
+	OverallAverageGameTime float64      `json:"overall_average_game_time" db:"overall_average_game_time"`
+	OverallDeaths          int          `json:"overall_deaths" db:"overall_deaths"`
+	OverallGems            int          `json:"overall_gems" db:"overall_gems"`
+	OverallEnemiesKilled   int          `json:"overall_enemies_killed" db:"overall_enemies_killed"`
+	OverallDaggersHit      int          `json:"overall_daggers_hit" db:"overall_daggers_hit"`
+	OverallDaggersFired    int          `json:"overall_daggers_fired" db:"overall_daggers_fired"`
+	OverallAccuracy        float64      `json:"overall_accuracy" db:"overall_accuracy"`
 }
 
 // State struct is for State
@@ -181,4 +183,28 @@ type News struct {
 	TimeStamp time.Time `json:"time_stamp" db:"time_stamp"`
 	Title     string    `json:"title" db:"title"`
 	Body      string    `json:"body" db:"body"`
+}
+
+type CollectorRun struct {
+	ID        int       `db:"id"`
+	TimeStamp time.Time `db:"time_stamp"`
+}
+
+type CollectorPlayer struct {
+	ID                   int     `db:"id"`
+	PlayerName           string  `db:"player_name"`
+	Rank                 int     `db:"rank"`
+	GameTime             float64 `db:"game_time"`
+	DeathType            string  `db:"death_type"`
+	Gems                 int     `db:"gems"`
+	DaggersHit           int     `db:"daggers_hit"`
+	DaggersFired         int     `db:"daggers_fired"`
+	EnemiesKilled        int     `db:"enemies_killed"`
+	OverallGameTime      float64 `db:"overall_game_time"`
+	OverallDeaths        int     `db:"overall_deaths"`
+	OverallGems          int     `db:"overall_gems"`
+	OverallEnemiesKilled int     `db:"overall_enemies_killed"`
+	OverallDaggersHit    int     `db:"overall_daggers_hit"`
+	OverallDaggersFired  int     `db:"overall_daggers_fired"`
+	CollectorRunID       int     `db:"collector_run_id"`
 }
