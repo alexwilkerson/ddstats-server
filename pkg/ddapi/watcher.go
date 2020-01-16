@@ -35,5 +35,5 @@ func (w *Watcher) Start() {
 
 func (w *Watcher) Close() {
 	w.ticker.Stop()
-	w.quit <- struct{}{}
+	close(w.quit)
 }

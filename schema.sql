@@ -1,3 +1,5 @@
+DROP TABLE collector;
+DROP TABLE collector_run;
 DROP TABLE news;
 DROP TABLE release;
 DROP TABLE message_of_the_day;
@@ -50,7 +52,8 @@ CREATE INDEX game_id_idx ON state(game_id);
 
 CREATE TABLE IF NOT EXISTS player (
   id BIGSERIAL PRIMARY KEY NOT NULL,
-  name TEXT NOT NULL,
+  last_active TIMESTAMP WITH TIME ZONE,
+  player_name TEXT NOT NULL,
   rank INTEGER NOT NULL,
   game_time DOUBLE PRECISION NOT NULL,
   death_type TEXT NOT NULL,
@@ -108,6 +111,51 @@ CREATE TABLE IF NOT EXISTS news (
   time_stamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
   title TEXT NOT NULL DEFAULT '',
   body TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS collector_run (
+  id BIGSERIAL PRIMARY KEY,
+  time_stamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  player_count INTEGER NOT NULL,
+  new_players INTEGER NOT NULL,
+  active_players INTEGER NOT NULL,
+  inactive_players INTEGER NOT NULL,
+  players_with_new_scores INTEGER NOT NULL,
+  players_with_new_ranks INTEGER NOT NULL,
+  avg_improvement_time DOUBLE PRECISION NOT NULL,
+  avg_game_time_per_active_player DOUBLE PRECISION NOT NULL,
+  avg_deaths_per_active_player DOUBLE PRECISION NOT NULL,
+  avg_gems_per_active_player BIGINT NOT NULL,
+  avg_enemies_killed_per_active_player BIGINT NOT NULL,
+  avg_daggers_hit_per_active_player BIGINT NOT NULL,
+  avg_daggers_fired_per_active_player BIGINT NOT NULL,
+  avg_accuracy_per_active_player DOUBLE PRECISION NOT NULL,
+  total_game_time DOUBLE PRECISION NOT NULL,
+  deaths BIGINT NOT NULL,
+  gems BIGINT NOT NULL,
+  enemies_killed BIGINT NOT NULL,
+  daggers_hit BIGINT NOT NULL,
+  daggers_fired BIGINT NOT NULL,
+  accuracy DOUBLE PRECISION NOT NULL,
+);
+
+CREATE TABLE IF NOT EXISTS collector_player (
+  id INTEGER PRIMARY KEY,
+  player_name TEXT NOT NULL,
+  rank INTEGER NOT NULL,
+  game_time DOUBLE PRECISION NOT NULL,
+  death_type TEXT NOT NULL,
+  gems BIGINT NOT NULL,
+  daggers_hit BIGINT NOT NULL,
+  daggers_fired BIGINT NOT NULL,
+  enemies_killed BIGINT NOT NULL,
+  overall_game_time DOUBLE PRECISION NOT NULL,
+  overall_deaths BIGINT NOT NULL,
+  overall_gems BIGINT NOT NULL,
+  overall_enemies_killed BIGINT NOT NULL,
+  overall_daggers_hit BIGINT NOT NULL,
+  overall_daggers_fired BIGINT NOT NULL,
+  collector_run_id BIGINT REFERENCES collector_run(id)
 );
 
 -- below are POSTGRES helper functions to make dealing with the database easier --

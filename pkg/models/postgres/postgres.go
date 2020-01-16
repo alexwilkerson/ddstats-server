@@ -7,25 +7,29 @@ import (
 )
 
 type Postgres struct {
-	Games          *GameModel
-	States         *StateModel
-	Players        *PlayerModel
-	SubmittedGames *SubmittedGameModel
-	MOTD           *MOTDModel
-	DiscordUsers   *DiscordUserModel
-	Releases       *ReleaseModel
-	News           *NewsModel
+	Games            *GameModel
+	States           *StateModel
+	Players          *PlayerModel
+	SubmittedGames   *SubmittedGameModel
+	MOTD             *MOTDModel
+	DiscordUsers     *DiscordUserModel
+	Releases         *ReleaseModel
+	News             *NewsModel
+	CollectorRuns    *CollectorRunModel
+	CollectorPlayers *CollectorPlayerModel
 }
 
 func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
 	return &Postgres{
-		Games:          &GameModel{DB: db},
-		States:         &StateModel{DB: db},
-		Players:        &PlayerModel{DB: db},
-		SubmittedGames: &SubmittedGameModel{DB: db, Client: client},
-		MOTD:           &MOTDModel{DB: db},
-		DiscordUsers:   &DiscordUserModel{DB: db},
-		Releases:       &ReleaseModel{DB: db},
-		News:           &NewsModel{DB: db},
+		Games:            &GameModel{DB: db},
+		States:           &StateModel{DB: db},
+		Players:          &PlayerModel{DB: db},
+		SubmittedGames:   &SubmittedGameModel{DB: db, Client: client},
+		MOTD:             &MOTDModel{DB: db},
+		DiscordUsers:     &DiscordUserModel{DB: db},
+		Releases:         &ReleaseModel{DB: db},
+		News:             &NewsModel{DB: db},
+		CollectorRuns:    &CollectorRunModel{DB: db},
+		CollectorPlayers: &CollectorPlayerModel{DB: db},
 	}
 }

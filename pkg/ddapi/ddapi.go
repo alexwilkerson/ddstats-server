@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"net/url"
+	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -71,12 +72,12 @@ var DeathTypes = []string{
 type Player struct {
 	PlayerID               uint64  `json:"player_id"`
 	PlayerName             string  `json:"player_name"`
-	Rank                   int32   `json:"rank"`
+	Rank                   uint32  `json:"rank"`
 	GameTime               float64 `json:"game_time"`
-	EnemiesKilled          int32   `json:"enemies_killed"`
-	Gems                   int32   `json:"gems"`
-	DaggersHit             int32   `json:"daggers_hit"`
-	DaggersFired           int32   `json:"daggers_fired"`
+	EnemiesKilled          uint32  `json:"enemies_killed"`
+	Gems                   uint32  `json:"gems"`
+	DaggersHit             uint32  `json:"daggers_hit"`
+	DaggersFired           uint32  `json:"daggers_fired"`
 	Accuracy               float64 `json:"accuracy"`
 	DeathType              string  `json:"death_type"`
 	OverallGameTime        float64 `json:"overall_game_time"`
@@ -99,7 +100,7 @@ type Leaderboard struct {
 	GlobalDaggersFired    uint64    `json:"global_daggers_fired"`
 	GlobalDaggersHit      uint64    `json:"global_daggers_hit"`
 	GlobalAccuracy        float64   `json:"global_accuracy"`
-	GlobalPlayerCount     int32     `json:"global_player_count"`
+	GlobalPlayerCount     uint32    `json:"global_player_count"`
 	PlayerCount           int       `json:"player_count"`
 	Players               []*Player `json:"players"`
 }
@@ -122,7 +123,7 @@ func (api *API) UserByID(id int) (*Player, error) {
 		return nil, err
 	}
 
-	player, err := bytesToPlayer(bodyBytes, 19)
+	player, _, err := bytesToPlayer(bodyBytes, 19)
 	if err != nil {
 		return nil, err
 	}
@@ -152,7 +153,7 @@ func (api *API) UserByRank(rank int) (*Player, error) {
 		return nil, err
 	}
 
-	player, err := bytesToPlayer(bodyBytes, 19)
+	player, _, err := bytesToPlayer(bodyBytes, 19)
 	if err != nil {
 		return nil, err
 	}
@@ -234,28 +235,29 @@ func (api *API) UserSearch(name string) ([]*Player, error) {
 // BytesToPlayer takes a byte array and an initial offset
 // and returns a Player object. Will return an error if the
 // Player is not found
-func bytesToPlayer(b []byte, bytePosition int) (*Player, error) {
+func bytesToPlayer(b []byte, bytePosition int) (*Player, int, error) {
 	var player Player
 
-	playerNameLength := int(toInt16(b, bytePosition))
+	playerNameLength := uint8(b[bytePosition])
+
 	bytePosition += 2
-	player.PlayerName = string(b[bytePosition : bytePosition+playerNameLength])
-	bytePosition += playerNameLength
+	player.PlayerName = strings.ToValidUTF8(string(b[bytePosition:bytePosition+int(playerNameLength)]), "?")
+	bytePosition += int(playerNameLength)
 	// just figured out this information manually...
 	player.PlayerID = toUint64(b, bytePosition+4)
 	if player.PlayerID == 0 {
-		return nil, ErrPlayerNotFound
+		return nil, 0, ErrPlayerNotFound
 	}
-	player.Rank = toInt32(b, bytePosition)
-	player.GameTime = roundToNearest(float64(toInt32(b, bytePosition+12))/10000, 4)
-	player.EnemiesKilled = toInt32(b, bytePosition+16)
-	player.Gems = toInt32(b, bytePosition+28)
-	player.DaggersHit = toInt32(b, bytePosition+24)
-	player.DaggersFired = toInt32(b, bytePosition+20)
+	player.Rank = toUint32(b, bytePosition)
+	player.GameTime = roundToNearest(float64(toUint32(b, bytePosition+12))/10000, 4)
+	player.EnemiesKilled = toUint32(b, bytePosition+16)
+	player.Gems = toUint32(b, bytePosition+28)
+	player.DaggersHit = toUint32(b, bytePosition+24)
+	player.DaggersFired = toUint32(b, bytePosition+20)
 	if player.DaggersFired > 0 {
 		player.Accuracy = roundToNearest(float64(player.DaggersHit)/float64(player.DaggersFired)*100, 2)
 	}
-	player.DeathType = DeathTypes[toInt16(b, bytePosition+32)]
+	player.DeathType = DeathTypes[toUint16(b, bytePosition+32)]
 	player.OverallGameTime = roundToNearest(float64(toUint64(b, bytePosition+60))/10000, 4)
 	player.OverallDeaths = toUint64(b, bytePosition+36)
 	player.OverallAverageGameTime = roundToNearest(player.OverallGameTime/float64(player.OverallDeaths), 4)
@@ -267,13 +269,21 @@ func bytesToPlayer(b []byte, bytePosition int) (*Player, error) {
 		player.OverallAccuracy = roundToNearest(float64(player.OverallDaggersHit)/float64(player.OverallDaggersFired)*100, 2)
 	}
 
-	return &player, nil
+	return &player, int(playerNameLength), nil
 }
 
 // GetScoresBytesToLeaderboard converts the byte array from the DD API
 // to a Leaderboard struct
 func bytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
+	outfile, err := os.Create("leaderboard.bytes")
+	if err != nil {
+		return nil, err
+	}
+	outfile.Write(b)
+	outfile.Close()
+
 	var leaderboard Leaderboard
+	leaderboard.Players = []*Player{} // init this so won't be nil
 
 	leaderboard.GlobalDeaths = toUint64(b, 11)
 	leaderboard.GlobalEnemiesKilled = toUint64(b, 19)
@@ -285,20 +295,20 @@ func bytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
 	if leaderboard.GlobalDaggersFired > 0 {
 		leaderboard.GlobalAccuracy = float64(leaderboard.GlobalDaggersHit) / float64(leaderboard.GlobalDaggersFired) * 100
 	}
-	leaderboard.GlobalPlayerCount = toInt32(b, 75)
+	leaderboard.GlobalPlayerCount = toUint32(b, 75)
 
-	leaderboard.PlayerCount = int(toInt16(b, 59))
+	leaderboard.PlayerCount = int(toUint16(b, 59))
 	if limit < leaderboard.PlayerCount {
 		leaderboard.PlayerCount = limit
 	}
 
 	offset := 83
 	for i := 0; i < leaderboard.PlayerCount; i++ {
-		p, err := bytesToPlayer(b, offset)
+		p, playerNameLength, err := bytesToPlayer(b, offset)
 		if err != nil {
 			return nil, ErrPlayerNotFound
 		}
-		offset += len(p.PlayerName) + 90
+		offset += playerNameLength + 90
 		leaderboard.Players = append(leaderboard.Players, p)
 	}
 
@@ -307,18 +317,18 @@ func bytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
 
 // UserSearchBytesToPlayers converts a byte array to a player slice
 func userSearchBytesToPlayers(b []byte) ([]*Player, error) {
-	playerCount := int(toInt16(b, 11))
+	playerCount := int(toUint16(b, 11))
 	if playerCount < 1 {
 		return nil, ErrNoPlayersFound
 	}
 	var players []*Player
 	offset := 19
 	for i := 0; i < playerCount; i++ {
-		p, err := bytesToPlayer(b, offset)
+		p, playerNameLength, err := bytesToPlayer(b, offset)
 		if err != nil {
 			return nil, ErrPlayerNotFound
 		}
-		offset += len(p.PlayerName) + 90
+		offset += playerNameLength + 90
 		players = append(players, p)
 	}
 	return players, nil
@@ -328,20 +338,12 @@ func toUint64(b []byte, offset int) uint64 {
 	return binary.LittleEndian.Uint64(b[offset : offset+8])
 }
 
-func toInt64(b []byte, offset int) int64 {
-	return int64(binary.LittleEndian.Uint64(b[offset : offset+4]))
-}
-
 func toUint32(b []byte, offset int) uint32 {
 	return binary.LittleEndian.Uint32(b[offset : offset+4])
 }
 
-func toInt32(b []byte, offset int) int32 {
-	return int32(binary.LittleEndian.Uint32(b[offset : offset+4]))
-}
-
-func toInt16(b []byte, offset int) int16 {
-	return int16(binary.LittleEndian.Uint16(b[offset : offset+2]))
+func toUint16(b []byte, offset int) uint16 {
+	return binary.LittleEndian.Uint16(b[offset : offset+2])
 }
 
 func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {
