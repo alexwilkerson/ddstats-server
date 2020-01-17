@@ -2,6 +2,7 @@ package collector
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"time"
 
@@ -33,7 +34,6 @@ type Collector struct {
 	playerEnemiesKilled   int
 	playerDaggersHit      int
 	playerDaggersFired    int
-	playerAccuracy        float64
 	quit                  chan struct{}
 	done                  chan struct{}
 }
@@ -145,7 +145,7 @@ func initRun(run *models.CollectorRun, previousRun *models.CollectorRun, leaderb
 	run.SinceDaggersHit = run.GlobalDaggersHit - previousRun.GlobalDaggersHit
 	run.SinceDaggersFired = run.GlobalDaggersFired - previousRun.GlobalDaggersFired
 	if run.SinceDaggersFired != 0 {
-		run.SinceAccuracy = float64(run.SinceDaggersHit) / float64(run.SinceDaggersFired)
+		run.SinceAccuracy = float64(run.SinceDaggersHit) / float64(run.SinceDaggersFired) * 100
 	}
 }
 
@@ -161,20 +161,21 @@ func (c *Collector) compileRunStats(run *models.CollectorRun, previousRun *model
 	if c.playersWithNewRanks != 0 {
 		run.AverageRankImprovement = float64(c.playerRankImprovement) / float64(c.playersWithNewRanks)
 	}
+	run.AverageGameTimePerActivePlayer = c.playerGameTime / float64(c.playerDeaths)
 	activePlayers := float64(c.activePlayers)
 	if activePlayers != 0 {
-		run.AverageGameTimePerActivePlayer = c.playerGameTime / activePlayers
 		run.AverageDeathsPerActivePlayer = float64(c.playerDeaths) / activePlayers
 		run.AverageGemsPerActivePlayer = float64(c.playerGems) / activePlayers
 		run.AverageEnemiesKilledPerActivePlayer = float64(c.playerEnemiesKilled) / activePlayers
 		run.AverageDaggersHitPerActivePlayer = float64(c.playerDaggersHit) / activePlayers
 		run.AverageDaggersFiredPerActivePlayer = float64(c.playerDaggersFired) / activePlayers
-		run.AverageAccuracyPerActivePlayer = c.playerAccuracy / activePlayers
+		if run.AverageDaggersFiredPerActivePlayer != 0 {
+			run.AverageAccuracyPerActivePlayer = run.AverageDaggersHitPerActivePlayer / run.AverageDaggersFiredPerActivePlayer * 100
+		}
 	}
 }
 
 func (c *Collector) calculatePlayer(fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) {
-	c.playerRankImprovement += int(fromDDAPI.Rank) - fromDB.Rank
 	overallDeaths := int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
 	if overallDeaths < 1 {
 		return
@@ -183,6 +184,8 @@ func (c *Collector) calculatePlayer(fromDDAPI *ddapi.Player, fromDB *models.Coll
 	c.playerDeaths += overallDeaths
 	gameTime := float64(fromDDAPI.GameTime) - fromDB.GameTime
 	if gameTime > 0 {
+		fmt.Println("old rank:", fromDB.GameTime, ";new rank:", fromDDAPI.GameTime)
+		fmt.Println("gameTime", gameTime)
 		c.playersWithNewScores++
 		c.playerImprovementTime += gameTime
 	}
@@ -197,9 +200,6 @@ func (c *Collector) calculatePlayer(fromDDAPI *ddapi.Player, fromDB *models.Coll
 	c.playerEnemiesKilled += int(fromDDAPI.OverallEnemiesKilled) - fromDB.OverallEnemiesKilled
 	c.playerDaggersHit += int(fromDDAPI.OverallDaggersHit) - fromDB.OverallDaggersHit
 	c.playerDaggersFired += int(fromDDAPI.OverallDaggersFired) - fromDB.OverallDaggersFired
-	if fromDB.OverallDaggersFired != 0 {
-		c.playerAccuracy += float64(fromDDAPI.OverallAccuracy) - (float64(fromDB.OverallDaggersHit) / float64(fromDB.OverallDaggersFired) * 100)
-	}
 }
 
 func (c *Collector) calculateNewPlayer(p *ddapi.Player) {
@@ -212,13 +212,11 @@ func (c *Collector) calculateNewPlayer(p *ddapi.Player) {
 	gameTime := float64(p.GameTime)
 	if gameTime > 0 {
 		c.playersWithNewScores++
+		c.playerImprovementTime += gameTime
 	}
-	c.playerImprovementTime += gameTime
 	c.playerGameTime += float64(p.OverallGameTime)
 	c.playerGems += int(p.OverallGems)
 	c.playerEnemiesKilled += int(p.OverallEnemiesKilled)
 	c.playerDaggersHit += int(p.OverallDaggersHit)
 	c.playerDaggersFired += int(p.OverallDaggersFired)
-	// accuracy is excluded since jump from 0 to whatever they have is too large.
-	// this will result in a disparity between daggers hit/fired and accuracy
 }
