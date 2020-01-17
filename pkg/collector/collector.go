@@ -2,7 +2,6 @@ package collector
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"time"
 
@@ -184,8 +183,6 @@ func (c *Collector) calculatePlayer(fromDDAPI *ddapi.Player, fromDB *models.Coll
 	c.playerDeaths += overallDeaths
 	gameTime := float64(fromDDAPI.GameTime) - fromDB.GameTime
 	if gameTime > 0 {
-		fmt.Println("old rank:", fromDB.GameTime, ";new rank:", fromDDAPI.GameTime)
-		fmt.Println("gameTime", gameTime)
 		c.playersWithNewScores++
 		c.playerImprovementTime += gameTime
 	}
