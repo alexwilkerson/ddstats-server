@@ -9,11 +9,11 @@ type CollectorRunModel struct {
 	DB *sqlx.DB
 }
 
-func (crm *CollectorRunModel) CreateNew() (int, error) {
+func (crm *CollectorRunModel) CreateNew(tx *sqlx.Tx) (int, error) {
 	var id int
 	stmt := `
 		INSERT INTO collector_run DEFAULT VALUES returning id`
-	err := crm.DB.Get(&id, stmt)
+	err := tx.Get(&id, stmt)
 	if err != nil {
 		return 0, err
 	}
@@ -25,6 +25,7 @@ func (crm *CollectorRunModel) SelectLastRunID() (*models.CollectorRun, error) {
 	stmt := `
 		SELECT *
 		FROM collector_run
+		WHERE run_time != 0
 		ORDER BY id DESC LIMIT 1`
 	err := crm.DB.Get(&cr, stmt)
 	if err != nil {
@@ -33,7 +34,7 @@ func (crm *CollectorRunModel) SelectLastRunID() (*models.CollectorRun, error) {
 	return &cr, nil
 }
 
-func (crm *CollectorRunModel) Update(cr *models.CollectorRun) error {
+func (crm *CollectorRunModel) Update(tx *sqlx.Tx, cr *models.CollectorRun) error {
 	stmt := `
 		UPDATE collector_run
 		SET
@@ -68,7 +69,7 @@ func (crm *CollectorRunModel) Update(cr *models.CollectorRun) error {
 			since_daggers_fired=$29,
 			since_accuracy=$30
 		WHERE id=$31`
-	_, err := crm.DB.Exec(stmt,
+	_, err := tx.Exec(stmt,
 		cr.RunTime,
 		cr.GlobalPlayers,
 		cr.NewPlayers,
@@ -104,13 +105,13 @@ func (crm *CollectorRunModel) Update(cr *models.CollectorRun) error {
 	return err
 }
 
-func (crm *CollectorRunModel) InsertNew() (int, error) {
+func (crm *CollectorRunModel) InsertNew(tx *sqlx.Tx) (int, error) {
 	var id int
 	stmt := `
 		INSERT INTO collector_run
 		DEFAULT VALUES
 		RETURNING id`
-	err := crm.DB.Get(&id, stmt)
+	err := tx.Get(&id, stmt)
 	if err != nil {
 		return 0, err
 	}
