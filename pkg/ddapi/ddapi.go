@@ -7,7 +7,6 @@ import (
 	"math"
 	"net/http"
 	"net/url"
-	"os"
 	"sort"
 	"strconv"
 	"strings"
@@ -275,13 +274,6 @@ func bytesToPlayer(b []byte, bytePosition int) (*Player, int, error) {
 // GetScoresBytesToLeaderboard converts the byte array from the DD API
 // to a Leaderboard struct
 func bytesToLeaderboard(b []byte, limit int) (*Leaderboard, error) {
-	outfile, err := os.Create("leaderboard.bytes")
-	if err != nil {
-		return nil, err
-	}
-	outfile.Write(b)
-	outfile.Close()
-
 	var leaderboard Leaderboard
 	leaderboard.Players = []*Player{} // init this so won't be nil
 
