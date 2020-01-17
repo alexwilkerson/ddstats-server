@@ -7,6 +7,7 @@ import (
 )
 
 type Postgres struct {
+	DB               *sqlx.DB
 	Games            *GameModel
 	States           *StateModel
 	Players          *PlayerModel
@@ -21,6 +22,7 @@ type Postgres struct {
 
 func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
 	return &Postgres{
+		DB:               db,
 		Games:            &GameModel{DB: db},
 		States:           &StateModel{DB: db},
 		Players:          &PlayerModel{DB: db},

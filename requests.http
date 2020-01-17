@@ -1,11 +1,11 @@
 ### ddapi - get user by rank
-GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=77
+GET http://localhost:5000/api/v2/ddapi/get_user_by_rank?rank=3081
 ### ddapi - get user by id
-GET http://localhost:5000/api/v2/ddapi/get_user_by_id?id=151675
+GET http://localhost:5000/api/v2/ddapi/get_user_by_id?id=49457
 ### ddapi - get user by name
 GET http://localhost:5000/api/v2/ddapi/get_user_by_name?name=VHS
 ### ddapi - get leaderboard scores
-GET http://localhost:5000/api/v2/ddapi/get_scores?offset=1&limit=1
+GET http://localhost:5000/api/v2/ddapi/get_scores?offset=400000&limit=100
 
 ### get top games
 GET http://localhost:5000/api/v2/game/top?limit=10

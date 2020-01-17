@@ -51,7 +51,6 @@ func NewCollector(ddAPI *ddapi.API, db *postgres.Postgres, infoLog, errorLog *lo
 func (c *Collector) Start() {
 	defer func() {
 		close(c.done)
-		c.Stop()
 	}()
 	start := time.Now()
 	var leaderboard *ddapi.Leaderboard
@@ -62,20 +61,37 @@ func (c *Collector) Start() {
 		c.errorLog.Printf("collector error: %v", err)
 		return
 	}
-	runID, err := c.DB.CollectorRuns.CreateNew()
+	tx, err := c.DB.DB.Beginx()
 	if err != nil {
 		c.errorLog.Printf("collector error: %v", err)
+		return
+	}
+	runID, err := c.DB.CollectorRuns.CreateNew(tx)
+	if err != nil {
+		c.errorLog.Printf("collector error: %v", err)
+		err = tx.Rollback()
+		if err != nil {
+			c.errorLog.Printf("collector rollback error: %v", err)
+		}
 		return
 	}
 	run := models.CollectorRun{ID: runID}
 	for ok := true; ok; ok = leaderboard.PlayerCount > 0 {
 		select {
 		case <-c.quit:
+			err = tx.Rollback()
+			if err != nil {
+				c.errorLog.Printf("collector rollback error: %v", err)
+			}
 			return
 		default:
 			leaderboard, err = c.DDAPI.GetLeaderboard(maxLimit, offset)
 			if err != nil {
 				c.errorLog.Printf("collector error: %v", err)
+				err = tx.Rollback()
+				if err != nil {
+					c.errorLog.Printf("collector rollback error: %v", err)
+				}
 				return
 			}
 			// only run once
@@ -86,11 +102,19 @@ func (c *Collector) Start() {
 			for _, player := range leaderboard.Players {
 				select {
 				case <-c.quit:
+					err = tx.Rollback()
+					if err != nil {
+						c.errorLog.Printf("collector rollback error: %v", err)
+					}
 					return
 				default:
 					previousPlayer, err := c.DB.CollectorPlayers.Select(int(player.PlayerID))
 					if err != nil && !errors.Is(err, models.ErrNoRecord) {
 						c.errorLog.Printf("collector error: %v", err)
+						err = tx.Rollback()
+						if err != nil {
+							c.errorLog.Printf("collector rollback error: %v", err)
+						}
 						return
 					}
 					if errors.Is(err, models.ErrNoRecord) {
@@ -98,10 +122,13 @@ func (c *Collector) Start() {
 					} else {
 						c.calculatePlayer(player, previousPlayer)
 					}
-					err = c.DB.CollectorPlayers.UpsertPlayer(player, run.ID)
+					err = c.DB.CollectorPlayers.UpsertPlayer(tx, player, run.ID)
 					if err != nil {
-						c.infoLog.Printf("%+v", player)
 						c.errorLog.Printf("collector error: %v", err)
+						err = tx.Rollback()
+						if err != nil {
+							c.errorLog.Printf("collector rollback error: %v", err)
+						}
 						return
 					}
 					c.totalPlayers++
@@ -112,16 +139,25 @@ func (c *Collector) Start() {
 	}
 	c.compileRunStats(&run, previousRun)
 	run.RunTime = models.Duration(time.Since(start))
-	err = c.DB.CollectorRuns.Update(&run)
+	err = c.DB.CollectorRuns.Update(tx, &run)
 	if err != nil {
+		err = tx.Rollback()
 		c.errorLog.Printf("collector error: %v", err)
+		if err != nil {
+			c.errorLog.Printf("collector rollback error: %v", err)
+		}
+		return
 	}
+	err = tx.Commit()
+	if err != nil {
+		c.errorLog.Printf("collector commit error: %v", err)
+	}
+	c.infoLog.Printf("%d Players recorded to database...", c.totalPlayers)
 }
 
 func (c *Collector) Stop() {
 	close(c.quit)
 	<-c.done
-	c.infoLog.Printf("%d Players recorded to database...", c.totalPlayers)
 }
 
 func (c *Collector) Done() chan struct{} {

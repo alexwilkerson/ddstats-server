@@ -30,7 +30,7 @@ func (cpm *CollectorPlayerModel) Select(playerID int) (*models.CollectorPlayer, 
 	return &collectorPlayer, nil
 }
 
-func (cpm *CollectorPlayerModel) UpsertPlayer(player *ddapi.Player, collectorRunID int) error {
+func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player, collectorRunID int) error {
 	stmt := `
 		INSERT INTO collector_player(
 			id,
@@ -53,7 +53,7 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(player *ddapi.Player, collectorRun
 		ON CONFLICT (id) DO
 		UPDATE SET
 			id=$1,
-			player_name=$2,
+			player_name='$2',
 			rank=$3,
 			game_time=$4,
 			death_type=$5,
@@ -69,7 +69,7 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(player *ddapi.Player, collectorRun
 			overall_daggers_fired=$15,
 			collector_run_id=$16
 		WHERE collector_player.id=$1`
-	_, err := cpm.DB.Exec(stmt,
+	_, err := tx.Exec(stmt,
 		player.PlayerID,
 		player.PlayerName,
 		player.Rank,
