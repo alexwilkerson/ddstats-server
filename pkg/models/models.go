@@ -1,8 +1,9 @@
 package models
 
 import (
-	"database/sql"
+	"database/sql/driver"
 	"errors"
+	"fmt"
 	"time"
 
 	"gopkg.in/guregu/null.v3"
@@ -48,25 +49,24 @@ type GameWithName struct {
 
 // Player struct is for players
 type Player struct {
-	ID                     int          `json:"player_id" db:"id"`
-	LastActive             sql.NullTime `json:"last_active,omitempty" db:"last_active"`
-	PlayerName             string       `json:"player_name" db:"player_name"`
-	Rank                   int          `json:"rank" db:"rank"`
-	GameTime               float64      `json:"game_time" db:"game_time"`
-	DeathType              string       `json:"death_type" db:"death_type"`
-	Gems                   int          `json:"gems" db:"gems"`
-	DaggersHit             int          `json:"daggers_hit" db:"daggers_hit"`
-	DaggersFired           int          `json:"daggers_fired" db:"daggers_fired"`
-	EnemiesKilled          int          `json:"enemies_killed" db:"enemies_killed"`
-	Accuracy               float64      `json:"accuracy" db:"accuracy"`
-	OverallGameTime        float64      `json:"overall_game_time" db:"overall_game_time"`
-	OverallAverageGameTime float64      `json:"overall_average_game_time" db:"overall_average_game_time"`
-	OverallDeaths          int          `json:"overall_deaths" db:"overall_deaths"`
-	OverallGems            int          `json:"overall_gems" db:"overall_gems"`
-	OverallEnemiesKilled   int          `json:"overall_enemies_killed" db:"overall_enemies_killed"`
-	OverallDaggersHit      int          `json:"overall_daggers_hit" db:"overall_daggers_hit"`
-	OverallDaggersFired    int          `json:"overall_daggers_fired" db:"overall_daggers_fired"`
-	OverallAccuracy        float64      `json:"overall_accuracy" db:"overall_accuracy"`
+	ID                     int     `json:"player_id" db:"id"`
+	PlayerName             string  `json:"player_name" db:"player_name"`
+	Rank                   int     `json:"rank" db:"rank"`
+	GameTime               float64 `json:"game_time" db:"game_time"`
+	DeathType              string  `json:"death_type" db:"death_type"`
+	Gems                   int     `json:"gems" db:"gems"`
+	DaggersHit             int     `json:"daggers_hit" db:"daggers_hit"`
+	DaggersFired           int     `json:"daggers_fired" db:"daggers_fired"`
+	EnemiesKilled          int     `json:"enemies_killed" db:"enemies_killed"`
+	Accuracy               float64 `json:"accuracy" db:"accuracy"`
+	OverallGameTime        float64 `json:"overall_game_time" db:"overall_game_time"`
+	OverallAverageGameTime float64 `json:"overall_average_game_time" db:"overall_average_game_time"`
+	OverallDeaths          int     `json:"overall_deaths" db:"overall_deaths"`
+	OverallGems            int     `json:"overall_gems" db:"overall_gems"`
+	OverallEnemiesKilled   int     `json:"overall_enemies_killed" db:"overall_enemies_killed"`
+	OverallDaggersHit      int     `json:"overall_daggers_hit" db:"overall_daggers_hit"`
+	OverallDaggersFired    int     `json:"overall_daggers_fired" db:"overall_daggers_fired"`
+	OverallAccuracy        float64 `json:"overall_accuracy" db:"overall_accuracy"`
 }
 
 // State struct is for State
@@ -186,8 +186,38 @@ type News struct {
 }
 
 type CollectorRun struct {
-	ID        int       `db:"id"`
-	TimeStamp time.Time `db:"time_stamp"`
+	ID                                  int       `json:"-" db:"id"`
+	TimeStamp                           time.Time `json:"time_stamp" db:"time_stamp"`
+	RunTime                             Duration  `json:"-" db:"run_time"`
+	GlobalPlayers                       int       `json:"global_players" db:"global_players"`
+	NewPlayers                          int       `json:"new_players" db:"new_players"`
+	ActivePlayers                       int       `json:"active_players" db:"active_players"`
+	InactivePlayers                     int       `json:"inactive_players" db:"inactive_players"`
+	PlayersWithNewScores                int       `json:"players_with_new_scores" db:"players_with_new_scores"`
+	PlayersWithNewRanks                 int       `json:"players_with_new_ranks" db:"players_with_new_ranks"`
+	AverageImprovementTime              float64   `json:"average_improvement_time" db:"average_improvement_time"`
+	AverageRankImprovement              float64   `json:"average_rank_improvement" db:"average_rank_improvement"`
+	AverageGameTimePerActivePlayer      float64   `json:"average_game_time_per_active_player" db:"average_game_time_per_active_player"`
+	AverageDeathsPerActivePlayer        float64   `json:"average_deaths_per_active_player" db:"average_deaths_per_active_player"`
+	AverageGemsPerActivePlayer          float64   `json:"average_gems_per_active_player" db:"average_gems_per_active_player"`
+	AverageEnemiesKilledPerActivePlayer float64   `json:"average_enemies_killed_per_active_player" db:"average_enemies_killed_per_active_player"`
+	AverageDaggersHitPerActivePlayer    float64   `json:"average_daggers_hit_per_active_player" db:"average_daggers_hit_per_active_player"`
+	AverageDaggersFiredPerActivePlayer  float64   `json:"average_daggers_fired_per_active_player" db:"average_daggers_fired_per_active_player"`
+	AverageAccuracyPerActivePlayer      float64   `json:"average_accuracy_per_active_player" db:"average_accuracy_per_active_player"`
+	GlobalGameTime                      float64   `json:"global_game_time" db:"global_game_time"`
+	GlobalDeaths                        int       `json:"global_deaths" db:"global_deaths"`
+	GlobalGems                          int       `json:"global_gems" db:"global_gems"`
+	GlobalEnemiesKilled                 int       `json:"global_enemies_killed" db:"global_enemies_killed"`
+	GlobalDaggersHit                    int       `json:"global_daggers_hit" db:"global_daggers_hit"`
+	GlobalDaggersFired                  int       `json:"global_daggers_fired" db:"global_daggers_fired"`
+	GlobalAccuracy                      float64   `json:"global_accuracy" db:"global_accuracy"`
+	SinceGameTime                       float64   `json:"since_game_time" db:"since_game_time"`
+	SinceDeaths                         int       `json:"since_deaths" db:"since_deaths"`
+	SinceGems                           int       `json:"since_gems" db:"since_gems"`
+	SinceEnemiesKilled                  int       `json:"since_enemies_killed" db:"since_enemies_killed"`
+	SinceDaggersHit                     int       `json:"since_daggers_hit" db:"since_daggers_hit"`
+	SinceDaggersFired                   int       `json:"since_daggers_fired" db:"since_daggers_fired"`
+	SinceAccuracy                       float64   `json:"since_accuracy" db:"since_accuracy"`
 }
 
 type CollectorPlayer struct {
@@ -207,4 +237,22 @@ type CollectorPlayer struct {
 	OverallDaggersHit    int     `db:"overall_daggers_hit"`
 	OverallDaggersFired  int     `db:"overall_daggers_fired"`
 	CollectorRunID       int     `db:"collector_run_id"`
+}
+
+type Duration time.Duration
+
+func (d Duration) Value() (driver.Value, error) {
+	return driver.Value(int64(d)), nil
+}
+
+func (d *Duration) Scan(raw interface{}) error {
+	switch v := raw.(type) {
+	case int64:
+		*d = Duration(v)
+	case nil:
+		*d = Duration(0)
+	default:
+		return fmt.Errorf("cannot sql.Scan() strfmt.Duration from: %#v", v)
+	}
+	return nil
 }
