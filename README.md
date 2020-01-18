@@ -87,7 +87,7 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 #### collector
 
-- [ ] `api/v2/daily` returns most recent
+- [x] `api/v2/daily` returns most recent
 - [ ] `api/v2/daily?date={?}`
 
 #### index
