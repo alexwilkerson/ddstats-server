@@ -56,6 +56,7 @@ reflex -d none -c reflex.conf
 #### collector
 
 - [ ] add game_time_improvement to collector_active_player
+- [ ] add the following to runs: bronze_daggers, silver_daggers, gold_daggers, devil_daggers, total_bronze, total_silver, total_gold, total_devil
 
 #### discord-bot commands
 
@@ -83,7 +84,7 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 - [x] create connection between socket.io -> websocket -> discord for player best and above 1000 notifications
 
 ### TODO: endpoints
-
+l
 #### index
 
 - [x] set up `/static` endpoint to host static files
