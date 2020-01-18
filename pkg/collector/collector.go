@@ -164,17 +164,17 @@ func (c *Collector) Start() {
 					}
 					previousPlayer, err := c.DB.CollectorPlayers.Select(int(player.PlayerID))
 					if err != nil && !errors.Is(err, models.ErrNoRecord) {
-						err = c.calculateNewPlayer(tx, runID, player)
+						err = c.calculateNewPlayer(tx, &run, player)
 						return
 					}
 					if errors.Is(err, models.ErrNoRecord) {
-						err = c.calculateNewPlayer(tx, runID, player)
+						err = c.calculateNewPlayer(tx, &run, player)
 						if err != nil {
 							c.rollbackAndLogError(tx, err)
 							return
 						}
 					} else {
-						err = c.calculatePlayer(tx, runID, player, previousPlayer)
+						err = c.calculatePlayer(tx, &run, player, previousPlayer)
 						if err != nil {
 							c.rollbackAndLogError(tx, err)
 							return
@@ -268,7 +268,8 @@ func (c *Collector) compileRunStats(run *models.CollectorRun, previousRun *model
 	}
 }
 
-func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) error {
+func (c *Collector) calculatePlayer(tx *sqlx.Tx, run *models.CollectorRun, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) error {
+	newDagger := calculateDaggers(run, fromDDAPI, fromDB)
 	overallDeaths := int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
 	if overallDeaths < 1 {
 		return nil
@@ -280,22 +281,19 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Pla
 	} else {
 		rankImprovement = 0
 	}
-	err := c.DB.CollectorActivePlayers.Insert(tx, runID, int(fromDDAPI.PlayerID), int(fromDDAPI.Rank), rankImprovement, float64(fromDDAPI.GameTime))
-	if err != nil {
-		return err
-	}
 	c.activePlayers++
 	c.playerDeaths += overallDeaths
 	gameTimeImprovement := float64(fromDDAPI.GameTime) - fromDB.GameTime
 	if gameTimeImprovement > 0 {
 		c.playersWithNewScores++
 		c.playerImprovementTime += gameTimeImprovement
-		if fromDB.GameTime < DevilDaggerThreshold && float64(fromDDAPI.GameTime) >= DevilDaggerThreshold ||
-			fromDB.GameTime < GoldDaggerThreshold && float64(fromDDAPI.GameTime) >= GoldDaggerThreshold ||
-			fromDB.GameTime < SilverDaggerThreshold && float64(fromDDAPI.GameTime) >= SilverDaggerThreshold ||
-			fromDB.GameTime < BronzeDaggerThreshold && float64(fromDDAPI.GameTime) >= BronzeDaggerThreshold {
-			c.DB.CollectorHighScores.Insert(tx, runID, int(fromDDAPI.PlayerID), float64(fromDDAPI.GameTime))
+		if newDagger {
+			c.DB.CollectorHighScores.Insert(tx, run.ID, int(fromDDAPI.PlayerID), float64(fromDDAPI.GameTime))
 		}
+	}
+	err := c.DB.CollectorActivePlayers.Insert(tx, run.ID, int(fromDDAPI.PlayerID), int(fromDDAPI.Rank), rankImprovement, float64(fromDDAPI.GameTime), gameTimeImprovement)
+	if err != nil {
+		return err
 	}
 	c.playerGameTime += float64(fromDDAPI.OverallGameTime) - fromDB.OverallGameTime
 	c.playerDeaths += int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
@@ -306,12 +304,13 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Pla
 	return nil
 }
 
-func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, runID int, p *ddapi.Player) error {
+func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, run *models.CollectorRun, p *ddapi.Player) error {
+	calculateDaggers(run, p, nil)
 	err := c.DB.CollectorPlayers.NewPlayer(tx, int(p.PlayerID))
 	if err != nil {
 		return err
 	}
-	err = c.DB.CollectorNewPlayers.Insert(tx, runID, int(p.PlayerID), int(p.Rank), float64(p.GameTime))
+	err = c.DB.CollectorNewPlayers.Insert(tx, run.ID, int(p.PlayerID), int(p.Rank), float64(p.GameTime))
 	if err != nil {
 		return err
 	}
@@ -319,12 +318,12 @@ func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, runID int, p *ddapi.Player) 
 	if overallDeaths < 1 {
 		return nil
 	}
-	err = c.DB.CollectorActivePlayers.Insert(tx, runID, int(p.PlayerID), int(p.Rank), 0, float64(p.GameTime))
+	err = c.DB.CollectorActivePlayers.Insert(tx, run.ID, int(p.PlayerID), int(p.Rank), 0, float64(p.GameTime), 0)
 	if err != nil {
 		return err
 	}
 	if p.GameTime >= BronzeDaggerThreshold {
-		err = c.DB.CollectorHighScores.Insert(tx, runID, int(p.PlayerID), float64(p.GameTime))
+		err = c.DB.CollectorHighScores.Insert(tx, run.ID, int(p.PlayerID), float64(p.GameTime))
 		if err != nil {
 			return err
 		}
@@ -342,4 +341,53 @@ func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, runID int, p *ddapi.Player) 
 	c.playerDaggersHit += int(p.OverallDaggersHit)
 	c.playerDaggersFired += int(p.OverallDaggersFired)
 	return nil
+}
+
+func calculateDaggers(run *models.CollectorRun, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) bool {
+	gameTimeFromDDAPI := float64(fromDDAPI.GameTime)
+	switch {
+	case gameTimeFromDDAPI >= DevilDaggerThreshold:
+		run.GlobalDevilDaggers++
+	case gameTimeFromDDAPI >= GoldDaggerThreshold:
+		run.GlobalGoldDaggers++
+	case gameTimeFromDDAPI >= SilverDaggerThreshold:
+		run.GlobalSilverDaggers++
+	case gameTimeFromDDAPI >= BronzeDaggerThreshold:
+		run.GlobalBronzeDaggers++
+	default:
+		run.GlobalDefaultDaggers++
+	}
+	var newDagger bool
+	if fromDB != nil {
+		switch {
+		case fromDB.GameTime < DevilDaggerThreshold && gameTimeFromDDAPI >= DevilDaggerThreshold:
+			run.SinceDevilDaggers++
+			newDagger = true
+		case fromDB.GameTime < GoldDaggerThreshold && gameTimeFromDDAPI >= GoldDaggerThreshold:
+			run.SinceGoldDaggers++
+			newDagger = true
+		case fromDB.GameTime < SilverDaggerThreshold && gameTimeFromDDAPI >= SilverDaggerThreshold:
+			run.SinceSilverDaggers++
+			newDagger = true
+		case fromDB.GameTime < BronzeDaggerThreshold && gameTimeFromDDAPI >= BronzeDaggerThreshold:
+			run.SinceBronzeDaggers++
+			newDagger = true
+		}
+	} else { // if it's a new player, fromDB will be nil
+		switch {
+		case gameTimeFromDDAPI >= DevilDaggerThreshold:
+			run.SinceDevilDaggers++
+			newDagger = true
+		case gameTimeFromDDAPI >= GoldDaggerThreshold:
+			run.SinceGoldDaggers++
+			newDagger = true
+		case gameTimeFromDDAPI >= SilverDaggerThreshold:
+			run.SinceSilverDaggers++
+			newDagger = true
+		case gameTimeFromDDAPI >= BronzeDaggerThreshold:
+			run.SinceBronzeDaggers++
+			newDagger = true
+		}
+	}
+	return newDagger
 }
