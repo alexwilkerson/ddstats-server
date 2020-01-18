@@ -21,7 +21,7 @@ const (
 
 // GetTop retrieves a slice of the top games in the database with a given limit
 func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
-	var games []*models.GameWithName
+	games := []*models.GameWithName{}
 
 	stmt := fmt.Sprintf(`
 		SELECT
@@ -70,7 +70,7 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 		where = fmt.Sprintf("WHERE game.player_id=$1 AND game.replay_player_id=0")
 	}
 
-	var games []*models.GameWithName
+	games := []*models.GameWithName{}
 
 	stmt := fmt.Sprintf(`
 		SELECT

@@ -34,15 +34,13 @@ var (
 
 // API is used as an abstraction and to inject the client into the ddapi package
 type API struct {
-	Client  *http.Client
-	Watcher *Watcher
+	Client *http.Client
 }
 
 // NewAPI returns an API struct
 func NewAPI(client *http.Client) *API {
 	return &API{
-		Client:  client,
-		Watcher: NewWatcher(),
+		Client: client,
 	}
 }
 

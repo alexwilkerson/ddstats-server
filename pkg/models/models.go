@@ -218,6 +218,22 @@ type CollectorRun struct {
 	SinceDaggersHit                     int       `json:"since_daggers_hit" db:"since_daggers_hit"`
 	SinceDaggersFired                   int       `json:"since_daggers_fired" db:"since_daggers_fired"`
 	SinceAccuracy                       float64   `json:"since_accuracy" db:"since_accuracy"`
+	Fallen                              int       `json:"fallen" db:"fallen"`
+	Swarmed                             int       `json:"swarmed" db:"swarmed"`
+	Impaled                             int       `json:"impaled" db:"impaled"`
+	Gored                               int       `json:"gored" db:"gored"`
+	Infested                            int       `json:"infested" db:"infested"`
+	Opened                              int       `json:"opened" db:"opened"`
+	Purged                              int       `json:"purged" db:"purged"`
+	Desecrated                          int       `json:"desecrated" db:"desecrated"`
+	Sacrificed                          int       `json:"sacrificed" db:"sacrificed"`
+	Eviscerated                         int       `json:"eviscerated" db:"eviscerated"`
+	Annihilated                         int       `json:"annihilated" db:"annihilated"`
+	Intoxicated                         int       `json:"intoxicated" db:"intoxicated"`
+	Envenmonated                        int       `json:"envenmonated" db:"envenmonated"`
+	Incarnated                          int       `json:"incarnated" db:"incarnated"`
+	Discarnated                         int       `json:"discarnated" db:"discarnated"`
+	Barbed                              int       `json:"barbed" db:"barbed"`
 }
 
 type CollectorPlayer struct {
@@ -236,7 +252,29 @@ type CollectorPlayer struct {
 	OverallEnemiesKilled int     `db:"overall_enemies_killed"`
 	OverallDaggersHit    int     `db:"overall_daggers_hit"`
 	OverallDaggersFired  int     `db:"overall_daggers_fired"`
-	CollectorRunID       int     `db:"collector_run_id"`
+}
+
+type CollectorHighScore struct {
+	CollectorRunID      int     `json:"-" db:"collector_run_id"`
+	CollectorPlayerID   int     `json:"player_id" db:"collector_player_id"`
+	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
+	Score               float64 `json:"score" db:"score"`
+}
+
+type CollectorActivePlayer struct {
+	CollectorRunID      int     `json:"-" db:"collector_run_id"`
+	CollectorPlayerID   int     `json:"player_id" db:"collector_player_id"`
+	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
+	Rank                int     `json:"rank" db:"rank"`
+	GameTime            float64 `json:"game_time" db:"game_time"`
+}
+
+type CollectorNewPlayer struct {
+	CollectorRunID      int     `json:"-" db:"collector_run_id"`
+	CollectorPlayerID   int     `json:"player_id" db:"collector_player_id"`
+	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
+	Rank                int     `json:"rank" db:"rank"`
+	GameTime            float64 `json:"game_time" db:"game_time"`
 }
 
 type Duration time.Duration

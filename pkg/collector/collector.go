@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/models"
+	"github.com/jmoiron/sqlx"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 
@@ -14,6 +15,32 @@ import (
 
 const (
 	maxLimit int = 1000
+)
+
+const (
+	BronzeDaggerThreshold float64 = 60
+	SilverDaggerThreshold float64 = 120
+	GoldDaggerThreshold   float64 = 250
+	DevilDaggerThreshold  float64 = 500
+)
+
+const (
+	Fallen       = "FALLEN"
+	Swarmed      = "SWARMED"
+	Impaled      = "IMPALED"
+	Gored        = "GORED"
+	Infested     = "INFESTED"
+	Opened       = "OPENED"
+	Purged       = "PURGED"
+	Desecrated   = "DESECRATED"
+	Sacrificed   = "SACRIFICED"
+	Eviscerated  = "EVISCERATED"
+	Annihilated  = "ANNIHILATED"
+	Intoxicated  = "INTOXICATED"
+	Envenmonated = "ENVENMONATED"
+	Incarnated   = "INCARNATED"
+	Discarnated  = "DISCARNATED"
+	Barbed       = "BARBED"
 )
 
 type Collector struct {
@@ -102,12 +129,47 @@ func (c *Collector) Start() {
 			for _, player := range leaderboard.Players {
 				select {
 				case <-c.quit:
+					c.infoLog.Println("Collector exiting prematurely. Rolling back database changes...")
 					err = tx.Rollback()
 					if err != nil {
 						c.errorLog.Printf("collector rollback error: %v", err)
 					}
 					return
 				default:
+					switch player.DeathType {
+					case Fallen:
+						run.Fallen++
+					case Swarmed:
+						run.Swarmed++
+					case Impaled:
+						run.Impaled++
+					case Gored:
+						run.Gored++
+					case Infested:
+						run.Infested++
+					case Opened:
+						run.Opened++
+					case Purged:
+						run.Purged++
+					case Desecrated:
+						run.Desecrated++
+					case Sacrificed:
+						run.Sacrificed++
+					case Eviscerated:
+						run.Eviscerated++
+					case Annihilated:
+						run.Annihilated++
+					case Intoxicated:
+						run.Intoxicated++
+					case Envenmonated:
+						run.Envenmonated++
+					case Incarnated:
+						run.Incarnated++
+					case Discarnated:
+						run.Discarnated++
+					case Barbed:
+						run.Barbed++
+					}
 					previousPlayer, err := c.DB.CollectorPlayers.Select(int(player.PlayerID))
 					if err != nil && !errors.Is(err, models.ErrNoRecord) {
 						c.errorLog.Printf("collector error: %v", err)
@@ -118,9 +180,17 @@ func (c *Collector) Start() {
 						return
 					}
 					if errors.Is(err, models.ErrNoRecord) {
-						c.calculateNewPlayer(player)
+						err = c.calculateNewPlayer(tx, runID, player)
+						if err != nil {
+							c.errorLog.Printf("collector error: %v", err)
+							err = tx.Rollback()
+							if err != nil {
+								c.errorLog.Printf("collector rollback error: %v", err)
+							}
+							return
+						}
 					} else {
-						c.calculatePlayer(player, previousPlayer)
+						c.calculatePlayer(tx, runID, player, previousPlayer)
 					}
 					err = c.DB.CollectorPlayers.UpsertPlayer(tx, player, run.ID)
 					if err != nil {
@@ -210,7 +280,7 @@ func (c *Collector) compileRunStats(run *models.CollectorRun, previousRun *model
 	}
 }
 
-func (c *Collector) calculatePlayer(fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) {
+func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) {
 	overallDeaths := int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
 	if overallDeaths < 1 {
 		return
@@ -221,6 +291,12 @@ func (c *Collector) calculatePlayer(fromDDAPI *ddapi.Player, fromDB *models.Coll
 	if gameTime > 0 {
 		c.playersWithNewScores++
 		c.playerImprovementTime += gameTime
+		if fromDB.GameTime < DevilDaggerThreshold && float64(fromDDAPI.GameTime) >= DevilDaggerThreshold ||
+			fromDB.GameTime < GoldDaggerThreshold && float64(fromDDAPI.GameTime) >= GoldDaggerThreshold ||
+			fromDB.GameTime < SilverDaggerThreshold && float64(fromDDAPI.GameTime) >= SilverDaggerThreshold ||
+			fromDB.GameTime < BronzeDaggerThreshold && float64(fromDDAPI.GameTime) >= BronzeDaggerThreshold {
+			c.DB.CollectorHighScores.Insert(tx, runID, int(fromDDAPI.PlayerID), float64(fromDDAPI.GameTime))
+		}
 	}
 	rank := int(fromDDAPI.Rank) - fromDB.Rank
 	if rank > 0 {
@@ -235,10 +311,17 @@ func (c *Collector) calculatePlayer(fromDDAPI *ddapi.Player, fromDB *models.Coll
 	c.playerDaggersFired += int(fromDDAPI.OverallDaggersFired) - fromDB.OverallDaggersFired
 }
 
-func (c *Collector) calculateNewPlayer(p *ddapi.Player) {
+func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, runID int, p *ddapi.Player) error {
 	overallDeaths := int(p.OverallDeaths)
 	if overallDeaths < 1 {
-		return
+		return nil
+	}
+	if p.GameTime >= BronzeDaggerThreshold {
+		err := c.DB.CollectorPlayers.NewPlayer(tx, int(p.PlayerID))
+		if err != nil {
+			return err
+		}
+		c.DB.CollectorHighScores.Insert(tx, runID, int(p.PlayerID), float64(p.GameTime))
 	}
 	c.playerDeaths += overallDeaths
 	c.activePlayers++
@@ -252,4 +335,5 @@ func (c *Collector) calculateNewPlayer(p *ddapi.Player) {
 	c.playerEnemiesKilled += int(p.OverallEnemiesKilled)
 	c.playerDaggersHit += int(p.OverallDaggersHit)
 	c.playerDaggersFired += int(p.OverallDaggersFired)
+	return nil
 }
