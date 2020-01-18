@@ -141,6 +141,11 @@ CREATE TABLE IF NOT EXISTS collector_run (
   global_daggers_hit BIGINT NOT NULL DEFAULT 0,
   global_daggers_fired BIGINT NOT NULL DEFAULT 0,
   global_accuracy DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  global_default_daggers INTEGER NOT NULL DEFAULT 0,
+  global_bronze_daggers INTEGER NOT NULL DEFAULT 0,
+  global_silver_daggers INTEGER NOT NULL DEFAULT 0,
+  global_gold_daggers INTEGER NOT NULL DEFAULT 0,
+  global_devil_daggers INTEGER NOT NULL DEFAULT 0,
   since_game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
   since_deaths BIGINT NOT NULL DEFAULT 0,
   since_gems BIGINT NOT NULL DEFAULT 0,
@@ -148,6 +153,10 @@ CREATE TABLE IF NOT EXISTS collector_run (
   since_daggers_hit BIGINT NOT NULL DEFAULT 0,
   since_daggers_fired BIGINT NOT NULL DEFAULT 0,
   since_accuracy DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  since_bronze_daggers INTEGER NOT NULL DEFAULT 0,
+  since_silver_daggers INTEGER NOT NULL DEFAULT 0,
+  since_gold_daggers INTEGER NOT NULL DEFAULT 0,
+  since_devil_daggers INTEGER NOT NULL DEFAULT 0,
   fallen INTEGER NOT NULL DEFAULT 0,
   swarmed INTEGER NOT NULL DEFAULT 0,
   impaled INTEGER NOT NULL DEFAULT 0,
@@ -194,7 +203,9 @@ CREATE TABLE IF NOT EXISTS collector_active_player (
   collector_run_id BIGINT REFERENCES collector_run(id),
   collector_player_id INTEGER REFERENCES collector_player(id),
   rank INTEGER NOT NULL DEFAULT 0,
-  game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0
+  rank_improvement INTEGER NOT NULL DEFAULT 0,
+  game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  game_time_improvement DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
 CREATE TABLE IF NOT EXISTS collector_new_player (

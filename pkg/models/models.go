@@ -211,6 +211,11 @@ type CollectorRun struct {
 	GlobalDaggersHit                    int       `json:"global_daggers_hit" db:"global_daggers_hit"`
 	GlobalDaggersFired                  int       `json:"global_daggers_fired" db:"global_daggers_fired"`
 	GlobalAccuracy                      float64   `json:"global_accuracy" db:"global_accuracy"`
+	GlobalDefaultDaggers                int       `json:"global_default_daggers" db:"global_default_daggers"`
+	GlobalBronzeDaggers                 int       `json:"global_bronze_daggers" db:"global_bronze_daggers"`
+	GlobalSilverDaggers                 int       `json:"global_silver_daggers" db:"global_silver_daggers"`
+	GlobalGoldDaggers                   int       `json:"global_gold_daggers" db:"global_gold_daggers"`
+	GlobalDevilDaggers                  int       `json:"global_devil_daggers" db:"global_devil_daggers"`
 	SinceGameTime                       float64   `json:"since_game_time" db:"since_game_time"`
 	SinceDeaths                         int       `json:"since_deaths" db:"since_deaths"`
 	SinceGems                           int       `json:"since_gems" db:"since_gems"`
@@ -218,6 +223,10 @@ type CollectorRun struct {
 	SinceDaggersHit                     int       `json:"since_daggers_hit" db:"since_daggers_hit"`
 	SinceDaggersFired                   int       `json:"since_daggers_fired" db:"since_daggers_fired"`
 	SinceAccuracy                       float64   `json:"since_accuracy" db:"since_accuracy"`
+	SinceBronzeDaggers                  int       `json:"since_bronze_daggers" db:"since_bronze_daggers"`
+	SinceSilverDaggers                  int       `json:"since_silver_daggers" db:"since_silver_daggers"`
+	SinceGoldDaggers                    int       `json:"since_gold_daggers" db:"since_gold_daggers"`
+	SinceDevilDaggers                   int       `json:"since_devil_daggers" db:"since_devil_daggers"`
 	Fallen                              int       `json:"fallen" db:"fallen"`
 	Swarmed                             int       `json:"swarmed" db:"swarmed"`
 	Impaled                             int       `json:"impaled" db:"impaled"`
@@ -266,8 +275,9 @@ type CollectorActivePlayer struct {
 	CollectorPlayerID   int     `json:"player_id" db:"collector_player_id"`
 	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
 	Rank                int     `json:"rank" db:"rank"`
-	RankImprovement     int     `json:"rank_improvement" db:"rank_improvement"`
+	RankImprovement     int     `json:"rank_improvement,omitempty" db:"rank_improvement"`
 	GameTime            float64 `json:"game_time" db:"game_time"`
+	GameTimeImprovement float64 `json:"game_time_improvement,omitempty" db:"game_time_improvement"`
 }
 
 type CollectorNewPlayer struct {
