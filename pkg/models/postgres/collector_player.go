@@ -30,6 +30,17 @@ func (cpm *CollectorPlayerModel) Select(playerID int) (*models.CollectorPlayer, 
 	return &collectorPlayer, nil
 }
 
+func (cpm *CollectorPlayerModel) NewPlayer(tx *sqlx.Tx, collectorPlayerID int) error {
+	stmt := `
+		INSERT INTO collector_player(id)
+		VALUES ($1)`
+	_, err := tx.Exec(stmt, collectorPlayerID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player, collectorRunID int) error {
 	stmt := `
 		INSERT INTO collector_player(
@@ -47,9 +58,8 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player,
 			overall_gems,
 			overall_enemies_killed,
 			overall_daggers_hit,
-			overall_daggers_fired,
-			collector_run_id
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
+			overall_daggers_fired
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
 		ON CONFLICT (id) DO
 		UPDATE SET
 			id=$1,
@@ -66,8 +76,7 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player,
 			overall_gems=$12,
 			overall_enemies_killed=$13,
 			overall_daggers_hit=$14,
-			overall_daggers_fired=$15,
-			collector_run_id=$16
+			overall_daggers_fired=$15
 		WHERE collector_player.id=$1`
 	_, err := tx.Exec(stmt,
 		player.PlayerID,
@@ -85,7 +94,6 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player,
 		player.OverallEnemiesKilled,
 		player.OverallDaggersHit,
 		player.OverallDaggersFired,
-		collectorRunID,
 	)
 	if err != nil {
 		return err

@@ -1,4 +1,5 @@
-DROP TABLE collector;
+DROP TABLE collector_high_score;
+DROP TABLE collector_player;
 DROP TABLE collector_run;
 DROP TABLE news;
 DROP TABLE release;
@@ -144,26 +145,61 @@ CREATE TABLE IF NOT EXISTS collector_run (
   since_enemies_killed BIGINT NOT NULL DEFAULT 0,
   since_daggers_hit BIGINT NOT NULL DEFAULT 0,
   since_daggers_fired BIGINT NOT NULL DEFAULT 0,
-  since_accuracy DOUBLE PRECISION NOT NULL DEFAULT 0.0
+  since_accuracy DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  fallen INTEGER NOT NULL DEFAULT 0,
+  swarmed INTEGER NOT NULL DEFAULT 0,
+  impaled INTEGER NOT NULL DEFAULT 0,
+  gored INTEGER NOT NULL DEFAULT 0,
+  infested INTEGER NOT NULL DEFAULT 0,
+  opened INTEGER NOT NULL DEFAULT 0,
+  purged INTEGER NOT NULL DEFAULT 0,
+  desecrated INTEGER NOT NULL DEFAULT 0,
+  sacrificed INTEGER NOT NULL DEFAULT 0,
+  eviscerated INTEGER NOT NULL DEFAULT 0,
+  annihilated INTEGER NOT NULL DEFAULT 0,
+  intoxicated INTEGER NOT NULL DEFAULT 0,
+  envenmonated INTEGER NOT NULL DEFAULT 0,
+  incarnated INTEGER NOT NULL DEFAULT 0,
+  discarnated INTEGER NOT NULL DEFAULT 0,
+  barbed INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS collector_player (
   id INTEGER PRIMARY KEY,
-  player_name TEXT NOT NULL,
-  rank INTEGER NOT NULL,
-  game_time DOUBLE PRECISION NOT NULL,
-  death_type TEXT NOT NULL,
-  gems BIGINT NOT NULL,
-  daggers_hit BIGINT NOT NULL,
-  daggers_fired BIGINT NOT NULL,
-  enemies_killed BIGINT NOT NULL,
-  overall_game_time DOUBLE PRECISION NOT NULL,
-  overall_deaths BIGINT NOT NULL,
-  overall_gems BIGINT NOT NULL,
-  overall_enemies_killed BIGINT NOT NULL,
-  overall_daggers_hit BIGINT NOT NULL,
-  overall_daggers_fired BIGINT NOT NULL,
-  collector_run_id BIGINT REFERENCES collector_run(id)
+  player_name TEXT NOT NULL DEFAULT '',
+  rank INTEGER NOT NULL DEFAULT 0,
+  game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  death_type TEXT NOT NULL DEFAULT '',
+  gems BIGINT NOT NULL DEFAULT 0,
+  daggers_hit BIGINT NOT NULL DEFAULT 0,
+  daggers_fired BIGINT NOT NULL DEFAULT 0,
+  enemies_killed BIGINT NOT NULL DEFAULT 0,
+  overall_game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  overall_deaths BIGINT NOT NULL DEFAULT 0,
+  overall_gems BIGINT NOT NULL DEFAULT 0,
+  overall_enemies_killed BIGINT NOT NULL DEFAULT 0,
+  overall_daggers_hit BIGINT NOT NULL DEFAULT 0,
+  overall_daggers_fired BIGINT NOT NULL DEFAULT 0
+);
+
+CREATE TABLE IF NOT EXISTS collector_high_score (
+  collector_run_id BIGINT REFERENCES collector_run(id),
+  collector_player_id INTEGER REFERENCES collector_player(id),
+  score DOUBLE PRECISION NOT NULL DEFAULT 0.0
+);
+
+CREATE TABLE IF NOT EXISTS collector_active_player (
+  collector_run_id BIGINT REFERENCES collector_run(id),
+  collector_player_id INTEGER REFERENCES collector_player(id),
+  rank INTEGER NOT NULL DEFAULT 0,
+  game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0
+);
+
+CREATE TABLE IF NOT EXISTS collector_new_player (
+  collector_run_id BIGINT REFERENCES collector_run(id),
+  collector_player_id INTEGER REFERENCES collector_player(id),
+  rank INTEGER NOT NULL DEFAULT 0,
+  game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
 -- below are POSTGRES helper functions to make dealing with the database easier --
@@ -181,36 +217,3 @@ CREATE OR REPLACE FUNCTION DIVZERO(float,float) RETURNS FLOAT AS $$
       ELSE
         ($1::FLOAT/$2::FLOAT)::FLOAT END;
 $$ language SQL IMMUTABLE;
-
-
-ALTER TABLE collector_run
-  ADD run_time BIGINT NOT NULL DEFAULT 0,
-  ADD global_players INTEGER NOT NULL DEFAULT 0,
-  ADD new_players INTEGER NOT NULL DEFAULT 0,
-  ADD active_players INTEGER NOT NULL DEFAULT 0,
-  ADD inactive_players INTEGER NOT NULL DEFAULT 0,
-  ADD players_with_new_scores INTEGER NOT NULL DEFAULT 0,
-  ADD players_with_new_ranks INTEGER NOT NULL DEFAULT 0,
-  ADD average_improvement_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD average_rank_improvement DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD average_game_time_per_active_player DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD average_deaths_per_active_player DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD average_gems_per_active_player DOUBLE PRECISION NOT NULL DEFAULT 0,
-  ADD average_enemies_killed_per_active_player DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD average_daggers_hit_per_active_player DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD average_daggers_fired_per_active_player DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD average_accuracy_per_active_player DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD global_game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD global_deaths BIGINT NOT NULL DEFAULT 0,
-  ADD global_gems BIGINT NOT NULL DEFAULT 0,
-  ADD global_enemies_killed BIGINT NOT NULL DEFAULT 0,
-  ADD global_daggers_hit BIGINT NOT NULL DEFAULT 0,
-  ADD global_daggers_fired BIGINT NOT NULL DEFAULT 0,
-  ADD global_accuracy DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD since_game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  ADD since_deaths BIGINT NOT NULL DEFAULT 0,
-  ADD since_gems BIGINT NOT NULL DEFAULT 0,
-  ADD since_enemies_killed BIGINT NOT NULL DEFAULT 0,
-  ADD since_daggers_hit BIGINT NOT NULL DEFAULT 0,
-  ADD since_daggers_fired BIGINT NOT NULL DEFAULT 0,
-  ADD since_accuracy DOUBLE PRECISION NOT NULL DEFAULT 0.0;
