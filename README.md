@@ -53,6 +53,10 @@ reflex -d none -c reflex.conf
 
 - [ ] authorization
 
+#### collector
+
+- [ ] add game_time_improvement to collector_active_player
+
 #### discord-bot commands
 
 _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_

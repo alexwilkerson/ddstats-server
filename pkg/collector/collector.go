@@ -286,10 +286,10 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Pla
 	}
 	c.activePlayers++
 	c.playerDeaths += overallDeaths
-	gameTime := float64(fromDDAPI.GameTime) - fromDB.GameTime
-	if gameTime > 0 {
+	gameTimeImprovement := float64(fromDDAPI.GameTime) - fromDB.GameTime
+	if gameTimeImprovement > 0 {
 		c.playersWithNewScores++
-		c.playerImprovementTime += gameTime
+		c.playerImprovementTime += gameTimeImprovement
 		if fromDB.GameTime < DevilDaggerThreshold && float64(fromDDAPI.GameTime) >= DevilDaggerThreshold ||
 			fromDB.GameTime < GoldDaggerThreshold && float64(fromDDAPI.GameTime) >= GoldDaggerThreshold ||
 			fromDB.GameTime < SilverDaggerThreshold && float64(fromDDAPI.GameTime) >= SilverDaggerThreshold ||
