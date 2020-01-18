@@ -29,11 +29,12 @@ func (cnp *CollectorNewPlayerModel) Select(runID int) ([]*models.CollectorNewPla
 		SELECT
 			collector_run_id,
 			collector_player_id,
-			player.player_name AS collector_player_name,
-			collector_new_player,rank,
+			collector_player.player_name AS collector_player_name,
+			collector_new_player.rank,
 			collector_new_player.game_time
-		FROM collector_new_player JOIN player ON collector_player_id=player.id
-		WHERE collector_run_id=$1`
+		FROM collector_new_player JOIN collector_player ON collector_player_id=collector_player.id
+		WHERE collector_run_id=$1
+		ORDER BY collector_new_player.rank ASC`
 	err := cnp.DB.Select(&players, stmt, runID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err

@@ -80,8 +80,6 @@ func main() {
 	}
 	defer discordSession.Close()
 
-	go ddAPI.Watcher.Start()
-	defer ddAPI.Watcher.Close()
 	go websocketHub.Start()
 	defer websocketHub.Close()
 	go socketioServer.Serve()

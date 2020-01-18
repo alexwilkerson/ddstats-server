@@ -12,6 +12,73 @@ import (
 	"github.com/alexwilkerson/ddstats-server/pkg/websocket"
 )
 
+const (
+	BronzeDaggerThreshold float64 = 60
+	SilverDaggerThreshold float64 = 120
+	GoldDaggerThreshold   float64 = 250
+	DevilDaggerThreshold  float64 = 500
+)
+
+func (api *API) getDaily(w http.ResponseWriter, r *http.Request) {
+	run, err := api.db.CollectorRuns.SelectMostRecent()
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+	newPlayers, err := api.db.CollectorNewPlayers.Select(run.ID)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+	activePlayers, err := api.db.CollectorActivePlayers.Select(run.ID)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+	highScores, err := api.db.CollectorHighScores.Select(run.ID)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+	bronzeDaggers := []*models.CollectorHighScore{}
+	silverDaggers := []*models.CollectorHighScore{}
+	goldDaggers := []*models.CollectorHighScore{}
+	devilDaggers := []*models.CollectorHighScore{}
+
+	for _, player := range highScores {
+		switch {
+		case player.Score >= DevilDaggerThreshold:
+			devilDaggers = append(devilDaggers, player)
+		case player.Score >= GoldDaggerThreshold:
+			goldDaggers = append(goldDaggers, player)
+		case player.Score >= SilverDaggerThreshold:
+			silverDaggers = append(silverDaggers, player)
+		case player.Score >= BronzeDaggerThreshold:
+			bronzeDaggers = append(bronzeDaggers, player)
+		}
+	}
+
+	daily := struct {
+		*models.CollectorRun
+		NewPlayers    []*models.CollectorNewPlayer    `json:"new_players_list"`
+		ActivePlayers []*models.CollectorActivePlayer `json:"active_players_list"`
+		BronzeDaggers []*models.CollectorHighScore    `json:"bronze_daggers_list"`
+		SilverDaggers []*models.CollectorHighScore    `json:"silver_daggers_list"`
+		GoldDaggers   []*models.CollectorHighScore    `json:"gold_daggers_list"`
+		DevilDaggers  []*models.CollectorHighScore    `json:"devil_daggers_list"`
+	}{
+		run,
+		newPlayers,
+		activePlayers,
+		bronzeDaggers,
+		silverDaggers,
+		goldDaggers,
+		devilDaggers,
+	}
+
+	api.writeJSON(w, daily)
+}
+
 func (api *API) getNews(w http.ResponseWriter, r *http.Request) {
 	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
 	if err != nil {
