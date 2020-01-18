@@ -194,26 +194,32 @@ CREATE TABLE IF NOT EXISTS collector_player (
 );
 
 CREATE TABLE IF NOT EXISTS collector_high_score (
-  collector_run_id BIGINT REFERENCES collector_run(id),
-  collector_player_id INTEGER REFERENCES collector_player(id),
+  collector_run_id BIGINT REFERENCES collector_run(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  collector_player_id INTEGER REFERENCES collector_player(id) ON UPDATE CASCADE ON DELETE CASCADE,
   score DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
+CREATE IF NOT EXISTS INDEX collector_high_score_collector_run_id_idx ON collector_high_score(collector_run_id int8_ops);
+
 CREATE TABLE IF NOT EXISTS collector_active_player (
-  collector_run_id BIGINT REFERENCES collector_run(id),
-  collector_player_id INTEGER REFERENCES collector_player(id),
+  collector_run_id BIGINT REFERENCES collector_run(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  collector_player_id INTEGER REFERENCES collector_player(id) ON UPDATE CASCADE ON DELETE CASCADE,
   rank INTEGER NOT NULL DEFAULT 0,
   rank_improvement INTEGER NOT NULL DEFAULT 0,
   game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
   game_time_improvement DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
+CREATE IF NOT EXISTS INDEX collector_active_player_collector_run_id_idx ON collector_active_player(collector_run_id int8_ops);
+
 CREATE TABLE IF NOT EXISTS collector_new_player (
-  collector_run_id BIGINT REFERENCES collector_run(id),
-  collector_player_id INTEGER REFERENCES collector_player(id),
+  collector_run_id BIGINT REFERENCES collector_run(id) ON UPDATE CASCADE ON DELETE CASCADE,
+  collector_player_id INTEGER REFERENCES collector_player(id) ON UPDATE CASCADE ON DELETE CASCADE,
   rank INTEGER NOT NULL DEFAULT 0,
   game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
+
+CREATE IF NOT EXISTS INDEX collector_new_player_collector_run_id_idx ON collector_new_player(collector_run_id int8_ops);
 
 -- below are POSTGRES helper functions to make dealing with the database easier --
 
