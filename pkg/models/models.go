@@ -266,6 +266,7 @@ type CollectorActivePlayer struct {
 	CollectorPlayerID   int     `json:"player_id" db:"collector_player_id"`
 	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
 	Rank                int     `json:"rank" db:"rank"`
+	RankImprovement     int     `json:"rank_improvement" db:"rank_improvement"`
 	GameTime            float64 `json:"game_time" db:"game_time"`
 }
 

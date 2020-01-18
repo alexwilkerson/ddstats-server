@@ -273,7 +273,14 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Pla
 	if overallDeaths < 1 {
 		return nil
 	}
-	err := c.DB.CollectorActivePlayers.Insert(tx, runID, int(fromDDAPI.PlayerID), int(fromDDAPI.Rank), float64(fromDDAPI.GameTime))
+	rankImprovement := int(fromDDAPI.Rank) - fromDB.Rank
+	if rankImprovement > 0 {
+		c.playersWithNewRanks++
+		c.playerRankImprovement += rankImprovement
+	} else {
+		rankImprovement = 0
+	}
+	err := c.DB.CollectorActivePlayers.Insert(tx, runID, int(fromDDAPI.PlayerID), int(fromDDAPI.Rank), rankImprovement, float64(fromDDAPI.GameTime))
 	if err != nil {
 		return err
 	}
@@ -289,11 +296,6 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Pla
 			fromDB.GameTime < BronzeDaggerThreshold && float64(fromDDAPI.GameTime) >= BronzeDaggerThreshold {
 			c.DB.CollectorHighScores.Insert(tx, runID, int(fromDDAPI.PlayerID), float64(fromDDAPI.GameTime))
 		}
-	}
-	rank := int(fromDDAPI.Rank) - fromDB.Rank
-	if rank > 0 {
-		c.playersWithNewRanks++
-		c.playerRankImprovement += rank
 	}
 	c.playerGameTime += float64(fromDDAPI.OverallGameTime) - fromDB.OverallGameTime
 	c.playerDeaths += int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
@@ -317,7 +319,7 @@ func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, runID int, p *ddapi.Player) 
 	if overallDeaths < 1 {
 		return nil
 	}
-	err = c.DB.CollectorActivePlayers.Insert(tx, runID, int(p.PlayerID), int(p.Rank), float64(p.GameTime))
+	err = c.DB.CollectorActivePlayers.Insert(tx, runID, int(p.PlayerID), int(p.Rank), 0, float64(p.GameTime))
 	if err != nil {
 		return err
 	}
