@@ -85,7 +85,10 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 ### TODO: endpoints
 
-l
+#### collector
+
+- [ ] `api/v2/daily` returns most recent
+- [ ] `api/v2/daily?date={?}`
 
 #### index
 
