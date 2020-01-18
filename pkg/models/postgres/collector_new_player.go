@@ -26,8 +26,13 @@ func (cnp *CollectorNewPlayerModel) Insert(tx *sqlx.Tx, runID, playerID, rank in
 func (cnp *CollectorNewPlayerModel) Select(runID int) ([]*models.CollectorNewPlayer, error) {
 	players := []*models.CollectorNewPlayer{}
 	stmt := `
-		SELECT collector_run_id, collector_player_id, player.player_name AS collector_player_name, game_time
-		FROM collector_new_player JOIN player ON collector_new_id=player.id
+		SELECT
+			collector_run_id,
+			collector_player_id,
+			player.player_name AS collector_player_name,
+			collector_new_player,rank,
+			collector_new_player.game_time
+		FROM collector_new_player JOIN player ON collector_player_id=player.id
 		WHERE collector_run_id=$1`
 	err := cnp.DB.Select(&players, stmt, runID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
