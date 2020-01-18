@@ -12,11 +12,11 @@ type CollectorNewPlayerModel struct {
 	DB *sqlx.DB
 }
 
-func (cnp *CollectorNewPlayerModel) Insert(runID, playerID, rank int, gameTime float64) error {
+func (cnp *CollectorNewPlayerModel) Insert(tx *sqlx.Tx, runID, playerID, rank int, gameTime float64) error {
 	stmt := `
 		INSERT INTO collector_new_player (collector_run_id, collector_player_id, rank, game_time)
 		VALUES ($1, $2, $3, $4)`
-	_, err := cnp.DB.Exec(stmt, runID, playerID, rank, gameTime)
+	_, err := tx.Exec(stmt, runID, playerID, rank, gameTime)
 	if err != nil {
 		return err
 	}
@@ -26,8 +26,8 @@ func (cnp *CollectorNewPlayerModel) Insert(runID, playerID, rank int, gameTime f
 func (cnp *CollectorNewPlayerModel) Select(runID int) ([]*models.CollectorNewPlayer, error) {
 	players := []*models.CollectorNewPlayer{}
 	stmt := `
-		SELECT *
-		FROM collector_new_player
+		SELECT collector_run_id, collector_player_id, player.player_name AS collector_player_name, game_time
+		FROM collector_new_player JOIN player ON collector_new_id=player.id
 		WHERE collector_run_id=$1`
 	err := cnp.DB.Select(&players, stmt, runID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
