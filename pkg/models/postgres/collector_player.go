@@ -63,7 +63,7 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player,
 		ON CONFLICT (id) DO
 		UPDATE SET
 			id=$1,
-			player_name='$2',
+			player_name=$2,
 			rank=$3,
 			game_time=$4,
 			death_type=$5,

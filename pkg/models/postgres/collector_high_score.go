@@ -29,12 +29,13 @@ func (crsm *CollectorHighScoreModel) Select(collectorRunID int) ([]*models.Colle
 		SELECT
 			collector_run_id,
 			collector_player_id,
-			collector_player_id,
-			collector_player.player_name AS collector_player_name
+			collector_player.player_name AS collector_player_name,
+			score
 		FROM collector_high_score
 		JOIN collector_player ON collector_player_id=collector_player.id
-		WHERE collector_run_id=$1`
-	err := crsm.DB.Get(&scores, stmt, collectorRunID)
+		WHERE collector_run_id=$1
+		ORDER BY score DESC`
+	err := crsm.DB.Select(&scores, stmt, collectorRunID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
 	}

@@ -167,3 +167,70 @@ func (crm *CollectorRunModel) InsertNew(tx *sqlx.Tx) (int, error) {
 	}
 	return id, nil
 }
+
+func (crm *CollectorRunModel) SelectMostRecent() (*models.CollectorRun, error) {
+	var run models.CollectorRun
+	stmt := `
+		SELECT 
+			id,
+			time_stamp,
+			new_players,
+			active_players,
+			players_with_new_scores,
+			players_with_new_ranks,
+			ROUND(average_improvement_time, 4) AS average_improvement_time,
+			average_rank_improvement,
+			ROUND(average_game_time_per_active_player, 4) AS average_game_time_per_active_player,
+			ROUND(average_deaths_per_active_player, 2) AS average_deaths_per_active_player,
+			ROUND(average_gems_per_active_player, 2) AS average_gems_per_active_player,
+			ROUND(average_enemies_killed_per_active_player, 2) AS average_enemies_killed_per_active_player,
+			ROUND(average_daggers_hit_per_active_player, 2) AS average_daggers_hit_per_active_player,
+			ROUND(average_daggers_fired_per_active_player, 2) AS average_daggers_fired_per_active_player,
+			ROUND(average_accuracy_per_active_player, 2) AS average_accuracy_per_active_player,
+			ROUND(global_game_time, 4) AS global_game_time,
+			global_deaths,
+			global_gems,
+			global_enemies_killed,
+			global_daggers_hit,
+			global_daggers_fired,
+			ROUND(global_accuracy, 2) AS global_accuracy,
+			global_default_daggers,
+			global_bronze_daggers,
+			global_silver_daggers,
+			global_gold_daggers,
+			global_devil_daggers,
+			ROUND(since_game_time, 4) AS since_game_time,
+			since_deaths,
+			since_gems,
+			since_enemies_killed,
+			since_daggers_hit,
+			since_daggers_fired,
+			ROUND(since_accuracy, 2) AS since_accuracy,
+			since_bronze_daggers,
+			since_silver_daggers,
+			since_gold_daggers,
+			since_devil_daggers,
+			fallen,
+			swarmed,
+			impaled,
+			gored,
+			infested,
+			opened,
+			purged,
+			desecrated,
+			sacrificed,
+			eviscerated,
+			annihilated,
+			intoxicated,
+			envenmonated,
+			incarnated,
+			discarnated,
+			barbed
+		FROM collector_run
+		ORDER BY id DESC LIMIT 1`
+	err := crm.DB.Get(&run, stmt)
+	if err != nil {
+		return nil, err
+	}
+	return &run, nil
+}

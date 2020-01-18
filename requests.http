@@ -39,6 +39,8 @@ GET http://localhost:5000/api/v2/player/all?page_size=9&page_num=1
 GET http://localhost:5000/api/v2/player/live
 ### get message of the day
 GET http://localhost:5000/api/v2/motd
+### get daily stats
+GET http://localhost:5000/api/v2/daily
 ###
 GET http://localhost:5000/api/v2/releases?page_size=10&page_num=1
 ###

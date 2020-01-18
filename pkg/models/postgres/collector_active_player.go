@@ -29,13 +29,14 @@ func (cap *CollectorActivePlayerModel) Select(runID int) ([]*models.CollectorAct
 		SELECT
 			collector_run_id,
 			collector_player_id,
-			player.player_name AS collector_player_name,
+			collector_player.player_name AS collector_player_name,
 			collector_active_player.rank,
 			rank_improvement,
 			collector_active_player.game_time,
 			collector_active_player.game_time_improvement
-		FROM collector_active_player JOIN player ON collector_player_id=player.id
-		WHERE collector_run_id=$1`
+		FROM collector_active_player JOIN collector_player ON collector_player_id=collector_player.id
+		WHERE collector_run_id=$1
+		ORDER BY collector_active_player.rank ASC`
 	err := cap.DB.Select(&players, stmt, runID)
 	if err != nil && !errors.Is(err, sql.ErrNoRows) {
 		return nil, err
