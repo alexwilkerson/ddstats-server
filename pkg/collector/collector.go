@@ -95,11 +95,7 @@ func (c *Collector) Start() {
 	}
 	runID, err := c.DB.CollectorRuns.CreateNew(tx)
 	if err != nil {
-		c.errorLog.Printf("collector error: %v", err)
-		err = tx.Rollback()
-		if err != nil {
-			c.errorLog.Printf("collector rollback error: %v", err)
-		}
+		c.rollbackAndLogError(tx, err)
 		return
 	}
 	run := models.CollectorRun{ID: runID}
@@ -114,11 +110,7 @@ func (c *Collector) Start() {
 		default:
 			leaderboard, err = c.DDAPI.GetLeaderboard(maxLimit, offset)
 			if err != nil {
-				c.errorLog.Printf("collector error: %v", err)
-				err = tx.Rollback()
-				if err != nil {
-					c.errorLog.Printf("collector rollback error: %v", err)
-				}
+				c.rollbackAndLogError(tx, err)
 				return
 			}
 			// only run once
@@ -172,33 +164,25 @@ func (c *Collector) Start() {
 					}
 					previousPlayer, err := c.DB.CollectorPlayers.Select(int(player.PlayerID))
 					if err != nil && !errors.Is(err, models.ErrNoRecord) {
-						c.errorLog.Printf("collector error: %v", err)
-						err = tx.Rollback()
-						if err != nil {
-							c.errorLog.Printf("collector rollback error: %v", err)
-						}
+						err = c.calculateNewPlayer(tx, runID, player)
 						return
 					}
 					if errors.Is(err, models.ErrNoRecord) {
 						err = c.calculateNewPlayer(tx, runID, player)
 						if err != nil {
-							c.errorLog.Printf("collector error: %v", err)
-							err = tx.Rollback()
-							if err != nil {
-								c.errorLog.Printf("collector rollback error: %v", err)
-							}
+							c.rollbackAndLogError(tx, err)
 							return
 						}
 					} else {
-						c.calculatePlayer(tx, runID, player, previousPlayer)
+						err = c.calculatePlayer(tx, runID, player, previousPlayer)
+						if err != nil {
+							c.rollbackAndLogError(tx, err)
+							return
+						}
 					}
 					err = c.DB.CollectorPlayers.UpsertPlayer(tx, player, run.ID)
 					if err != nil {
-						c.errorLog.Printf("collector error: %v", err)
-						err = tx.Rollback()
-						if err != nil {
-							c.errorLog.Printf("collector rollback error: %v", err)
-						}
+						c.rollbackAndLogError(tx, err)
 						return
 					}
 					c.totalPlayers++
@@ -211,11 +195,7 @@ func (c *Collector) Start() {
 	run.RunTime = models.Duration(time.Since(start))
 	err = c.DB.CollectorRuns.Update(tx, &run)
 	if err != nil {
-		err = tx.Rollback()
-		c.errorLog.Printf("collector error: %v", err)
-		if err != nil {
-			c.errorLog.Printf("collector rollback error: %v", err)
-		}
+		c.rollbackAndLogError(tx, err)
 		return
 	}
 	err = tx.Commit()
@@ -232,6 +212,14 @@ func (c *Collector) Stop() {
 
 func (c *Collector) Done() chan struct{} {
 	return c.done
+}
+
+func (c *Collector) rollbackAndLogError(tx *sqlx.Tx, err error) {
+	c.errorLog.Printf("collector error: %v", err)
+	err = tx.Rollback()
+	if err != nil {
+		c.errorLog.Printf("collector rollback error: %v", err)
+	}
 }
 
 func initRun(run *models.CollectorRun, previousRun *models.CollectorRun, leaderboard *ddapi.Leaderboard) {
@@ -280,10 +268,14 @@ func (c *Collector) compileRunStats(run *models.CollectorRun, previousRun *model
 	}
 }
 
-func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) {
+func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) error {
 	overallDeaths := int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
 	if overallDeaths < 1 {
-		return
+		return nil
+	}
+	err := c.DB.CollectorActivePlayers.Insert(tx, runID, int(fromDDAPI.PlayerID), int(fromDDAPI.Rank), float64(fromDDAPI.GameTime))
+	if err != nil {
+		return err
 	}
 	c.activePlayers++
 	c.playerDeaths += overallDeaths
@@ -309,19 +301,31 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, runID int, fromDDAPI *ddapi.Pla
 	c.playerEnemiesKilled += int(fromDDAPI.OverallEnemiesKilled) - fromDB.OverallEnemiesKilled
 	c.playerDaggersHit += int(fromDDAPI.OverallDaggersHit) - fromDB.OverallDaggersHit
 	c.playerDaggersFired += int(fromDDAPI.OverallDaggersFired) - fromDB.OverallDaggersFired
+	return nil
 }
 
 func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, runID int, p *ddapi.Player) error {
+	err := c.DB.CollectorPlayers.NewPlayer(tx, int(p.PlayerID))
+	if err != nil {
+		return err
+	}
+	err = c.DB.CollectorNewPlayers.Insert(tx, runID, int(p.PlayerID), int(p.Rank), float64(p.GameTime))
+	if err != nil {
+		return err
+	}
 	overallDeaths := int(p.OverallDeaths)
 	if overallDeaths < 1 {
 		return nil
 	}
+	err = c.DB.CollectorActivePlayers.Insert(tx, runID, int(p.PlayerID), int(p.Rank), float64(p.GameTime))
+	if err != nil {
+		return err
+	}
 	if p.GameTime >= BronzeDaggerThreshold {
-		err := c.DB.CollectorPlayers.NewPlayer(tx, int(p.PlayerID))
+		err = c.DB.CollectorHighScores.Insert(tx, runID, int(p.PlayerID), float64(p.GameTime))
 		if err != nil {
 			return err
 		}
-		c.DB.CollectorHighScores.Insert(tx, runID, int(p.PlayerID), float64(p.GameTime))
 	}
 	c.playerDeaths += overallDeaths
 	c.activePlayers++

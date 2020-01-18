@@ -1,3 +1,5 @@
+DROP TABLE collector_new_player;
+DROP TABLE collector_active_player;
 DROP TABLE collector_high_score;
 DROP TABLE collector_player;
 DROP TABLE collector_run;
