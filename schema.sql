@@ -199,7 +199,7 @@ CREATE TABLE IF NOT EXISTS collector_high_score (
   score DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
-CREATE IF NOT EXISTS INDEX collector_high_score_collector_run_id_idx ON collector_high_score(collector_run_id int8_ops);
+CREATE IF NOT EXISTS INDEX collector_high_score_collector_run_id_idx ON collector_high_score(collector_run_id);
 
 CREATE TABLE IF NOT EXISTS collector_active_player (
   collector_run_id BIGINT REFERENCES collector_run(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -210,7 +210,7 @@ CREATE TABLE IF NOT EXISTS collector_active_player (
   game_time_improvement DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
-CREATE IF NOT EXISTS INDEX collector_active_player_collector_run_id_idx ON collector_active_player(collector_run_id int8_ops);
+CREATE IF NOT EXISTS INDEX collector_active_player_collector_run_id_idx ON collector_active_player(collector_run_id);
 
 CREATE TABLE IF NOT EXISTS collector_new_player (
   collector_run_id BIGINT REFERENCES collector_run(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -219,7 +219,7 @@ CREATE TABLE IF NOT EXISTS collector_new_player (
   game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
-CREATE IF NOT EXISTS INDEX collector_new_player_collector_run_id_idx ON collector_new_player(collector_run_id int8_ops);
+CREATE IF NOT EXISTS INDEX collector_new_player_collector_run_id_idx ON collector_new_player(collector_run_id);
 
 -- below are POSTGRES helper functions to make dealing with the database easier --
 
