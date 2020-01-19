@@ -57,9 +57,8 @@ reflex -d none -c reflex.conf
 
 - [x] add game_time_improvement to collector_active_player
 - [x] add the following to runs: bronze_daggers, silver_daggers, gold_daggers, devil_daggers, total_bronze, total_silver, total_gold, total_devil
-- [ ] add last_active to player table and collect using collector
-- [ ] possibly add deaths and total_game_time to active players column 
-
+- [x] add last_active to player table and collect using collector
+- [x] possibly add deaths and total_game_time to active players column
 
 #### discord-bot commands
 
