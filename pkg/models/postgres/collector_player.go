@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"time"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 
@@ -41,11 +42,12 @@ func (cpm *CollectorPlayerModel) NewPlayer(tx *sqlx.Tx, collectorPlayerID int) e
 	return nil
 }
 
-func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player, collectorRunID int) error {
+func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player, collectorRunID int, lastActive *time.Time) error {
 	stmt := `
 		INSERT INTO collector_player(
 			id,
 			player_name,
+			last_active,
 			rank,
 			game_time,
 			death_type,
@@ -59,28 +61,30 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player,
 			overall_enemies_killed,
 			overall_daggers_hit,
 			overall_daggers_fired
-		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)
+		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
 		ON CONFLICT (id) DO
 		UPDATE SET
 			id=$1,
 			player_name=$2,
-			rank=$3,
-			game_time=$4,
-			death_type=$5,
-			gems=$6,
-			daggers_hit=$7,
-			daggers_fired=$8,
-			enemies_killed=$9,
-			overall_game_time=$10,
-			overall_deaths=$11,
-			overall_gems=$12,
-			overall_enemies_killed=$13,
-			overall_daggers_hit=$14,
-			overall_daggers_fired=$15
+			last_active=$3,
+			rank=$4,
+			game_time=$5,
+			death_type=$6,
+			gems=$7,
+			daggers_hit=$8,
+			daggers_fired=$9,
+			enemies_killed=$10,
+			overall_game_time=$11,
+			overall_deaths=$12,
+			overall_gems=$13,
+			overall_enemies_killed=$14,
+			overall_daggers_hit=$15,
+			overall_daggers_fired=$16
 		WHERE collector_player.id=$1`
 	_, err := tx.Exec(stmt,
 		player.PlayerID,
 		player.PlayerName,
+		lastActive,
 		player.Rank,
 		player.GameTime,
 		player.DeathType,

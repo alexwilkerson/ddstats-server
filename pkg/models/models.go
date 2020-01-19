@@ -1,6 +1,7 @@
 package models
 
 import (
+	"database/sql"
 	"database/sql/driver"
 	"errors"
 	"fmt"
@@ -246,21 +247,22 @@ type CollectorRun struct {
 }
 
 type CollectorPlayer struct {
-	ID                   int     `db:"id"`
-	PlayerName           string  `db:"player_name"`
-	Rank                 int     `db:"rank"`
-	GameTime             float64 `db:"game_time"`
-	DeathType            string  `db:"death_type"`
-	Gems                 int     `db:"gems"`
-	DaggersHit           int     `db:"daggers_hit"`
-	DaggersFired         int     `db:"daggers_fired"`
-	EnemiesKilled        int     `db:"enemies_killed"`
-	OverallGameTime      float64 `db:"overall_game_time"`
-	OverallDeaths        int     `db:"overall_deaths"`
-	OverallGems          int     `db:"overall_gems"`
-	OverallEnemiesKilled int     `db:"overall_enemies_killed"`
-	OverallDaggersHit    int     `db:"overall_daggers_hit"`
-	OverallDaggersFired  int     `db:"overall_daggers_fired"`
+	ID                   int          `db:"id"`
+	PlayerName           string       `db:"player_name"`
+	LastActive           sql.NullTime `db:"last_active"`
+	Rank                 int          `db:"rank"`
+	GameTime             float64      `db:"game_time"`
+	DeathType            string       `db:"death_type"`
+	Gems                 int          `db:"gems"`
+	DaggersHit           int          `db:"daggers_hit"`
+	DaggersFired         int          `db:"daggers_fired"`
+	EnemiesKilled        int          `db:"enemies_killed"`
+	OverallGameTime      float64      `db:"overall_game_time"`
+	OverallDeaths        int          `db:"overall_deaths"`
+	OverallGems          int          `db:"overall_gems"`
+	OverallEnemiesKilled int          `db:"overall_enemies_killed"`
+	OverallDaggersHit    int          `db:"overall_daggers_hit"`
+	OverallDaggersFired  int          `db:"overall_daggers_fired"`
 }
 
 type CollectorHighScore struct {
@@ -278,6 +280,8 @@ type CollectorActivePlayer struct {
 	RankImprovement     int     `json:"rank_improvement,omitempty" db:"rank_improvement"`
 	GameTime            float64 `json:"game_time" db:"game_time"`
 	GameTimeImprovement float64 `json:"game_time_improvement,omitempty" db:"game_time_improvement"`
+	SinceGameTime       float64 `json:"since_game_time" db:"since_game_time"`
+	SinceDeaths         float64 `json:"since_deaths" db:"since_deaths"`
 }
 
 type CollectorNewPlayer struct {

@@ -167,20 +167,27 @@ func (c *Collector) Start() {
 						err = c.calculateNewPlayer(tx, &run, player)
 						return
 					}
+					var activePlayer bool
 					if errors.Is(err, models.ErrNoRecord) {
 						err = c.calculateNewPlayer(tx, &run, player)
+						activePlayer = true
 						if err != nil {
 							c.rollbackAndLogError(tx, err)
 							return
 						}
 					} else {
-						err = c.calculatePlayer(tx, &run, player, previousPlayer)
+						activePlayer, err = c.calculatePlayer(tx, &run, player, previousPlayer)
 						if err != nil {
 							c.rollbackAndLogError(tx, err)
 							return
 						}
 					}
-					err = c.DB.CollectorPlayers.UpsertPlayer(tx, player, run.ID)
+					if activePlayer {
+						lastActive := time.Now()
+						err = c.DB.CollectorPlayers.UpsertPlayer(tx, player, run.ID, &lastActive)
+					} else {
+						err = c.DB.CollectorPlayers.UpsertPlayer(tx, player, run.ID, nil)
+					}
 					if err != nil {
 						c.rollbackAndLogError(tx, err)
 						return
@@ -268,13 +275,14 @@ func (c *Collector) compileRunStats(run *models.CollectorRun, previousRun *model
 	}
 }
 
-func (c *Collector) calculatePlayer(tx *sqlx.Tx, run *models.CollectorRun, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) error {
+func (c *Collector) calculatePlayer(tx *sqlx.Tx, run *models.CollectorRun, fromDDAPI *ddapi.Player, fromDB *models.CollectorPlayer) (bool, error) {
 	newDagger := calculateDaggers(run, fromDDAPI, fromDB)
-	overallDeaths := int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
-	if overallDeaths < 1 {
-		return nil
+	sinceDeaths := int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
+	sinceGameTime := float64(fromDDAPI.OverallGameTime) - fromDB.OverallGameTime
+	if sinceDeaths < 1 || sinceGameTime == 0 {
+		return false, nil
 	}
-	rankImprovement := int(fromDDAPI.Rank) - fromDB.Rank
+	rankImprovement := fromDB.Rank - int(fromDDAPI.Rank)
 	if rankImprovement > 0 {
 		c.playersWithNewRanks++
 		c.playerRankImprovement += rankImprovement
@@ -282,7 +290,7 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, run *models.CollectorRun, fromD
 		rankImprovement = 0
 	}
 	c.activePlayers++
-	c.playerDeaths += overallDeaths
+	c.playerDeaths += sinceDeaths
 	gameTimeImprovement := float64(fromDDAPI.GameTime) - fromDB.GameTime
 	if gameTimeImprovement > 0 {
 		c.playersWithNewScores++
@@ -291,17 +299,17 @@ func (c *Collector) calculatePlayer(tx *sqlx.Tx, run *models.CollectorRun, fromD
 			c.DB.CollectorHighScores.Insert(tx, run.ID, int(fromDDAPI.PlayerID), float64(fromDDAPI.GameTime))
 		}
 	}
-	err := c.DB.CollectorActivePlayers.Insert(tx, run.ID, int(fromDDAPI.PlayerID), int(fromDDAPI.Rank), rankImprovement, float64(fromDDAPI.GameTime), gameTimeImprovement)
+	err := c.DB.CollectorActivePlayers.Insert(tx, run.ID, int(fromDDAPI.PlayerID), int(fromDDAPI.Rank), rankImprovement, float64(fromDDAPI.GameTime), gameTimeImprovement, sinceGameTime, sinceDeaths)
 	if err != nil {
-		return err
+		return false, err
 	}
-	c.playerGameTime += float64(fromDDAPI.OverallGameTime) - fromDB.OverallGameTime
+	c.playerGameTime += sinceGameTime
 	c.playerDeaths += int(fromDDAPI.OverallDeaths) - fromDB.OverallDeaths
 	c.playerGems += int(fromDDAPI.OverallGems) - fromDB.OverallGems
 	c.playerEnemiesKilled += int(fromDDAPI.OverallEnemiesKilled) - fromDB.OverallEnemiesKilled
 	c.playerDaggersHit += int(fromDDAPI.OverallDaggersHit) - fromDB.OverallDaggersHit
 	c.playerDaggersFired += int(fromDDAPI.OverallDaggersFired) - fromDB.OverallDaggersFired
-	return nil
+	return true, nil
 }
 
 func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, run *models.CollectorRun, p *ddapi.Player) error {
@@ -318,7 +326,7 @@ func (c *Collector) calculateNewPlayer(tx *sqlx.Tx, run *models.CollectorRun, p 
 	if overallDeaths < 1 {
 		return nil
 	}
-	err = c.DB.CollectorActivePlayers.Insert(tx, run.ID, int(p.PlayerID), int(p.Rank), 0, float64(p.GameTime), 0)
+	err = c.DB.CollectorActivePlayers.Insert(tx, run.ID, int(p.PlayerID), int(p.Rank), 0, float64(p.GameTime), 0, float64(p.OverallGameTime), overallDeaths)
 	if err != nil {
 		return err
 	}

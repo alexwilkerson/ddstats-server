@@ -7,6 +7,7 @@ require (
 	github.com/bwmarrin/discordgo v0.20.2
 	github.com/googollee/go-engine.io v1.4.2 // indirect
 	github.com/googollee/go-socket.io v1.4.3-0.20191220165003-799291763859
+	github.com/gopherjs/gopherjs v0.0.0-20181017120253-0766667cb4d1
 	github.com/gorilla/websocket v1.4.1
 	github.com/jmoiron/sqlx v1.2.0
 	github.com/justinas/alice v1.2.0
