@@ -178,6 +178,7 @@ CREATE TABLE IF NOT EXISTS collector_run (
 CREATE TABLE IF NOT EXISTS collector_player (
   id INTEGER PRIMARY KEY,
   player_name TEXT NOT NULL DEFAULT '',
+  last_active TIMESTAMP WITH TIME ZONE,
   rank INTEGER NOT NULL DEFAULT 0,
   game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
   death_type TEXT NOT NULL DEFAULT '',
@@ -207,7 +208,9 @@ CREATE TABLE IF NOT EXISTS collector_active_player (
   rank INTEGER NOT NULL DEFAULT 0,
   rank_improvement INTEGER NOT NULL DEFAULT 0,
   game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
-  game_time_improvement DOUBLE PRECISION NOT NULL DEFAULT 0.0
+  game_time_improvement DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  since_game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0,
+  since_deaths INTEGER NOT NULL DEFAULT 0
 );
 
 CREATE IF NOT EXISTS INDEX collector_active_player_collector_run_id_idx ON collector_active_player(collector_run_id);
