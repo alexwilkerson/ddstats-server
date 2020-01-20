@@ -174,8 +174,10 @@ func (crm *CollectorRunModel) SelectMostRecent() (*models.CollectorRun, error) {
 		SELECT 
 			id,
 			time_stamp,
+			global_players,
 			new_players,
 			active_players,
+			inactive_players,
 			players_with_new_scores,
 			players_with_new_ranks,
 			ROUND(average_improvement_time, 4) AS average_improvement_time,
