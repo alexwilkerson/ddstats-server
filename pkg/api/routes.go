@@ -49,17 +49,23 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 
 	mux.Get("/ws", http.HandlerFunc(api.serveWebsocket))
 
-	fileServer := http.FileServer(http.Dir("./ui/static/"))
-	mux.Get("/static/", http.StripPrefix("/static", fileServer))
-
 	// Why? Well, because the pat application only accounts for REST requests,
 	// so if the server receives anything else (such as a websocket request),
 	// there's no way to register it.. these three lines will match the /socket-io/
 	// end point and if it doesn't match will pass everything on to the pat mux
 	// since "/" matches everything
-	sioMux := http.NewServeMux()
-	sioMux.Handle("/socket.io/", socketioCORS(socketioServer))
-	sioMux.Handle("/", standardMiddleware.Then(mux))
+	muxParent := http.NewServeMux()
+	muxParent.Handle("/socket.io/", socketioCORS(socketioServer))
 
-	return sioMux
+	// serves the vue app, built inside the dist directory
+	// must be handled by this parent mux, since for whatever
+	// reason it won't work otherwise
+	vueApp := http.FileServer(http.Dir("./ui/dist/"))
+	muxParent.Handle("/", http.StripPrefix("/", vueApp))
+
+	muxParent.Handle("/api/", standardMiddleware.Then(mux))
+	muxParent.Handle("/api/v2/", standardMiddleware.Then(mux))
+	muxParent.Handle("/ws/", standardMiddleware.Then(mux))
+
+	return muxParent
 }
