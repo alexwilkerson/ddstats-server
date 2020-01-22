@@ -61,7 +61,24 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	// must be handled by this parent mux, since for whatever
 	// reason it won't work otherwise
 	vueApp := http.FileServer(http.Dir("./ui/dist/"))
-	muxParent.Handle("/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix(r.URL.RequestURI(), vueApp).ServeHTTP(w, r)
+	}))
+	// these routes are needed to point to specific static files generated
+	// by vue
+	muxParent.Handle("/js/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/fonts/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/css/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/img/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/static/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/favicon.ico", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/android-chrome-192x192.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/android-chrome-512x512.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/apple-touch-icon.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/favicon-16x16.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/favicon-32x32.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/site.webmanifest", http.StripPrefix("/", vueApp))
+	// END VUEJS BULLSHIT
 
 	muxParent.Handle("/api/", standardMiddleware.Then(mux))
 	muxParent.Handle("/api/v2/", standardMiddleware.Then(mux))
