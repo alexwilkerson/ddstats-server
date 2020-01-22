@@ -60,7 +60,7 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	// serves the vue app, built inside the dist directory
 	// must be handled by this parent mux, since for whatever
 	// reason it won't work otherwise
-	vueApp := http.FileServer(http.Dir("./ui/dist/"))
+	vueApp := api.handleCORS(http.FileServer(http.Dir("./ui/dist/")))
 	muxParent.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		http.StripPrefix(r.URL.RequestURI(), vueApp).ServeHTTP(w, r)
 	}))
