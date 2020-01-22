@@ -96,4 +96,11 @@ h3 {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 13px;
 }
+.apexcharts-tooltip,
+.apexcharts-tooltip.active,
+.apexcharts-xaxistooltip,
+.apexcharts-xaxistooltip.active,
+.apexcharts-marker {
+  transition: none;
+}
 </style>
