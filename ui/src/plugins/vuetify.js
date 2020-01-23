@@ -49,7 +49,7 @@ export default new Vuetify({
         secondary: "#424242",
         accent: "#c33409",
         error: "#FF5252",
-        info: "#2196F3",
+        info: "#c33409",
         success: "#4CAF50",
         warning: "#FFC107"
       }
