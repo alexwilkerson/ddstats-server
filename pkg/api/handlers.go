@@ -294,6 +294,44 @@ func (api *API) submitGame(w http.ResponseWriter, r *http.Request) {
 	}{"Game submitted.", gameID})
 }
 
+func (api *API) getGameFull(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		api.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	game, err := api.db.Games.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			api.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			api.serverError(w, err)
+		}
+		return
+	}
+
+	states, err := api.db.Games.GetAll(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			api.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			api.serverError(w, err)
+		}
+		return
+	}
+
+	v := struct {
+		GameInfo *models.GameWithName `json:"game_info"`
+		States   []*models.State      `json:"states"`
+	}{
+		GameInfo: game,
+		States:   states,
+	}
+
+	api.writeJSON(w, v)
+}
+
 func (api *API) getGameAll(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {

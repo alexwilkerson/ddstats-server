@@ -1,15 +1,12 @@
 <template>
-  <v-app
-    id="main"
-    :style="{ background: $vuetify.theme.themes[theme].background }"
-  >
+  <v-app id="main" :style="{ background: $vuetify.theme.themes[theme].background }">
     <v-app-bar
       app
       color="header"
       dark
       height="60px"
       elevation="1"
-      :style="{ textAlign: 'center' }"
+      :style="{ textAlign: 'center', zIndex: 500 }"
     >
       <v-spacer />
       <!-- <div class="d-flex align-center"> -->
@@ -36,7 +33,7 @@
       <router-view></router-view>
     </v-content>
 
-    <v-footer app color="footer">
+    <v-footer app color="footer" absolute>
       <v-spacer />
       <div class="footer-text">&#x263A; 2020 - VHS</div>
     </v-footer>
@@ -95,12 +92,5 @@ h3 {
 .footer-text {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 13px;
-}
-.apexcharts-tooltip,
-.apexcharts-tooltip.active,
-.apexcharts-xaxistooltip,
-.apexcharts-xaxistooltip.active,
-.apexcharts-marker {
-  transition: none;
 }
 </style>

@@ -26,6 +26,7 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	mux.Get("/api/v2/game/top", http.HandlerFunc(api.getTopGames))
 	mux.Get("/api/v2/game/recent", http.HandlerFunc(api.getRecentGames))
 	mux.Get("/api/v2/game", http.HandlerFunc(api.getGame))
+	mux.Get("/api/v2/game/full", http.HandlerFunc(api.getGameFull))
 	mux.Get("/api/v2/game/all", http.HandlerFunc(api.getGameAll))
 	mux.Get("/api/v2/game/gems", http.HandlerFunc(api.getGameGems))
 	mux.Get("/api/v2/game/homing_daggers", http.HandlerFunc(api.getGameHomingDaggers))
