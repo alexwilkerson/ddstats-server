@@ -14,6 +14,8 @@ GET http://localhost:5000/api/v2/game/recent?player_id=229&page_size=10&page_num
 ### get game by game id
 GET http://localhost:5000/api/v2/game?id=20
 ### get a list of all game states
+GET http://localhost:5000/api/v2/game/full?id=20
+### get a list of all game states
 GET http://localhost:5000/api/v2/game/all?id=20
 ### get a list of game states with game time and gems
 GET http://localhost:5000/api/v2/game/gems?id=20

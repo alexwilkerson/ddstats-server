@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="wrapper">
     <GameCharts />
   </div>
 </template>
@@ -12,3 +12,10 @@ export default {
   }
 };
 </script>
+
+<style scoped>
+.wrapper {
+  padding-top: 40px;
+  padding-bottom: 40px;
+}
+</style>
