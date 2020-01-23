@@ -31,7 +31,7 @@ type Game struct {
 	EnemiesKilled        int         `json:"enemies_killed" db:"enemies_killed"`
 	TimeStamp            time.Time   `json:"time_stamp" db:"time_stamp"`
 	ReplayPlayerID       int         `json:"replay_player_id" db:"replay_player_id"`
-	SurvivalHash         string      `json:"survival_hash" db:"survival_hash"`
+	Spawnset             string      `json:"spawnset" db:"spawnset"`
 	Version              null.String `json:"version" db:"version"`
 	LevelTwoTime         float64     `json:"level_two_time" db:"level_two_time"`
 	LevelThreeTime       float64     `json:"level_three_time" db:"level_three_time"`
