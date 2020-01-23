@@ -1,14 +1,18 @@
 <template>
   <div class="wrapper">
-    <h1>Game Stats {{ $route.params.id }}</h1>
+    <h1>Game Stats</h1>
     <v-simple-table class="stats-table" dense>
       <template v-slot:default>
         <tbody>
           <tr>
             <td class="text-left">Player</td>
             <td class="text-right">
-              {{ gameInfo.player_name }} ({{ gameInfo.player_id }})
+              {{ gameInfo.player_name }}
             </td>
+          </tr>
+          <tr>
+            <td class="text-left">Game ID</td>
+            <td class="text-right">{{ $route.params.id }}</td>
           </tr>
           <tr>
             <td class="text-left">Death Type</td>
@@ -18,10 +22,17 @@
             <td class="text-left">Spawnset</td>
             <td class="text-right">{{ gameInfo.spawnset }}</td>
           </tr>
-          <tr>
+          <tr @mouseover="dateHover = true" @mouseleave="dateHover = false">
             <td class="text-left">Recorded</td>
             <td class="text-right">
-              {{ moment(gameInfo.time_stamp).fromNow() }}
+              {{
+                dateHover
+                  ? moment
+                      .utc(gameInfo.time_stamp)
+                      .local()
+                      .format("lll")
+                  : moment(gameInfo.time_stamp).fromNow()
+              }}
             </td>
           </tr>
         </tbody>
@@ -29,7 +40,7 @@
     </v-simple-table>
     <v-row no-gutters justify="center">
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom>
+        <v-tooltip bottom nudgeRight="6">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
@@ -40,7 +51,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom>
+        <v-tooltip bottom nudgeRight="5">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$gem</v-icon>
@@ -51,7 +62,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom>
+        <v-tooltip bottom nudgeRight="4">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409">$dagger</v-icon>
@@ -62,7 +73,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom>
+        <v-tooltip bottom nudgeRight="2">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$target</v-icon>
@@ -73,7 +84,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom>
+        <v-tooltip bottom nudgeRight="4">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$skull</v-icon>
@@ -84,7 +95,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom>
+        <v-tooltip bottom nudgeRight="4">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$splat</v-icon>
@@ -103,7 +114,9 @@ const moment = require("moment");
 export default {
   data() {
     return {
-      moment: moment
+      moment: moment,
+      nameHover: false,
+      dateHover: false
     };
   },
   props: {
@@ -116,8 +129,12 @@ export default {
 </script>
 
 <style scoped>
+tr:hover {
+  background: #fffefc !important;
+}
 .stats-table {
-  max-width: 600px;
+  border-radius: 2px;
+  max-width: 650px;
   margin: 0 auto 20px auto;
 }
 .stats-table tr {

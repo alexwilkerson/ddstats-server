@@ -1,7 +1,7 @@
 <template>
   <div id="wrapper" v-if="loaded">
     <GameInfo :gameInfo="gameInfo"></GameInfo>
-    <div class="chart-title">{{ titleGems }}</div>
+    <div class="chart-title" v-if="showGems">{{ titleGems }}</div>
     <div id="gems-chart" v-if="showGems">
       <apexchart
         type="area"
@@ -11,7 +11,9 @@
         :series="seriesGems"
       ></apexchart>
     </div>
-    <div class="chart-title">{{ titleHomingDaggers }}</div>
+    <div class="chart-title" v-if="showHomingDaggers">
+      {{ titleHomingDaggers }}
+    </div>
     <div id="homing-daggers-chart" v-if="showHomingDaggers">
       <apexchart
         type="area"
@@ -21,7 +23,7 @@
         :series="seriesHomingDaggers"
       ></apexchart>
     </div>
-    <div class="chart-title">{{ titleAccuracy }}</div>
+    <div class="chart-title" v-if="showAccuracy">{{ titleAccuracy }}</div>
     <div id="accuracy-chart" v-if="showAccuracy">
       <apexchart
         type="area"
@@ -31,7 +33,9 @@
         :series="seriesAccuracy"
       ></apexchart>
     </div>
-    <div class="chart-title">{{ titleEnemiesAlive }}</div>
+    <div class="chart-title" v-if="showEnemiesAlive">
+      {{ titleEnemiesAlive }}
+    </div>
     <div id="enemies-alive-chart" v-if="showEnemiesAlive">
       <apexchart
         type="area"
@@ -41,7 +45,9 @@
         :series="seriesEnemiesAlive"
       ></apexchart>
     </div>
-    <div class="chart-title">{{ titleEnemiesKilled }}</div>
+    <div class="chart-title" v-if="showEnemiesKilled">
+      {{ titleEnemiesKilled }}
+    </div>
     <div id="enemies-killed-chart" v-if="showEnemiesKilled">
       <apexchart
         type="area"
@@ -78,6 +84,10 @@ export default {
       chartOptionsAccuracy: null,
       chartOptionsEnemiesAlive: null,
       chartOptionsEnemiesKilled: null,
+      homingDaggersMaxX: 0,
+      homingDaggersMaxY: 0,
+      enemiesAliveMaxX: 0,
+      enemiesAliveMaxY: 0,
       seriesGems: [
         {
           name: "Gems",
@@ -121,7 +131,9 @@ export default {
       color,
       level2time,
       level3time,
-      level4time
+      level4time,
+      max,
+      maxTime
     ) {
       window.console.log(this);
       // let tooltipOffset = 0;
@@ -193,6 +205,40 @@ export default {
             text: "L4",
             orientation: "horizontal",
             offsetY: -8
+          }
+        });
+      }
+      if (name === "Homing Daggers") {
+        annotations.push({
+          x: Math.ceil(maxTime),
+          strokeDashArray: 5,
+          borderColor: "#34302e",
+          label: {
+            borderColor: "transparent",
+            style: {
+              color: "#34302e",
+              background: "#fffefc"
+            },
+            text: max.toString(),
+            orientation: "horizontal",
+            offsetY: -(5 - max.toString().length) * 3
+          }
+        });
+      }
+      if (name === "Enemies Alive") {
+        annotations.push({
+          x: Math.ceil(maxTime),
+          strokeDashArray: 5,
+          borderColor: "#34302e",
+          label: {
+            borderColor: "transparent",
+            style: {
+              color: "#34302e",
+              background: "#fffefc"
+            },
+            text: max.toString(),
+            orientation: "horizontal",
+            offsetY: -(5 - max.toString().length) * 3
           }
         });
       }
@@ -344,7 +390,9 @@ export default {
             colors[1],
             response.data.game_info.level_two_time,
             response.data.game_info.level_three_time,
-            response.data.game_info.level_four_time
+            response.data.game_info.level_four_time,
+            response.data.game_info.homing_daggers_max,
+            response.data.game_info.homing_daggers_max_time
           ));
         this.chartOptionsAccuracy = this.getChartOptions(
           "accuracy-chart",
@@ -360,7 +408,9 @@ export default {
           colors[3],
           response.data.game_info.level_two_time,
           response.data.game_info.level_three_time,
-          response.data.game_info.level_four_time
+          response.data.game_info.level_four_time,
+          response.data.game_info.enemies_alive_max,
+          response.data.game_info.enemies_alive_max_time
         );
         this.chartOptionsEnemiesKilled = this.getChartOptions(
           "enemies-killed-chart",
@@ -429,7 +479,7 @@ const colors = ["#898685", "#737271", "#5f5c5b", "#4a4746", "#373534"];
 #accuracy-chart,
 #enemies-alive-chart,
 #enemies-killed-chart {
-  width: 800px;
+  max-width: 800px;
   margin: 0 auto;
 }
 .chart-title {
