@@ -28,7 +28,7 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 		SELECT
 			game.id,
 			player_id,
-			player_name,
+			p1.player_name,
 			granularity,
 			round(game.game_time, 4) as game_time,
 			death_type.name as death_type,
@@ -41,6 +41,7 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 			game.enemies_killed,
 			time_stamp,
 			replay_player_id,
+			CASE WHEN replay_player_id=0 THEN '' WHEN p2.id IS NULL THEN 'unknown' ELSE p2.player_name END AS replay_player_name,
 			CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
 			version,
 			level_two_time,
@@ -50,8 +51,9 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 			enemies_alive_max_time,
 			homing_daggers_max,
 			enemies_alive_max
-		FROM game JOIN player ON game.player_id=player.id JOIN death_type ON game.death_type=death_type.id
-			LEFT JOIN spawnset ON game.survival_hash=spawnset.survival_hash
+		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+			NATURAL LEFT JOIN spawnset
+			LEFT JOIN replay_player p2 ON game.replay_player_id=p2.id
 		WHERE replay_player_id=0 AND (spawnset.spawnset_name='%s')
 		ORDER BY game_time DESC LIMIT %d`, defaultSpawnset, limit)
 	err := g.DB.Select(&games, stmt)
@@ -78,7 +80,7 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 		SELECT
 			game.id,
 			player_id,
-			player_name,
+			p1.player_name,
 			granularity,
 			round(game.game_time, 4) as game_time,
 			death_type.name as death_type,
@@ -91,6 +93,7 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 			game.enemies_killed,
 			time_stamp,
 			replay_player_id,
+			CASE WHEN replay_player_id=0 THEN '' WHEN p2.id IS NULL THEN 'unknown' ELSE p2.player_name END AS replay_player_name,
 			CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
 			version,
 			level_two_time,
@@ -100,8 +103,9 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 			enemies_alive_max_time,
 			homing_daggers_max,
 			enemies_alive_max
-		FROM game JOIN player ON game.player_id=player.id JOIN death_type ON game.death_type=death_type.id
-			LEFT JOIN spawnset ON game.survival_hash=spawnset.survival_hash %s
+		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+			NATURAL LEFT JOIN spawnset
+			LEFT JOIN replay_player p2 ON game.replay_player_id=p2.id %s
 		ORDER BY id DESC LIMIT %d OFFSET %d`, where, pageSize, (pageNum-1)*pageSize)
 	var err error
 	if playerID != 0 {
@@ -126,7 +130,7 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 		SELECT
 			game.id,
 			player_id,
-			player_name,
+			p1.player_name,
 			granularity,
 			round(game.game_time, 4) as game_time,
 			death_type.name as death_type,
@@ -139,6 +143,7 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 			game.enemies_killed,
 			time_stamp,
 			replay_player_id,
+			CASE WHEN replay_player_id=0 THEN '' WHEN p2.id IS NULL THEN 'unknown' ELSE p2.player_name END AS replay_player_name,
 			CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
 			version,
 			level_two_time,
@@ -148,8 +153,9 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 			enemies_alive_max_time,
 			homing_daggers_max,
 			enemies_alive_max
-		FROM game JOIN player ON game.player_id=player.id JOIN death_type ON game.death_type=death_type.id
-			LEFT JOIN spawnset ON game.survival_hash=spawnset.survival_hash
+		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+			NATURAL LEFT JOIN spawnset
+			LEFT JOIN replay_player p2 ON game.replay_player_id=p2.id
 		WHERE game.id=$1`
 	err := g.DB.Get(&game, stmt, id)
 	if err != nil {

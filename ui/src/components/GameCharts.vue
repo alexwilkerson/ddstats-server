@@ -4,6 +4,7 @@
     <div class="chart-title" v-if="showGems">{{ titleGems }}</div>
     <div id="gems-chart" v-if="showGems">
       <apexchart
+        ref="gems"
         type="area"
         height="200"
         width="800px"
@@ -16,6 +17,7 @@
     </div>
     <div id="homing-daggers-chart" v-if="showHomingDaggers">
       <apexchart
+        ref="homing-daggers"
         type="area"
         height="200"
         width="800px"
@@ -26,6 +28,7 @@
     <div class="chart-title" v-if="showAccuracy">{{ titleAccuracy }}</div>
     <div id="accuracy-chart" v-if="showAccuracy">
       <apexchart
+        ref="accuracy"
         type="area"
         height="200"
         width="800px"
@@ -38,6 +41,7 @@
     </div>
     <div id="enemies-alive-chart" v-if="showEnemiesAlive">
       <apexchart
+        ref="enemies-alive"
         type="area"
         height="200"
         width="800px"
@@ -50,6 +54,7 @@
     </div>
     <div id="enemies-killed-chart" v-if="showEnemiesKilled">
       <apexchart
+        ref="enemies-killed"
         type="area"
         height="200"
         width="800px"
@@ -120,40 +125,102 @@ export default {
       ]
     };
   },
+  computed: {
+    theme() {
+      return this.$vuetify.theme.dark ? "dark" : "light";
+    }
+  },
+  watch: {
+    theme: function() {
+      this.resetChartOptions();
+    }
+  },
   components: {
     apexchart: VueApexCharts,
     GameInfo
   },
   methods: {
+    resetChartOptions: function() {
+      this.$refs.gems.updateOptions({
+        grid: {
+          borderColor: colors.grid[this.theme]
+        },
+        fill: {
+          colors: [colors.area[this.theme]],
+          opacity: 1,
+          type: "solid"
+        },
+        xaxis: {
+          labels: {
+            style: {
+              colors: colors.labels[this.theme]
+            }
+          }
+        },
+        yaxis: {
+          labels: {
+            style: {
+              color: colors.labels[this.theme]
+            }
+          }
+        }
+      });
+      // this.chartOptionsGems = { colors: ["#f00"] };
+      // this.chartOptionsGems = this.getChartOptions(
+      //   "gems-chart",
+      //   "Gems",
+      //   0,
+      //   this.gameInfo.level_two_time,
+      //   this.gameInfo.level_three_time,
+      //   this.gameInfo.level_four_time
+      // );
+      // this.chartOptionsHomingDaggers = this.getChartOptions(
+      //   "homing-daggers-chart",
+      //   "Homing Daggers",
+      //   1,
+      //   this.gameInfo.level_two_time,
+      //   this.gameInfo.level_three_time,
+      //   this.gameInfo.level_four_time,
+      //   this.gameInfo.homing_daggers_max,
+      //   this.gameInfo.homing_daggers_max_time
+      // );
+      // this.chartOptionsAccuracy = this.getChartOptions(
+      //   "accuracy-chart",
+      //   "Accuracy",
+      //   2,
+      //   this.gameInfo.level_two_time,
+      //   this.gameInfo.level_three_time,
+      //   this.gameInfo.level_four_time
+      // );
+      // this.chartOptionsEnemiesAlive = this.getChartOptions(
+      //   "enemies-alive-chart",
+      //   "Enemies Alive",
+      //   3,
+      //   this.gameInfo.level_two_time,
+      //   this.gameInfo.level_three_time,
+      //   this.gameInfo.level_four_time,
+      //   this.gameInfo.enemies_alive_max,
+      //   this.gameInfo.enemies_alive_max_time
+      // );
+      // this.chartOptionsEnemiesKilled = this.getChartOptions(
+      //   "enemies-killed-chart",
+      //   "Enemies Killed",
+      //   4,
+      //   this.gameInfo.level_two_time,
+      //   this.gameInfo.level_three_time,
+      //   this.gameInfo.level_four_time
+      // );
+    },
     getChartOptions: function(
       id,
       name,
-      color,
+      i,
       level2time,
       level3time,
       level4time,
       max,
       maxTime
     ) {
-      window.console.log(this);
-      // let tooltipOffset = 0;
-      // switch (name) {
-      //   case "Gems":
-      //     tooltipOffset = 60;
-      //     break;
-      //   case "Homing Daggers":
-      //     tooltipOffset = 120;
-      //     break;
-      //   case "Accuracy":
-      //     tooltipOffset = 60;
-      //     break;
-      //   case "Enemies Alive":
-      //     tooltipOffset = 60;
-      //     break;
-      //   case "Enemies Killed":
-      //     tooltipOffset = 60;
-      //     break;
-      // }
       let yaxisLabelFormatter = value => value;
       if (name === "Accuracy") yaxisLabelFormatter = value => value + "%";
       let annotations = [];
@@ -242,7 +309,6 @@ export default {
           }
         });
       }
-      // let vm = this;
       return {
         chart: {
           id: id,
@@ -269,12 +335,11 @@ export default {
         // title: {
         //   text: this.titleGems
         // },
-        colors: [color],
         dataLabels: {
           enabled: false
         },
         fill: {
-          colors: [color],
+          colors: [colors.area[this.theme]],
           opacity: 1,
           type: "solid"
         },
@@ -283,7 +348,7 @@ export default {
         },
         grid: {
           position: "front",
-          borderColor: "#EBE7E4",
+          borderColor: colors.grid[this.theme],
           strokeDashArray: 5,
           yaxis: {
             lines: {
@@ -300,19 +365,24 @@ export default {
           xaxis: annotations
         },
         markers: {
+          colors: colors.area[this.theme == "dark" ? "light" : "dark"],
           strokeWidth: 2,
-          strokeColors: "#c33409",
+          strokeColors: colors.area[this.theme],
           hover: {
             size: 4
           }
         },
         xaxis: {
+          labels: {
+            style: {
+              colors: colors.labels[this.theme]
+            }
+          },
           type: "numeric",
           tickAmount: 16,
           crosshairs: {
             position: "front",
             stroke: {
-              color: "#EBE7E4",
               dashArray: 5
             }
           },
@@ -327,7 +397,10 @@ export default {
         yaxis: {
           labels: {
             formatter: yaxisLabelFormatter,
-            minWidth: 42
+            minWidth: 42,
+            style: {
+              color: colors.labels[this.theme]
+            }
           },
           decimalsInFloat: false
         },
@@ -379,7 +452,7 @@ export default {
         (this.chartOptionsGems = this.getChartOptions(
           "gems-chart",
           "Gems",
-          colors[0],
+          0,
           response.data.game_info.level_two_time,
           response.data.game_info.level_three_time,
           response.data.game_info.level_four_time
@@ -387,7 +460,7 @@ export default {
           (this.chartOptionsHomingDaggers = this.getChartOptions(
             "homing-daggers-chart",
             "Homing Daggers",
-            colors[1],
+            1,
             response.data.game_info.level_two_time,
             response.data.game_info.level_three_time,
             response.data.game_info.level_four_time,
@@ -397,7 +470,7 @@ export default {
         this.chartOptionsAccuracy = this.getChartOptions(
           "accuracy-chart",
           "Accuracy",
-          colors[2],
+          2,
           response.data.game_info.level_two_time,
           response.data.game_info.level_three_time,
           response.data.game_info.level_four_time
@@ -405,7 +478,7 @@ export default {
         this.chartOptionsEnemiesAlive = this.getChartOptions(
           "enemies-alive-chart",
           "Enemies Alive",
-          colors[3],
+          3,
           response.data.game_info.level_two_time,
           response.data.game_info.level_three_time,
           response.data.game_info.level_four_time,
@@ -415,7 +488,7 @@ export default {
         this.chartOptionsEnemiesKilled = this.getChartOptions(
           "enemies-killed-chart",
           "Enemies Killed",
-          colors[4],
+          4,
           response.data.game_info.level_two_time,
           response.data.game_info.level_three_time,
           response.data.game_info.level_four_time
@@ -464,8 +537,20 @@ export default {
   }
 };
 
-const colors = ["#898685", "#737271", "#5f5c5b", "#4a4746", "#373534"];
-// const colors = ["#4a4746", "#4a4746", "#4a4746", "#4a4746", "#4a4746"];
+const colors = {
+  area: {
+    light: "#4a4746",
+    dark: "#E0DDDB"
+  },
+  grid: {
+    light: "#EBE7E4",
+    dark: "#1f1f1f"
+  },
+  labels: {
+    light: "#34302e",
+    dark: "#EBE7E4"
+  }
+};
 </script>
 
 <style scoped>
@@ -485,7 +570,7 @@ const colors = ["#898685", "#737271", "#5f5c5b", "#4a4746", "#373534"];
 .chart-title {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 15px;
-  color: #34302e;
+  color: var(--v-primary-base);
   padding-left: 6px;
 }
 </style>

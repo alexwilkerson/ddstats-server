@@ -6,9 +6,7 @@
         <tbody>
           <tr>
             <td class="text-left">Player</td>
-            <td class="text-right">
-              {{ gameInfo.player_name }}
-            </td>
+            <td class="text-right">{{ gameInfo.player_name }}</td>
           </tr>
           <tr>
             <td class="text-left">Game ID</td>
@@ -26,21 +24,25 @@
             <td class="text-left">Recorded</td>
             <td class="text-right">
               {{
-                dateHover
-                  ? moment
-                      .utc(gameInfo.time_stamp)
-                      .local()
-                      .format("lll")
-                  : moment(gameInfo.time_stamp).fromNow()
+              dateHover
+              ? moment
+              .utc(gameInfo.time_stamp)
+              .local()
+              .format("lll")
+              : moment(gameInfo.time_stamp).fromNow()
               }}
             </td>
+          </tr>
+          <tr v-if="gameInfo.replay_player_name !== undefined">
+            <td class="text-left">Replay Recorded By</td>
+            <td class="text-right">{{ gameInfo.replay_player_name }}</td>
           </tr>
         </tbody>
       </template>
     </v-simple-table>
     <v-row no-gutters justify="center">
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom nudgeRight="6">
+        <v-tooltip bottom nudgeRight="6" nudgeTop="6" contentClass="tooltip">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
@@ -51,7 +53,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom nudgeRight="5">
+        <v-tooltip bottom nudgeRight="5" nudgeTop="6" contentClass="tooltip">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$gem</v-icon>
@@ -62,7 +64,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom nudgeRight="4">
+        <v-tooltip bottom nudgeRight="4" nudgeTop="6" contentClass="tooltip">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409">$dagger</v-icon>
@@ -73,7 +75,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom nudgeRight="2">
+        <v-tooltip bottom nudgeRight="2" nudgeTop="6" contentClass="tooltip">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$target</v-icon>
@@ -84,7 +86,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom nudgeRight="4">
+        <v-tooltip bottom nudgeRight="4" nudgeTop="6" contentClass="tooltip">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$skull</v-icon>
@@ -95,7 +97,7 @@
         </v-tooltip>
       </v-col>
       <v-col cols="12" sm="2" align="center">
-        <v-tooltip bottom nudgeRight="4">
+        <v-tooltip bottom nudgeRight="4" nudgeTop="6" contentClass="tooltip">
           <template v-slot:activator="{ on }">
             <div v-on="on" class="icon-info">
               <v-icon class="icon" fill="#c33409" small>$splat</v-icon>
@@ -129,8 +131,12 @@ export default {
 </script>
 
 <style scoped>
+h1 {
+  color: var(--v-primary-base);
+}
 tr:hover {
-  background: #fffefc !important;
+  /* background: #fffefc !important; */
+  background: var(--v-highlight-base) !important;
 }
 .stats-table {
   border-radius: 2px;
@@ -138,12 +144,14 @@ tr:hover {
   margin: 0 auto 20px auto;
 }
 .stats-table tr {
-  background: #f6f2ee;
+  /* background: #f6f2ee; */
+  background: var(--v-background-base);
 }
 .wrapper {
   max-width: 780px;
   margin: 0 auto 40px auto;
-  background: #f6f2ee;
+  /* background: #f6f2ee; */
+  background: var(--v-background-base);
 }
 .icon {
   margin-top: -4px;
@@ -163,6 +171,11 @@ tr:hover {
 .icon-info span {
   font-size: 15px;
   cursor: default;
+}
+.tooltip {
+  font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
+  font-size: 12px;
+  border-radius: 2px;
 }
 h1 {
   text-align: center;

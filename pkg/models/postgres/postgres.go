@@ -11,6 +11,7 @@ type Postgres struct {
 	Games                  *GameModel
 	States                 *StateModel
 	Players                *PlayerModel
+	ReplayPlayers          *ReplayPlayerModel
 	SubmittedGames         *SubmittedGameModel
 	MOTD                   *MOTDModel
 	DiscordUsers           *DiscordUserModel
@@ -29,6 +30,7 @@ func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
 		Games:                  &GameModel{DB: db},
 		States:                 &StateModel{DB: db},
 		Players:                &PlayerModel{DB: db},
+		ReplayPlayers:          &ReplayPlayerModel{DB: db},
 		SubmittedGames:         &SubmittedGameModel{DB: db, Client: client},
 		MOTD:                   &MOTDModel{DB: db},
 		DiscordUsers:           &DiscordUserModel{DB: db},
