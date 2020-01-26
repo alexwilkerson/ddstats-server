@@ -8,6 +8,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
+
 	"github.com/alexwilkerson/ddstats-server/pkg/models"
 	"github.com/alexwilkerson/ddstats-server/pkg/websocket"
 )
@@ -280,6 +282,19 @@ func (api *API) submitGame(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		api.serverError(w, err)
 		return
+	}
+
+	// This does the same as above, but for replay players.
+	if game.ReplayPlayerID != 0 {
+		replayPlayer, err := api.ddAPI.UserByID(game.ReplayPlayerID)
+		if err != nil && !errors.Is(err, ddapi.ErrPlayerNotFound) {
+			api.serverError(w, err)
+			return
+		}
+		err = api.db.ReplayPlayers.Upsert(int(replayPlayer.PlayerID), replayPlayer.PlayerName)
+		if err != nil {
+			api.errorLog.Printf("%v", err)
+		}
 	}
 
 	gameID, err := api.db.SubmittedGames.Insert(&game)

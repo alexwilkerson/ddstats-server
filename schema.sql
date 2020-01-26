@@ -54,7 +54,7 @@ CREATE TABLE IF NOT EXISTS state (
 CREATE INDEX game_id_idx ON state(game_id);
 
 CREATE TABLE IF NOT EXISTS player (
-  id BIGSERIAL PRIMARY KEY NOT NULL,
+  id BIGINT PRIMARY KEY NOT NULL,
   player_name TEXT NOT NULL,
   rank INTEGER NOT NULL,
   game_time DOUBLE PRECISION NOT NULL,
@@ -72,6 +72,11 @@ CREATE TABLE IF NOT EXISTS player (
   overall_daggers_hit BIGINT NOT NULL,
   overall_daggers_fired BIGINT NOT NULL,
   overall_accuracy DOUBLE PRECISION NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS replay_player (
+  id BIGINT PRIMARY KEY NOT NULL,
+  player_name TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS live (

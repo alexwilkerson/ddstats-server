@@ -12,7 +12,7 @@ GET http://localhost:5000/api/v2/game/top?limit=10
 ### get paginated list of most recent games
 GET http://localhost:5000/api/v2/game/recent?player_id=229&page_size=10&page_num=1
 ### get game by game id
-GET http://localhost:5000/api/v2/game?id=58381
+GET http://localhost:5000/api/v2/game?id=67882
 ### get a list of all game states
 GET http://localhost:5000/api/v2/game/full?id=20000
 ### get a list of all game states

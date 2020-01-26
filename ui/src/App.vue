@@ -1,5 +1,9 @@
 <template>
-  <v-app id="main" :style="{ background: $vuetify.theme.themes[theme].background }">
+  <v-app
+    id="main"
+    dark
+    :style="{ background: $vuetify.theme.themes[theme].background }"
+  >
     <v-app-bar
       app
       color="header"
@@ -9,23 +13,14 @@
       :style="{ textAlign: 'center', zIndex: 500 }"
     >
       <v-spacer />
-      <!-- <div class="d-flex align-center"> -->
-      <v-img
-        alt="Vuetify Logo"
-        class="shrink mr-2"
-        contain
-        dense
-        src="./assets/ddstats_logo_v2_header.png"
-        transition="scale-transition"
+      <Logo
         width="40"
+        @click="switchThemes()"
+        :fill="$vuetify.theme.themes[theme].logo"
+        class="shrink mr-2 dd-logo"
+        transition="scale-transition"
       />
-      <!-- <h1>DDSTATS</h1> -->
       <v-spacer />
-
-      <!-- <h1>DDSTATS</h1> -->
-      <!-- </div> -->
-
-      <!-- <v-spacer /> -->
     </v-app-bar>
 
     <v-content>
@@ -42,21 +37,41 @@
 
 <script>
 import NavBar from "./components/NavBar";
+import Logo from "./assets/logo.svg?inline";
 export default {
-  name: "App",
+  name: "DDSTATS",
   components: {
-    NavBar
+    NavBar,
+    Logo
   },
-  data: () => ({
-    //
-  }),
+  methods: {
+    switchThemes: function() {
+      this.$vuetify.theme.dark = !this.$vuetify.theme.dark;
+      if (this.$vuetify.theme.dark) {
+        window.$cookies.set("dark", true, "10y");
+      } else {
+        window.$cookies.remove("dark");
+      }
+    }
+  },
   computed: {
     theme() {
       return this.$vuetify.theme.dark ? "dark" : "light";
     }
+  },
+  created() {
+    if (window.$cookies.get("dark")) {
+      this.$vuetify.theme.dark = true;
+    }
   }
 };
 </script>
+
+<style scoped>
+.dd-logo {
+  cursor: pointer;
+}
+</style>
 
 <style>
 @font-face {
@@ -92,5 +107,6 @@ h3 {
 .footer-text {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 13px;
+  color: var(--v-logo-base);
 }
 </style>

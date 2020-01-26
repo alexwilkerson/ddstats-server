@@ -30,7 +30,8 @@ type Game struct {
 	EnemiesAlive         int         `json:"enemies_alive" db:"enemies_alive"`
 	EnemiesKilled        int         `json:"enemies_killed" db:"enemies_killed"`
 	TimeStamp            time.Time   `json:"time_stamp" db:"time_stamp"`
-	ReplayPlayerID       int         `json:"replay_player_id" db:"replay_player_id"`
+	ReplayPlayerID       int         `json:"replay_player_id,omitempty" db:"replay_player_id"`
+	ReplayPlayerName     string      `json:"replay_player_name,omitempty" db:"replay_player_name"`
 	Spawnset             string      `json:"spawnset" db:"spawnset"`
 	Version              null.String `json:"version" db:"version"`
 	LevelTwoTime         float64     `json:"level_two_time" db:"level_two_time"`
@@ -68,6 +69,11 @@ type Player struct {
 	OverallDaggersHit      int     `json:"overall_daggers_hit" db:"overall_daggers_hit"`
 	OverallDaggersFired    int     `json:"overall_daggers_fired" db:"overall_daggers_fired"`
 	OverallAccuracy        float64 `json:"overall_accuracy" db:"overall_accuracy"`
+}
+
+type ReplayPlayer struct {
+	ID         int    `db:"id"`
+	PlayerName string `db:"player_name"`
 }
 
 // State struct is for State
