@@ -7,7 +7,6 @@
         ref="gems"
         type="area"
         height="200"
-        width="800px"
         :options="chartOptionsGems"
         :series="seriesGems"
       ></apexchart>
@@ -20,7 +19,6 @@
         ref="homing-daggers"
         type="area"
         height="200"
-        width="800px"
         :options="chartOptionsHomingDaggers"
         :series="seriesHomingDaggers"
       ></apexchart>
@@ -31,7 +29,6 @@
         ref="accuracy"
         type="area"
         height="200"
-        width="800px"
         :options="chartOptionsAccuracy"
         :series="seriesAccuracy"
       ></apexchart>
@@ -44,7 +41,6 @@
         ref="enemies-alive"
         type="area"
         height="200"
-        width="800px"
         :options="chartOptionsEnemiesAlive"
         :series="seriesEnemiesAlive"
       ></apexchart>
@@ -57,7 +53,6 @@
         ref="enemies-killed"
         type="area"
         height="200"
-        width="800px"
         :options="chartOptionsEnemiesKilled"
         :series="seriesEnemiesKilled"
       ></apexchart>
@@ -572,6 +567,12 @@ const colors = {
   font-size: 15px;
   color: var(--v-primary-base);
   padding-left: 6px;
+}
+
+@media only screen and (max-width: 600px) {
+  body {
+    background-color: lightblue;
+  }
 }
 </style>
 
