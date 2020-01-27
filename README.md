@@ -53,6 +53,32 @@ reflex -d none -c reflex.conf
 
 - [ ] authorization
 
+#### ui
+
+##### pages
+
+- [ ] index
+  - collector statistics
+  - global stats
+  - live users
+  - news
+- [ ] players
+  - live users
+- [ ] info
+  - live users
+- [ ] individual player page
+  - live users
+  - live stats
+  - recent games
+  - player global stats
+- [ ] download page
+  - live users
+- [ ] leaderboard page
+  - filter by leaderboard
+  - live users
+- [ ] game stats
+  - live users
+
 #### collector
 
 - [x] add game_time_improvement to collector_active_player
