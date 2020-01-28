@@ -8,6 +8,7 @@
     app
   >
     <v-tab to="/">HOME</v-tab>
+    <v-tab to="/leaderboard">LEADERBOARD</v-tab>
     <v-tab to="/games">GAMES</v-tab>
     <v-tab to="/players">PLAYERS</v-tab>
     <v-tab to="/info">INFO</v-tab>

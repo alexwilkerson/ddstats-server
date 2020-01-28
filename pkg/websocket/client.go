@@ -1,10 +1,15 @@
 package websocket
 
 import (
-	"fmt"
+	"encoding/json"
 	"log"
 
 	"github.com/gorilla/websocket"
+)
+
+const (
+	wsFuncJoinRoom  = "join_room"
+	wsFuncLeaveRoom = "leave_room"
 )
 
 // Client represents the user connected through the websocket
@@ -53,10 +58,29 @@ func (c *Client) Read() {
 		_, p, err := c.Conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
-			return
+			continue
 		}
-		message := Message{Room: c.Room, Body: string(p)}
-		c.Hub.Broadcast <- &message
-		fmt.Printf("Message receieved: %+v\n", message)
+		v := struct {
+			Func string `json:"func"`
+			Body string `json:"body"`
+		}{}
+
+		err = json.Unmarshal(p, &v)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+		if v.Func == wsFuncJoinRoom {
+			c.Room = v.Body // room needs to be set here, because the hub handles join room per c.Room
+			c.Hub.JoinRoom <- c
+			continue
+		}
+		if v.Func == wsFuncLeaveRoom {
+			c.Hub.LeaveRoom <- c
+			continue
+		}
+		// message := Message{Room: c.Room, Body: string(p)}
+		// c.Hub.Broadcast <- &message
+		// fmt.Printf("Message receieved: %+v\n", message)
 	}
 }
