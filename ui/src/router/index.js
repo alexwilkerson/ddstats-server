@@ -23,6 +23,20 @@ const routes = [
       import(/* webpackChunkName: "gamesList" */ "../views/GamesList.vue")
   },
   {
+    path: "/leaderboard",
+    name: "leaderboard",
+    component: () =>
+      import(/* webpackChunkName: "leaderboard" */ "../views/Leaderboard.vue")
+  },
+  {
+    path: "/leaderboard/:name",
+    name: "leaderboardByName",
+    component: () =>
+      import(
+        /* webpackChunkName: "leaderboardByName" */ "../views/LeaderboardByName.vue"
+      )
+  },
+  {
     path: "/players",
     name: "playersList",
     component: () =>
