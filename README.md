@@ -134,6 +134,7 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 - [x] POST api/v2/game/submit
 - [x] GET api/v2/game/top
+- [x] GET api/v2/leaderboard?spawnset={spawnset_name}?page_size={int}&page_num={int}
 - [x] GET api/v2/game/recent?page_size={int}&page_num={int} (optional: player_id={int} will give most recent for given player)
 - [x] GET api/v2/game?id={int} (info)
 - [x] GET api/v2/game/all?id={int}
