@@ -48,7 +48,7 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	mux.Post("/api/get_motd", http.HandlerFunc(api.clientConnect))
 	mux.Post("/api/submit_game", http.HandlerFunc(api.submitGame))
 
-	mux.Get("/ws", http.HandlerFunc(api.serveWebsocket))
+	mux.Get("/ws", api.handleCORS(http.HandlerFunc(api.serveWebsocket)))
 
 	// Why? Well, because the pat application only accounts for REST requests,
 	// so if the server receives anything else (such as a websocket request),

@@ -1,17 +1,13 @@
 <template>
-  <v-app
-    id="main"
-    dark
-    :style="{ background: $vuetify.theme.themes[theme].background }"
-  >
+  <v-app id="main" dark :style="{ background: $vuetify.theme.themes[theme].background }">
     <v-app-bar
       app
       color="header"
-      dark
       height="60px"
       elevation="1"
       :style="{ textAlign: 'center', zIndex: 500 }"
     >
+      <v-app-bar-nav-icon v-if="$vuetify.breakpoint.xsOnly" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-spacer />
       <Logo
         width="40"
@@ -24,7 +20,31 @@
     </v-app-bar>
 
     <v-content>
-      <NavBar />
+      <NavBar v-if="!$vuetify.breakpoint.xsOnly" />
+      <v-navigation-drawer v-model="drawer" fixed temporary app :style="{top: '60px'}">
+        <v-list nav dense>
+          <v-list-item-group v-model="group">
+            <v-list-item to="/">
+              <v-list-item-title>HOME</v-list-item-title>
+            </v-list-item>
+            <v-list-item to="/leaderboard">
+              <v-list-item-title>LEADERBOARD</v-list-item-title>
+            </v-list-item>
+            <v-list-item to="/games">
+              <v-list-item-title>GAMES</v-list-item-title>
+            </v-list-item>
+            <v-list-item to="/players">
+              <v-list-item-title>PLAYERS</v-list-item-title>
+            </v-list-item>
+            <v-list-item to="/info">
+              <v-list-item-title>INFO</v-list-item-title>
+            </v-list-item>
+            <v-list-item to="/download">
+              <v-list-item-title>DOWNLOAD</v-list-item-title>
+            </v-list-item>
+          </v-list-item-group>
+        </v-list>
+      </v-navigation-drawer>
       <router-view></router-view>
     </v-content>
 
@@ -40,6 +60,10 @@ import NavBar from "./components/NavBar";
 import Logo from "./assets/logo.svg?inline";
 export default {
   name: "DDSTATS",
+  data: () => ({
+    drawer: false,
+    group: null
+  }),
   components: {
     NavBar,
     Logo
@@ -63,12 +87,22 @@ export default {
     if (window.$cookies.get("dark")) {
       this.$vuetify.theme.dark = true;
     }
+  },
+  watch: {
+    group() {
+      this.drawer = false;
+    }
   }
 };
 </script>
 
 <style scoped>
 .dd-logo {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  margin-top: -18px;
+  margin-left: -18px;
   cursor: pointer;
 }
 </style>
@@ -88,6 +122,7 @@ export default {
 }
 body {
   /* background-color: #fffefc; */
+  -webkit-font-smoothing: antialiased !important;
   color: #34302e;
   font-family: "alte_haas_grotesk_regular", "Helvetica Neue", Helvetica, Arial;
 }
