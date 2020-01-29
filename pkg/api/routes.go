@@ -24,6 +24,7 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	mux.Post("/api/v2/submit_game", http.HandlerFunc(api.submitGame))
 	mux.Post("/api/v2/client_connect", http.HandlerFunc(api.clientConnect))
 	mux.Get("/api/v2/game/top", http.HandlerFunc(api.getTopGames))
+	mux.Get("/api/v2/leaderboard", http.HandlerFunc(api.getLeaderboard))
 	mux.Get("/api/v2/game/recent", http.HandlerFunc(api.getRecentGames))
 	mux.Get("/api/v2/game", http.HandlerFunc(api.getGame))
 	mux.Get("/api/v2/game/full", http.HandlerFunc(api.getGameFull))
