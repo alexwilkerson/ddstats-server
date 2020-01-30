@@ -1,5 +1,9 @@
 <template>
-  <v-app id="main" dark :style="{ background: $vuetify.theme.themes[theme].background }">
+  <v-app
+    id="main"
+    dark
+    :style="{ background: $vuetify.theme.themes[theme].background }"
+  >
     <v-app-bar
       app
       color="header"
@@ -7,7 +11,10 @@
       elevation="1"
       :style="{ textAlign: 'center', zIndex: 500 }"
     >
-      <v-app-bar-nav-icon v-if="$vuetify.breakpoint.xsOnly" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon
+        v-if="$vuetify.breakpoint.xsOnly"
+        @click.stop="drawer = !drawer"
+      ></v-app-bar-nav-icon>
       <v-spacer />
       <Logo
         width="40"
@@ -21,14 +28,20 @@
 
     <v-content>
       <NavBar v-if="!$vuetify.breakpoint.xsOnly" />
-      <v-navigation-drawer v-model="drawer" fixed temporary app :style="{top: '60px'}">
+      <v-navigation-drawer
+        v-model="drawer"
+        fixed
+        temporary
+        app
+        :style="{ top: '60px' }"
+      >
         <v-list nav dense>
           <v-list-item-group v-model="group">
             <v-list-item to="/">
               <v-list-item-title>HOME</v-list-item-title>
             </v-list-item>
             <v-list-item to="/leaderboard">
-              <v-list-item-title>LEADERBOARD</v-list-item-title>
+              <v-list-item-title>LEADERBOARDS</v-list-item-title>
             </v-list-item>
             <v-list-item to="/games">
               <v-list-item-title>GAMES</v-list-item-title>

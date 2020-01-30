@@ -123,13 +123,14 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 	return games, nil
 }
 
-// GetLeaderboard is a function
-func (g *GameModel) GetLeaderboard(spawnset string, pageSize, pageNum int) ([]*models.GameWithName, error) {
+// GetLeaderboardPaginated is a function
+func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum int) ([]*models.GameWithName, error) {
 	games := []*models.GameWithName{}
 
 	stmt := fmt.Sprintf(`
 		SELECT
 			game.id,
+			ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
 			game.player_id,
 			p1.player_name,
 			game.granularity,
@@ -162,6 +163,57 @@ func (g *GameModel) GetLeaderboard(spawnset string, pageSize, pageNum int) ([]*m
 			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time
 			WHERE spawnset.spawnset_name=$1 AND game.replay_player_id=0
 		ORDER BY game_time DESC LIMIT %d OFFSET %d`, pageSize, (pageNum-1)*pageSize)
+	err := g.DB.Select(&games, stmt, spawnset)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, models.ErrNoRecord
+		}
+		return nil, err
+	}
+
+	return games, nil
+}
+
+// GetLeaderboardPaginated is a function
+func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, error) {
+	games := []*models.GameWithName{}
+
+	stmt := `
+		SELECT
+			game.id,
+			ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
+			game.player_id,
+			p1.player_name,
+			game.granularity,
+			round(game.game_time, 4) as game_time,
+			death_type.name as death_type,
+			game.gems,
+			game.homing_daggers,
+			game.daggers_fired,
+			game.daggers_hit,
+			round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
+			game.enemies_alive,
+			game.enemies_killed,
+			game.time_stamp,
+			CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
+			game.version,
+			game.level_two_time,
+			level_three_time,
+			level_four_time,
+			homing_daggers_max_time,
+			enemies_alive_max_time,
+			homing_daggers_max,
+			enemies_alive_max
+		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+			NATURAL LEFT JOIN spawnset
+			INNER JOIN (
+				SELECT player_id, MAX(game_time) AS max_game_time
+				FROM game
+				WHERE replay_player_id=0
+				GROUP BY player_id
+			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time
+			WHERE spawnset.spawnset_name=$1 AND game.replay_player_id=0
+		ORDER BY game_time DESC`
 	err := g.DB.Select(&games, stmt, spawnset)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

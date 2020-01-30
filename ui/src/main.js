@@ -12,5 +12,15 @@ new Vue({
   VueCookies,
   vuetify,
   router,
+  data() {
+    return {
+      mobile: window.innerWidth <= 700
+    };
+  },
+  created() {
+    addEventListener("resize", () => {
+      this.mobile = innerWidth <= 700;
+    });
+  },
   render: h => h(App)
 }).$mount("#app");
