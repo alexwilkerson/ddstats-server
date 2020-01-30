@@ -13,6 +13,13 @@ const routes = [
   {
     path: "/games/:id",
     name: "games",
+    props: route => {
+      const id = Number.parseInt(route.params.id, 10);
+      if (Number.isNaN(id)) {
+        return 0;
+      }
+      return { id };
+    },
     component: () =>
       import(/* webpackChunkName: "games" */ "../views/Games.vue")
   },
@@ -23,19 +30,25 @@ const routes = [
       import(/* webpackChunkName: "gamesList" */ "../views/GamesList.vue")
   },
   {
-    path: "/leaderboard",
+    path: "/leaderboard/:name",
     name: "leaderboard",
     component: () =>
       import(/* webpackChunkName: "leaderboard" */ "../views/Leaderboard.vue")
   },
   {
-    path: "/leaderboard/:name",
-    name: "leaderboardByName",
+    path: "/leaderboard",
+    name: "leaderboard",
     component: () =>
-      import(
-        /* webpackChunkName: "leaderboardByName" */ "../views/LeaderboardByName.vue"
-      )
+      import(/* webpackChunkName: "leaderboard" */ "../views/Leaderboard.vue")
   },
+  // {
+  //   path: "/leaderboard/:name",
+  //   name: "leaderboardByName",
+  //   component: () =>
+  //     import(
+  //       /* webpackChunkName: "leaderboardByName" */ "../views/LeaderboardByName.vue"
+  //     )
+  // },
   {
     path: "/players",
     name: "playersList",
@@ -45,6 +58,13 @@ const routes = [
   {
     path: "/players/:id",
     name: "players",
+    props: route => {
+      const id = Number.parseInt(route.params.id, 10);
+      if (Number.isNaN(id)) {
+        return 0;
+      }
+      return { id };
+    },
     component: () =>
       import(/* webpackChunkName: "players" */ "../views/Players.vue")
   },

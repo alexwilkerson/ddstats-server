@@ -16,6 +16,7 @@ type Postgres struct {
 	MOTD                   *MOTDModel
 	DiscordUsers           *DiscordUserModel
 	Releases               *ReleaseModel
+	Spawnsets              *SpawnsetModel
 	News                   *NewsModel
 	CollectorRuns          *CollectorRunModel
 	CollectorPlayers       *CollectorPlayerModel
@@ -35,6 +36,7 @@ func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
 		MOTD:                   &MOTDModel{DB: db},
 		DiscordUsers:           &DiscordUserModel{DB: db},
 		Releases:               &ReleaseModel{DB: db},
+		Spawnsets:              &SpawnsetModel{DB: db},
 		News:                   &NewsModel{DB: db},
 		CollectorRuns:          &CollectorRunModel{DB: db},
 		CollectorPlayers:       &CollectorPlayerModel{DB: db},

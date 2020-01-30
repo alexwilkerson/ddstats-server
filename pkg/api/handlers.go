@@ -659,23 +659,36 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	pageSize, err := strconv.Atoi(r.URL.Query().Get("page_size"))
-	if err != nil {
-		api.clientMessage(w, http.StatusBadRequest, "page_size must be an integer")
-		return
-	}
-	if pageSize < 1 {
-		api.clientMessage(w, http.StatusBadRequest, "page_size must be greater than 0")
-		return
-	}
+	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	pageNum, _ := strconv.Atoi(r.URL.Query().Get("page_num"))
 
-	pageNum, err := strconv.Atoi(r.URL.Query().Get("page_num"))
-	if err != nil {
-		api.clientMessage(w, http.StatusBadRequest, "page_num must be an integer")
-		return
-	}
-	if pageNum < 1 {
-		api.clientMessage(w, http.StatusBadRequest, "page_num must be greater than 0")
+	if pageSize < 1 || pageNum < 1 {
+		var leaderboard struct {
+			GameCount int                    `json:"game_count"`
+			Games     []*models.GameWithName `json:"games"`
+			Spawnsets []string               `json:"spawnsets"`
+		}
+
+		leaderboard.Games, err = api.db.Games.GetLeaderboard(spawnset)
+		if err != nil {
+			api.serverError(w, err)
+			return
+		}
+
+		if leaderboard.Games == nil {
+			api.clientMessage(w, http.StatusNotFound, "no records found in this range")
+			return
+		}
+
+		leaderboard.GameCount = len(leaderboard.Games)
+
+		leaderboard.Spawnsets, err = api.db.Spawnsets.SelectSpawnsetNames()
+		if err != nil {
+			api.serverError(w, err)
+			return
+		}
+
+		api.writeJSON(w, leaderboard)
 		return
 	}
 
@@ -688,7 +701,7 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		Games          []*models.GameWithName `json:"games"`
 	}
 
-	games.Games, err = api.db.Games.GetLeaderboard(spawnset, pageSize, pageNum)
+	games.Games, err = api.db.Games.GetLeaderboardPaginated(spawnset, pageSize, pageNum)
 	if err != nil {
 		api.serverError(w, err)
 		return

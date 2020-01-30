@@ -18,6 +18,7 @@ var ErrDiscordUserVerified = errors.New("discord user is verified so cannot upda
 //Game record representation
 type Game struct {
 	ID                   int         `json:"id" db:"id"`
+	Rank                 int         `json:"rank,omitempty" db:"rank"`
 	PlayerID             int         `json:"player_id" db:"player_id"`
 	Granularity          int         `json:"granularity" db:"granularity"`
 	GameTime             float64     `json:"game_time" db:"game_time"`
@@ -296,6 +297,11 @@ type CollectorNewPlayer struct {
 	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
 	Rank                int     `json:"rank" db:"rank"`
 	GameTime            float64 `json:"game_time" db:"game_time"`
+}
+
+type Spawnset struct {
+	SurvivalHash string `json:"survival_hash,omitempty" db:"survival_hash"`
+	SpawnsetName string `json:"spawnset_name,omitempty" db:"spawnset_name"`
 }
 
 type Duration time.Duration

@@ -57,14 +57,17 @@ export default new Vuetify({
         info: "#c33409",
         success: "#4CAF50",
         warning: "#FFC107",
-        highlight: "#fffefc"
+        highlight: "#fffefc",
+        deselected: "#716f6d"
       },
       dark: {
         logo: "#c33409",
         background: "#242121",
         highlight: "#34302e",
         primary: "#f6f2ee",
-        footer: "#1F1F1F"
+        footer: "#1F1F1F",
+        accent: "#c33409",
+        deselected: "#a7a6a6"
       }
     }
   }

@@ -9,6 +9,8 @@ GET http://localhost:5000/api/v2/ddapi/get_scores?offset=400000&limit=100
 
 ### get top games
 GET http://localhost:5000/api/v2/game/top?limit=10
+### get leaderboard
+GET http://localhost:5000/api/v2/leaderboard?spawnset=v3
 ### get paginated list of leaderboard
 GET http://localhost:5000/api/v2/leaderboard?spawnset=v3&page_size=10&page_num=1
 ### get paginated list of most recent games
