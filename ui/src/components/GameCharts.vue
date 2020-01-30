@@ -1,62 +1,67 @@
 <template>
-  <div id="wrapper" v-if="loaded">
-    <GameInfo :gameInfo="gameInfo"></GameInfo>
-    <div class="chart-title" v-if="showGems">{{ titleGems }}</div>
-    <div id="gems-chart" v-if="showGems">
-      <apexchart
-        ref="gems"
-        type="area"
-        height="200"
-        :options="chartOptionsGems"
-        :series="seriesGems"
-      ></apexchart>
+  <div id="wrapper">
+    <h1>Game Stats</h1>
+    <div v-if="loaded">
+      <GameInfo :gameInfo="gameInfo"></GameInfo>
+      <div class="chart-title" v-if="showGems">{{ titleGems }}</div>
+      <div id="gems-chart" v-if="showGems">
+        <apexchart
+          ref="gems"
+          type="area"
+          height="200"
+          :options="chartOptionsGems"
+          :series="seriesGems"
+        ></apexchart>
+      </div>
+      <div class="chart-title" v-if="showHomingDaggers">{{ titleHomingDaggers }}</div>
+      <div id="homing-daggers-chart" v-if="showHomingDaggers">
+        <apexchart
+          ref="homing-daggers"
+          type="area"
+          height="200"
+          :options="chartOptionsHomingDaggers"
+          :series="seriesHomingDaggers"
+        ></apexchart>
+      </div>
+      <div class="chart-title" v-if="showAccuracy">{{ titleAccuracy }}</div>
+      <div id="accuracy-chart" v-if="showAccuracy">
+        <apexchart
+          ref="accuracy"
+          type="area"
+          height="200"
+          :options="chartOptionsAccuracy"
+          :series="seriesAccuracy"
+        ></apexchart>
+      </div>
+      <div class="chart-title" v-if="showEnemiesAlive">{{ titleEnemiesAlive }}</div>
+      <div id="enemies-alive-chart" v-if="showEnemiesAlive">
+        <apexchart
+          ref="enemies-alive"
+          type="area"
+          height="200"
+          :options="chartOptionsEnemiesAlive"
+          :series="seriesEnemiesAlive"
+        ></apexchart>
+      </div>
+      <div class="chart-title" v-if="showEnemiesKilled">{{ titleEnemiesKilled }}</div>
+      <div id="enemies-killed-chart" v-if="showEnemiesKilled">
+        <apexchart
+          ref="enemies-killed"
+          type="area"
+          height="200"
+          :options="chartOptionsEnemiesKilled"
+          :series="seriesEnemiesKilled"
+        ></apexchart>
+      </div>
     </div>
-    <div class="chart-title" v-if="showHomingDaggers">
-      {{ titleHomingDaggers }}
-    </div>
-    <div id="homing-daggers-chart" v-if="showHomingDaggers">
-      <apexchart
-        ref="homing-daggers"
-        type="area"
-        height="200"
-        :options="chartOptionsHomingDaggers"
-        :series="seriesHomingDaggers"
-      ></apexchart>
-    </div>
-    <div class="chart-title" v-if="showAccuracy">{{ titleAccuracy }}</div>
-    <div id="accuracy-chart" v-if="showAccuracy">
-      <apexchart
-        ref="accuracy"
-        type="area"
-        height="200"
-        :options="chartOptionsAccuracy"
-        :series="seriesAccuracy"
-      ></apexchart>
-    </div>
-    <div class="chart-title" v-if="showEnemiesAlive">
-      {{ titleEnemiesAlive }}
-    </div>
-    <div id="enemies-alive-chart" v-if="showEnemiesAlive">
-      <apexchart
-        ref="enemies-alive"
-        type="area"
-        height="200"
-        :options="chartOptionsEnemiesAlive"
-        :series="seriesEnemiesAlive"
-      ></apexchart>
-    </div>
-    <div class="chart-title" v-if="showEnemiesKilled">
-      {{ titleEnemiesKilled }}
-    </div>
-    <div id="enemies-killed-chart" v-if="showEnemiesKilled">
-      <apexchart
-        ref="enemies-killed"
-        type="area"
-        height="200"
-        :options="chartOptionsEnemiesKilled"
-        :series="seriesEnemiesKilled"
-      ></apexchart>
-    </div>
+    <v-progress-circular
+      class="progress"
+      v-else
+      :size="100"
+      :width="6"
+      color="#c33409"
+      indeterminate
+    ></v-progress-circular>
   </div>
 </template>
 
@@ -160,51 +165,6 @@ export default {
           }
         }
       });
-      // this.chartOptionsGems = { colors: ["#f00"] };
-      // this.chartOptionsGems = this.getChartOptions(
-      //   "gems-chart",
-      //   "Gems",
-      //   0,
-      //   this.gameInfo.level_two_time,
-      //   this.gameInfo.level_three_time,
-      //   this.gameInfo.level_four_time
-      // );
-      // this.chartOptionsHomingDaggers = this.getChartOptions(
-      //   "homing-daggers-chart",
-      //   "Homing Daggers",
-      //   1,
-      //   this.gameInfo.level_two_time,
-      //   this.gameInfo.level_three_time,
-      //   this.gameInfo.level_four_time,
-      //   this.gameInfo.homing_daggers_max,
-      //   this.gameInfo.homing_daggers_max_time
-      // );
-      // this.chartOptionsAccuracy = this.getChartOptions(
-      //   "accuracy-chart",
-      //   "Accuracy",
-      //   2,
-      //   this.gameInfo.level_two_time,
-      //   this.gameInfo.level_three_time,
-      //   this.gameInfo.level_four_time
-      // );
-      // this.chartOptionsEnemiesAlive = this.getChartOptions(
-      //   "enemies-alive-chart",
-      //   "Enemies Alive",
-      //   3,
-      //   this.gameInfo.level_two_time,
-      //   this.gameInfo.level_three_time,
-      //   this.gameInfo.level_four_time,
-      //   this.gameInfo.enemies_alive_max,
-      //   this.gameInfo.enemies_alive_max_time
-      // );
-      // this.chartOptionsEnemiesKilled = this.getChartOptions(
-      //   "enemies-killed-chart",
-      //   "Enemies Killed",
-      //   4,
-      //   this.gameInfo.level_two_time,
-      //   this.gameInfo.level_three_time,
-      //   this.gameInfo.level_four_time
-      // );
     },
     getChartOptions: function(
       id,
@@ -321,15 +281,7 @@ export default {
           zoom: {
             enabled: false
           }
-          // events: {
-          //   dataPointMouseEnter: function(event, chartContext, config) {
-          //     window.console.log(event, chartContext, config);
-          //   }
-          // }
         },
-        // title: {
-        //   text: this.titleGems
-        // },
         dataLabels: {
           enabled: false
         },
@@ -426,11 +378,6 @@ export default {
                 break;
             }
             return "";
-            //   '<div class="tool-tip">' +
-            //   "Homing Daggers: " +
-            //   series[seriesIndex][dataPointIndex] +
-            //   "</div>"
-            // );
           }
         }
       };
@@ -562,6 +509,13 @@ const colors = {
   max-width: 800px;
   margin: 0 auto;
 }
+
+h1 {
+  text-align: center;
+  color: var(--v-primary-base);
+  padding-bottom: 20px;
+}
+
 .chart-title {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 15px;

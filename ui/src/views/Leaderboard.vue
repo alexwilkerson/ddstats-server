@@ -1,15 +1,24 @@
 <template>
-  <div class="wrapper" v-if="loaded">
+  <div class="wrapper">
     <h1>{{ spawnset }} Leaderboard</h1>
-    <v-select
-      :options="spawnsets"
-      class="style-chooser"
-      :clearable="false"
-      :value="spawnset"
-      @input="go"
-      placeholder="Select Spawnset"
-    ></v-select>
-    <LeaderboardTable :loadingTable="loadingTable" :data="data" />
+    <div v-if="loaded">
+      <v-select
+        :options="spawnsets"
+        class="style-chooser"
+        :clearable="false"
+        @input="go"
+        placeholder="Select Leaderboard"
+      ></v-select>
+      <LeaderboardTable :loadingTable="loadingTable" :data="data" />
+    </div>
+    <v-progress-circular
+      class="progress"
+      v-else
+      :size="100"
+      :width="6"
+      color="#c33409"
+      indeterminate
+    ></v-progress-circular>
   </div>
 </template>
 
@@ -32,12 +41,7 @@ export default {
       this.$router.push("/leaderboard/" + spawnset);
       this.spawnset = spawnset;
       this.loadingTable = true;
-      this.data = {
-        items: [],
-        page_size: 0,
-        page_num: 1,
-        total_game_count: 0
-      };
+      this.loaded = false;
       axios
         .get(
           process.env.VUE_APP_API_URL +
@@ -127,18 +131,21 @@ h1 {
 .style-chooser .vs__selected {
   background: var(--v-footer-base);
   color: var(--v-primary-base);
-  font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
+  font-family: "alte_haas_grotesk", "Helvetica Neue", Helvetica, Arial;
 }
 
 .style-chooser .vs__dropdown-option {
   margin-left: -23px;
   color: var(--v-deselected-base);
-  font-family: "alte_haas_grotesk", "Helvetica Neue", Helvetica, Arial;
 }
 
 .style-chooser .vs__dropdown-option--highlight {
   color: var(--v-primary-base);
   background-color: var(--v-highlight-base);
+}
+
+.vs__actions {
+  cursor: pointer;
 }
 
 .vs__clear,

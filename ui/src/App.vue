@@ -1,9 +1,5 @@
 <template>
-  <v-app
-    id="main"
-    dark
-    :style="{ background: $vuetify.theme.themes[theme].background }"
-  >
+  <v-app id="main" dark :style="{ background: $vuetify.theme.themes[theme].background }">
     <v-app-bar
       app
       color="header"
@@ -11,10 +7,7 @@
       elevation="1"
       :style="{ textAlign: 'center', zIndex: 500 }"
     >
-      <v-app-bar-nav-icon
-        v-if="$vuetify.breakpoint.xsOnly"
-        @click.stop="drawer = !drawer"
-      ></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon v-if="$vuetify.breakpoint.xsOnly" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-spacer />
       <Logo
         width="40"
@@ -28,13 +21,7 @@
 
     <v-content>
       <NavBar v-if="!$vuetify.breakpoint.xsOnly" />
-      <v-navigation-drawer
-        v-model="drawer"
-        fixed
-        temporary
-        app
-        :style="{ top: '60px' }"
-      >
+      <v-navigation-drawer v-model="drawer" fixed temporary app :style="{ top: '60px' }">
         <v-list nav dense>
           <v-list-item-group v-model="group">
             <v-list-item to="/">
@@ -156,5 +143,10 @@ h3 {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 13px;
   color: var(--v-logo-base);
+}
+
+.v-progress-circular {
+  margin: 50px auto 0 auto !important;
+  width: 100% !important;
 }
 </style>
