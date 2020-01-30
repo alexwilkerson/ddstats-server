@@ -1,6 +1,5 @@
 <template>
   <div class="wrapper">
-    <h1>Game Stats</h1>
     <v-simple-table class="stats-table" dense>
       <template v-slot:default>
         <tbody>
@@ -131,9 +130,6 @@ export default {
 </script>
 
 <style scoped>
-h1 {
-  color: var(--v-primary-base);
-}
 tr:hover {
   /* background: #fffefc !important; */
   background: var(--v-highlight-base) !important;
@@ -176,10 +172,6 @@ tr:hover {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 12px;
   border-radius: 2px;
-}
-h1 {
-  text-align: center;
-  padding-bottom: 20px;
 }
 tbody {
   background: #ebe7e4;
