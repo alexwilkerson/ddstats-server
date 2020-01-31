@@ -109,7 +109,7 @@ export default {
   padding-right: 10px;
   padding-top: 40px;
   padding-bottom: 40px;
-  max-width: 800px;
+  max-width: 860px;
   margin: auto;
 }
 h1 {

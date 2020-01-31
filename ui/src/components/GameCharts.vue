@@ -13,7 +13,9 @@
           :series="seriesGems"
         ></apexchart>
       </div>
-      <div class="chart-title" v-if="showHomingDaggers">{{ titleHomingDaggers }}</div>
+      <div class="chart-title" v-if="showHomingDaggers">
+        {{ titleHomingDaggers }}
+      </div>
       <div id="homing-daggers-chart" v-if="showHomingDaggers">
         <apexchart
           ref="homing-daggers"
@@ -33,7 +35,9 @@
           :series="seriesAccuracy"
         ></apexchart>
       </div>
-      <div class="chart-title" v-if="showEnemiesAlive">{{ titleEnemiesAlive }}</div>
+      <div class="chart-title" v-if="showEnemiesAlive">
+        {{ titleEnemiesAlive }}
+      </div>
       <div id="enemies-alive-chart" v-if="showEnemiesAlive">
         <apexchart
           ref="enemies-alive"
@@ -43,7 +47,9 @@
           :series="seriesEnemiesAlive"
         ></apexchart>
       </div>
-      <div class="chart-title" v-if="showEnemiesKilled">{{ titleEnemiesKilled }}</div>
+      <div class="chart-title" v-if="showEnemiesKilled">
+        {{ titleEnemiesKilled }}
+      </div>
       <div id="enemies-killed-chart" v-if="showEnemiesKilled">
         <apexchart
           ref="enemies-killed"
@@ -498,7 +504,7 @@ const colors = {
 <style scoped>
 #wrapper {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
-  max-width: 800px;
+  max-width: 860px;
   margin: 0 auto;
 }
 #gems-chart,
@@ -506,7 +512,7 @@ const colors = {
 #accuracy-chart,
 #enemies-alive-chart,
 #enemies-killed-chart {
-  max-width: 800px;
+  max-width: 860px;
   margin: 0 auto;
 }
 
