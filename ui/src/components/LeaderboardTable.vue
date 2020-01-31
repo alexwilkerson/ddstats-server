@@ -4,7 +4,6 @@
     :headers="this.$root.mobile ? mobileHeaders : headers"
     :loading="loadingTable"
     :items-per-page="data.page_size"
-    :page="data.page_num"
     :server-items-length="data.total_game_count"
     :disable-sort="true"
     :footer-props="{

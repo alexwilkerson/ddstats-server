@@ -15,9 +15,10 @@ type GameModel struct {
 }
 
 const (
-	v3SurvivalHashA = "5ff43e37d0f85e068caab5457305754e"
-	v3SurvivalHashB = "569fead87abf4d30fdee4231a6398051"
-	defaultSpawnset = "v3"
+	v3SurvivalHashA  = "5ff43e37d0f85e068caab5457305754e"
+	v3SurvivalHashB  = "569fead87abf4d30fdee4231a6398051"
+	defaultSpawnset  = "v3"
+	pacifistSpawnset = "pacifist"
 )
 
 // GetTop retrieves a slice of the top games in the database with a given limit
@@ -68,7 +69,7 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 }
 
 // GetRecent retrieves a slice of users using a specified page size and page num starting at 1
-func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWithName, error) {
+func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWithName, string, error) {
 	var where string
 	if playerID != 0 {
 		where = fmt.Sprintf("WHERE game.player_id=$1 AND game.replay_player_id=0")
@@ -115,55 +116,81 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
+			return nil, "", models.ErrNoRecord
 		}
-		return nil, err
+		return nil, "", err
 	}
 
-	return games, nil
+	if playerID != 0 && len(games) > 0 {
+		return games, games[0].PlayerName, nil
+	}
+
+	return games, "", nil
 }
 
 // GetLeaderboardPaginated is a function
 func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum int) ([]*models.GameWithName, error) {
 	games := []*models.GameWithName{}
 
+	var where string
+	var enemies string
+
+	if spawnset == pacifistSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND enemies_killed=0
+			AND daggers_hit=0
+			AND homing_daggers=0
+			AND game_time < 300`
+		enemies = "AND game.enemies_killed=0"
+	} else {
+		where = "WHERE spawnset_name=$1 AND (replay_player_id=0 OR replay_player_id=player_id)"
+	}
+
 	stmt := fmt.Sprintf(`
-		SELECT
-			game.id,
-			ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
-			game.player_id,
-			p1.player_name,
-			game.granularity,
-			round(game.game_time, 4) as game_time,
-			death_type.name as death_type,
-			game.gems,
-			game.homing_daggers,
-			game.daggers_fired,
-			game.daggers_hit,
-			round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
-			game.enemies_alive,
-			game.enemies_killed,
-			game.time_stamp,
-			CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
-			game.version,
-			game.level_two_time,
-			level_three_time,
-			level_four_time,
-			homing_daggers_max_time,
-			enemies_alive_max_time,
-			homing_daggers_max,
-			enemies_alive_max
-		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+		SELECT DISTINCT ON (player_id, game_time)
+		game.id,
+		ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
+		p1.player_name,
+		game.player_id,
+		game.granularity,
+		round(game.game_time, 4) as game_time,
+		death_type.name as death_type,
+		game.gems,
+		homing_daggers,
+		game.daggers_fired,
+		game.daggers_hit,
+		round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
+		game.enemies_alive,
+		game.enemies_killed,
+		game.replay_player_id,
+		game.time_stamp,
+		CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
+		game.version,
+		game.level_two_time,
+		level_three_time,
+		level_four_time,
+		homing_daggers_max_time,
+		enemies_alive_max_time,
+		homing_daggers_max,
+		enemies_alive_max
+	FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+		NATURAL LEFT JOIN spawnset
+		INNER JOIN (
+			SELECT player_id, MAX(game_time) AS max_game_time
+			FROM game
 			NATURAL LEFT JOIN spawnset
-			INNER JOIN (
-				SELECT player_id, MAX(game_time) AS max_game_time
-				FROM game
-				WHERE replay_player_id=0
-				GROUP BY player_id
-			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time
-			WHERE spawnset.spawnset_name=$1 AND game.replay_player_id=0
-		ORDER BY game_time DESC LIMIT %d OFFSET %d`, pageSize, (pageNum-1)*pageSize)
-	err := g.DB.Select(&games, stmt, spawnset)
+			%s
+			GROUP BY player_id
+		) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time %s
+	ORDER BY game_time DESC LIMIT %d OFFSET %d`, where, enemies, pageSize, (pageNum-1)*pageSize)
+	var err error
+	if spawnset == pacifistSpawnset {
+		err = g.DB.Select(&games, stmt)
+	} else {
+		err = g.DB.Select(&games, stmt, spawnset)
+	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
@@ -174,47 +201,69 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 	return games, nil
 }
 
-// GetLeaderboardPaginated is a function
+// GetLeaderboard is a function
 func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, error) {
 	games := []*models.GameWithName{}
 
-	stmt := `
-		SELECT
-			game.id,
-			ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
-			game.player_id,
-			p1.player_name,
-			game.granularity,
-			round(game.game_time, 4) as game_time,
-			death_type.name as death_type,
-			game.gems,
-			game.homing_daggers,
-			game.daggers_fired,
-			game.daggers_hit,
-			round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
-			game.enemies_alive,
-			game.enemies_killed,
-			game.time_stamp,
-			CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
-			game.version,
-			game.level_two_time,
-			level_three_time,
-			level_four_time,
-			homing_daggers_max_time,
-			enemies_alive_max_time,
-			homing_daggers_max,
-			enemies_alive_max
+	var where string
+	var enemies string
+
+	if spawnset == pacifistSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND enemies_killed=0
+			AND daggers_hit=0
+			AND homing_daggers=0
+			AND game_time < 300`
+		enemies = "AND game.enemies_killed=0"
+	} else {
+		where = "WHERE spawnset_name=$1 AND (replay_player_id=0 OR replay_player_id=player_id)"
+	}
+
+	stmt := fmt.Sprintf(`
+		SELECT DISTINCT ON (player_id, game_time)
+		game.id,
+		ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
+		p1.player_name,
+		game.player_id,
+		game.granularity,
+		round(game.game_time, 4) as game_time,
+		death_type.name as death_type,
+		game.gems,
+		homing_daggers,
+		game.daggers_fired,
+		game.daggers_hit,
+		round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
+		game.enemies_alive,
+		game.enemies_killed,
+		game.replay_player_id,
+		game.time_stamp,
+		CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
+		game.version,
+		game.level_two_time,
+		level_three_time,
+		level_four_time,
+		homing_daggers_max_time,
+		enemies_alive_max_time,
+		homing_daggers_max,
+		enemies_alive_max
 		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
 			NATURAL LEFT JOIN spawnset
 			INNER JOIN (
 				SELECT player_id, MAX(game_time) AS max_game_time
 				FROM game
-				WHERE replay_player_id=0
+				NATURAL LEFT JOIN spawnset
+				%s
 				GROUP BY player_id
-			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time
-			WHERE spawnset.spawnset_name=$1 AND game.replay_player_id=0
-		ORDER BY game_time DESC`
-	err := g.DB.Select(&games, stmt, spawnset)
+			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time %s
+		ORDER BY game_time DESC`, where, enemies)
+	var err error
+	if spawnset == pacifistSpawnset {
+		err = g.DB.Select(&games, stmt)
+	} else {
+		err = g.DB.Select(&games, stmt, spawnset)
+	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
@@ -228,21 +277,40 @@ func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, err
 // GetLeaderboardTotalCount returns the total number of games in the for leaderboards
 func (g *GameModel) GetLeaderboardTotalCount(spawnset string) (int, error) {
 	var err error
-	var stmt string
 	var gameCount int
-	stmt = `
-	SELECT COUNT(1)
-	FROM game g
-	NATURAL JOIN spawnset
-	INNER JOIN (
-		SELECT player_id, MAX(game_time) AS max_game_time
-		FROM game
-		NATURAL JOIN spawnset
-		WHERE replay_player_id=0 and spawnset.spawnset_name=$1
-		GROUP BY player_id
-	) gg ON g.player_id=gg.player_id AND g.game_time=gg.max_game_time
-	WHERE spawnset.spawnset_name=$1 AND replay_player_id=0`
-	err = g.DB.QueryRow(stmt, spawnset).Scan(&gameCount)
+
+	var stmt string
+
+	if spawnset == pacifistSpawnset {
+		stmt = `
+		SELECT COUNT(1) FROM (
+			SELECT MAX(game_time) AS max_game_time
+			FROM game
+			NATURAL LEFT JOIN spawnset
+			WHERE spawnset_name='v3'
+				AND (replay_player_id=0 OR replay_player_id=player_id)
+				AND enemies_killed=0
+				AND daggers_hit=0
+				AND homing_daggers=0
+				AND game_time < 300
+			GROUP BY player_id
+		) g`
+	} else {
+		stmt = `
+		SELECT COUNT(1) FROM (
+			SELECT MAX(game_time) AS max_game_time
+			FROM game
+			NATURAL LEFT JOIN spawnset
+			WHERE spawnset_name=$1 AND (replay_player_id=0 OR replay_player_id=player_id)
+			GROUP BY player_id
+		) g`
+	}
+
+	if spawnset == pacifistSpawnset {
+		err = g.DB.QueryRow(stmt).Scan(&gameCount)
+	} else {
+		err = g.DB.QueryRow(stmt, spawnset).Scan(&gameCount)
+	}
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return 0, models.ErrNoRecord
@@ -294,151 +362,6 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 		return nil, err
 	}
 	return &game, nil
-}
-
-// GetAll returns a slice of states including all of the data from each state
-func (g *GameModel) GetAll(id int) ([]*models.State, error) {
-	var states []*models.State
-	stmt := `
-		SELECT
-			round(game_time, 4) as game_time,
-			gems,
-			homing_daggers,
-			daggers_hit,
-			daggers_fired,
-			round(divzero(daggers_hit, daggers_fired)*100, 2) as accuracy,
-			enemies_alive,
-			enemies_killed
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-
-	return states, nil
-}
-
-// GetGems returns a slice game time and gems from the given game
-func (g *GameModel) GetGems(id int) ([]*models.Gems, error) {
-	var states []*models.Gems
-	stmt := `
-		SELECT round(game_time, 4) as game_time, gems
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-	return states, nil
-}
-
-// GetHomingDaggers returns a slice game time and homing daggers from the given game
-func (g *GameModel) GetHomingDaggers(id int) ([]*models.HomingDaggers, error) {
-	var states []*models.HomingDaggers
-	stmt := `
-		SELECT round(game_time, 4) as game_time, homing_daggers
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-	return states, nil
-}
-
-// GetDaggersHit returns a slice game time and daggers hit from the given game
-func (g *GameModel) GetDaggersHit(id int) ([]*models.DaggersHit, error) {
-	var states []*models.DaggersHit
-	stmt := `
-		SELECT round(game_time, 4) as game_time, daggers_hit
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-	return states, nil
-}
-
-// GetDaggersFired returns a slice game time and daggers fired from the given game
-func (g *GameModel) GetDaggersFired(id int) ([]*models.DaggersFired, error) {
-	var states []*models.DaggersFired
-	stmt := `
-		SELECT round(game_time, 4) as game_time, daggers_fired
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-	return states, nil
-}
-
-// GetAccuracy returns a slice game time and accuracy from the given game
-func (g *GameModel) GetAccuracy(id int) ([]*models.Accuracy, error) {
-	var states []*models.Accuracy
-	stmt := `
-		SELECT round(game_time, 4) as game_time, round(divzero(daggers_hit, daggers_fired)*100, 2) as accuracy
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-	return states, nil
-}
-
-// GetEnemiesAlive returns a slice game time and enemies alive from the given game
-func (g *GameModel) GetEnemiesAlive(id int) ([]*models.EnemiesAlive, error) {
-	var states []*models.EnemiesAlive
-	stmt := `
-		SELECT round(game_time, 4) as game_time, enemies_alive
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-	return states, nil
-}
-
-// GetEnemiesKilled returns a slice game time and enemies killed from the given game
-func (g *GameModel) GetEnemiesKilled(id int) ([]*models.EnemiesKilled, error) {
-	var states []*models.EnemiesKilled
-	stmt := `
-		SELECT round(game_time, 4) as game_time, enemies_killed
-		FROM state
-		WHERE game_id=$1`
-	err := g.DB.Select(&states, stmt, id)
-	if err != nil {
-		if errors.Is(err, sql.ErrNoRows) {
-			return nil, models.ErrNoRecord
-		}
-		return nil, err
-	}
-	return states, nil
 }
 
 // GetTotalCount returns the total number of games in the database

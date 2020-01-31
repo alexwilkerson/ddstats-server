@@ -24,7 +24,6 @@
           @click="selectItem(item)"
           class="pointer"
         >
-          <td class="grotesk-bold red-text">{{ item.player_name }}</td>
           <td
             class="text-right grotesk game-time"
           >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
@@ -38,7 +37,6 @@
           @click="selectItem(item)"
           class="pointer"
         >
-          <td class="grotesk-bold red-text">{{ item.player_name }}</td>
           <td
             class="text-right grotesk game-time"
           >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
@@ -68,11 +66,6 @@ export default {
         rowsPerPage: 10
       },
       headers: [
-        {
-          text: "Player Name",
-          align: "left",
-          value: "player_name"
-        },
         {
           text: "Game Time",
           align: "right",
@@ -111,11 +104,6 @@ export default {
       ],
       mobileHeaders: [
         {
-          text: "Player Name",
-          align: "left",
-          value: "player_name"
-        },
-        {
           text: "Game Time",
           align: "right",
           value: "game_time"
@@ -138,10 +126,11 @@ export default {
       axios
         .get(
           process.env.VUE_APP_API_URL +
-            `/api/v2/game/recent?page_size=${rowsPerPage}&page_num=${page}`
+            `/api/v2/game/recent?player_id=${this.$route.params.id}&page_size=${rowsPerPage}&page_num=${page}`
         )
         .then(response => {
           this.data = response.data;
+          this.$emit("onPlayerNameLoad", response.data.player_name);
           this.loading = false;
         })
         .catch(error => window.console.log(error));

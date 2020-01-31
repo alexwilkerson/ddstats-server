@@ -14,6 +14,8 @@ GET http://localhost:5000/api/v2/leaderboard?spawnset=v3
 ### get paginated list of leaderboard
 GET http://localhost:5000/api/v2/leaderboard?spawnset=v3&page_size=10&page_num=1
 ### get paginated list of most recent games
+GET http://localhost:5000/api/v2/game/recent?page_size=10&page_num=1
+### get paginated list of most recent games
 GET http://localhost:5000/api/v2/game/recent?player_id=229&page_size=10&page_num=1
 ### get game by game id
 GET http://localhost:5000/api/v2/game?id=67882
