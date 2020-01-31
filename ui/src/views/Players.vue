@@ -1,29 +1,62 @@
 <template>
   <div class="wrapper">
-    <h1>{{ playerName }} ({{ $route.params.id }})</h1>
-    <div>
-      <RecentPlayerGamesTable @onPlayerNameLoad="onPlayerNameLoad" />
+    <div v-if="!loading">
+      <h1>{{ data.player_name }}</h1>
+      <PlayerInfo :data="data" />
+      <div>
+        <h1 class="recorded-games-header">Recorded Games</h1>
+        <RecentPlayerGamesTable @onPlayerNameLoad="onPlayerNameLoad" />
+      </div>
     </div>
+    <v-progress-circular
+      class="progress"
+      v-else
+      :size="100"
+      :width="6"
+      color="#c33409"
+      indeterminate
+    ></v-progress-circular>
   </div>
 </template>
 
 <script>
+import axios from "axios";
 import RecentPlayerGamesTable from "../components/RecentPlayerGamesTable";
+import PlayerInfo from "../components/PlayerInfo";
 import "vue-select/dist/vue-select.css";
 
 export default {
   data() {
     return {
+      data: {},
+      loading: true,
       playerName: ""
     };
   },
   components: {
+    PlayerInfo,
     RecentPlayerGamesTable
   },
   methods: {
     onPlayerNameLoad(name) {
       this.playerName = name;
+    },
+    getPlayerFromAPI() {
+      this.loading = true;
+      axios
+        .get(
+          process.env.VUE_APP_API_URL +
+            `/api/v2/player?id=${this.$route.params.id}`
+        )
+        .then(response => {
+          this.data = response.data;
+          this.loading = false;
+        })
+        .catch(error => window.console.log(error));
     }
+  },
+  mounted() {
+    this.getPlayerFromAPI();
   }
 };
 </script>
@@ -36,6 +69,9 @@ export default {
   padding-bottom: 40px;
   max-width: 800px;
   margin: auto;
+}
+.recorded-games-header {
+  margin-top: 20px;
 }
 h1 {
   text-align: center;

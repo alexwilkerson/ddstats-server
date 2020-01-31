@@ -636,6 +636,10 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if playerID != 0 {
+		games.PlayerID = playerID
+	}
+
 	if games.Games == nil {
 		api.clientMessage(w, http.StatusNotFound, "no records found in this range")
 		return

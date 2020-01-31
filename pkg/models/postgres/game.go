@@ -149,42 +149,43 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 	}
 
 	stmt := fmt.Sprintf(`
-		SELECT DISTINCT ON (player_id, game_time)
-		game.id,
-		ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
-		p1.player_name,
-		game.player_id,
-		game.granularity,
-		round(game.game_time, 4) as game_time,
-		death_type.name as death_type,
-		game.gems,
-		homing_daggers,
-		game.daggers_fired,
-		game.daggers_hit,
-		round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
-		game.enemies_alive,
-		game.enemies_killed,
-		game.replay_player_id,
-		game.time_stamp,
-		CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
-		game.version,
-		game.level_two_time,
-		level_three_time,
-		level_four_time,
-		homing_daggers_max_time,
-		enemies_alive_max_time,
-		homing_daggers_max,
-		enemies_alive_max
-	FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
-		NATURAL LEFT JOIN spawnset
-		INNER JOIN (
-			SELECT player_id, MAX(game_time) AS max_game_time
-			FROM game
+		SELECT ROW_NUMBER() OVER (ORDER BY ggg.game_time DESC) AS rank, ggg.* FROM (
+			SELECT DISTINCT ON (player_id, game_time)
+				game.id,
+				p1.player_name,
+				game.player_id,
+				game.granularity,
+				round(game.game_time, 4) as game_time,
+				death_type.name as death_type,
+				game.gems,
+				homing_daggers,
+				game.daggers_fired,
+				game.daggers_hit,
+				round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
+				game.enemies_alive,
+				game.enemies_killed,
+				game.replay_player_id,
+				game.time_stamp,
+				CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
+				game.version,
+				game.level_two_time,
+				level_three_time,
+				level_four_time,
+				homing_daggers_max_time,
+				enemies_alive_max_time,
+				homing_daggers_max,
+				enemies_alive_max
+			FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
 			NATURAL LEFT JOIN spawnset
-			%s
-			GROUP BY player_id
-		) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time %s
-	ORDER BY game_time DESC LIMIT %d OFFSET %d`, where, enemies, pageSize, (pageNum-1)*pageSize)
+			INNER JOIN (
+				SELECT player_id, MAX(game_time) AS max_game_time
+				FROM game
+				NATURAL LEFT JOIN spawnset
+				%s
+				GROUP BY player_id
+			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time %s
+			ORDER BY game_time DESC LIMIT %d OFFSET %d
+		) ggg`, where, enemies, pageSize, (pageNum-1)*pageSize)
 	var err error
 	if spawnset == pacifistSpawnset {
 		err = g.DB.Select(&games, stmt)
@@ -222,33 +223,33 @@ func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, err
 	}
 
 	stmt := fmt.Sprintf(`
-		SELECT DISTINCT ON (player_id, game_time)
-		game.id,
-		ROW_NUMBER() OVER (ORDER BY game.game_time DESC) AS rank,
-		p1.player_name,
-		game.player_id,
-		game.granularity,
-		round(game.game_time, 4) as game_time,
-		death_type.name as death_type,
-		game.gems,
-		homing_daggers,
-		game.daggers_fired,
-		game.daggers_hit,
-		round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
-		game.enemies_alive,
-		game.enemies_killed,
-		game.replay_player_id,
-		game.time_stamp,
-		CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
-		game.version,
-		game.level_two_time,
-		level_three_time,
-		level_four_time,
-		homing_daggers_max_time,
-		enemies_alive_max_time,
-		homing_daggers_max,
-		enemies_alive_max
-		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+		SELECT ROW_NUMBER() OVER (ORDER BY ggg.game_time DESC) AS rank, ggg.* FROM (
+			SELECT DISTINCT ON (player_id, game_time)
+				game.id,
+				p1.player_name,
+				game.player_id,
+				game.granularity,
+				round(game.game_time, 4) as game_time,
+				death_type.name as death_type,
+				game.gems,
+				homing_daggers,
+				game.daggers_fired,
+				game.daggers_hit,
+				round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
+				game.enemies_alive,
+				game.enemies_killed,
+				game.replay_player_id,
+				game.time_stamp,
+				CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
+				game.version,
+				game.level_two_time,
+				level_three_time,
+				level_four_time,
+				homing_daggers_max_time,
+				enemies_alive_max_time,
+				homing_daggers_max,
+				enemies_alive_max
+			FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
 			NATURAL LEFT JOIN spawnset
 			INNER JOIN (
 				SELECT player_id, MAX(game_time) AS max_game_time
@@ -257,7 +258,8 @@ func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, err
 				%s
 				GROUP BY player_id
 			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time %s
-		ORDER BY game_time DESC`, where, enemies)
+			ORDER BY game_time DESC
+		) ggg`, where, enemies)
 	var err error
 	if spawnset == pacifistSpawnset {
 		err = g.DB.Select(&games, stmt)

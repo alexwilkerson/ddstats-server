@@ -7,6 +7,7 @@ import Gem from "../icons/Gem";
 import Dagger from "../icons/Dagger";
 import Target from "../icons/Target";
 import Splat from "../icons/Splat";
+import "material-design-icons-iconfont/dist/material-design-icons.css";
 
 Vue.use(Vuetify);
 
@@ -36,7 +37,8 @@ const DDSTATS_ICONS = {
 
 export default new Vuetify({
   icons: {
-    values: DDSTATS_ICONS
+    values: DDSTATS_ICONS,
+    iconfont: "md"
   },
   theme: {
     options: {

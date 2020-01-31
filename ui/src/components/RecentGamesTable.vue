@@ -7,6 +7,7 @@
     :page="data.page_number"
     :options.sync="options"
     :server-items-length="data.total_game_count"
+    :hide-default-header="true"
     :disable-sort="true"
     :footer-props="{
       itemsPerPageOptions: [10],
@@ -16,6 +17,51 @@
     no-data-text="No games found."
     :mobile-breakpoint="NaN"
   >
+    <template v-slot:header>
+      <thead v-if="$root.mobile">
+        <tr>
+          <th class="text-left" title="Player Name">
+            <v-icon class="icon" color="#c33409" small>mdi-account</v-icon>
+          </th>
+          <th class="text-right" title="Game Time">
+            <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
+          </th>
+          <th class="text-right" title="Recorded">
+            <v-icon class="icon" color="#c33409" small
+              >mdi-calendar-month</v-icon
+            >
+          </th>
+        </tr>
+      </thead>
+      <thead v-else>
+        <tr>
+          <th class="text-left">
+            Player Name
+          </th>
+          <th class="text-right">
+            Game Time
+          </th>
+          <th class="text-right">
+            Gems
+          </th>
+          <th class="text-right">
+            Homing Daggers
+          </th>
+          <th class="text-right">
+            Accuracy
+          </th>
+          <th class="text-right">
+            Enemies Alive
+          </th>
+          <th class="text-right">
+            Enemies Killed
+          </th>
+          <th class="text-right">
+            Recorded
+          </th>
+        </tr>
+      </thead>
+    </template>
     <template v-slot:body="{ items }">
       <tbody v-if="$root.mobile">
         <tr
@@ -25,10 +71,12 @@
           class="pointer"
         >
           <td class="grotesk-bold red-text">{{ item.player_name }}</td>
-          <td
-            class="text-right grotesk game-time"
-          >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
-          <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
+          <td class="text-right grotesk game-time">
+            {{ Number.parseFloat(item.game_time).toFixed(4) }}
+          </td>
+          <td class="text-right grotesk recorded">
+            {{ moment(item.time_stamp).fromNow() }}
+          </td>
         </tr>
       </tbody>
       <tbody v-else>
@@ -39,15 +87,19 @@
           class="pointer"
         >
           <td class="grotesk-bold red-text">{{ item.player_name }}</td>
-          <td
-            class="text-right grotesk game-time"
-          >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
+          <td class="text-right grotesk game-time">
+            {{ Number.parseFloat(item.game_time).toFixed(4) }}s
+          </td>
           <td class="text-right grotesk">{{ item.gems }}</td>
           <td class="text-right grotesk">{{ item.homing_daggers }}</td>
-          <td class="text-right grotesk">{{ Number.parseFloat(item.accuracy).toFixed(2) }}%</td>
+          <td class="text-right grotesk">
+            {{ Number.parseFloat(item.accuracy).toFixed(2) }}%
+          </td>
           <td class="text-right grotesk">{{ item.enemies_alive }}</td>
           <td class="text-right grotesk">{{ item.enemies_killed }}</td>
-          <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
+          <td class="text-right grotesk recorded">
+            {{ moment(item.time_stamp).fromNow() }}
+          </td>
         </tr>
       </tbody>
     </template>
@@ -181,6 +233,6 @@ export default {
   width: 120px;
 }
 .game-time {
-  width: 80px;
+  width: 100px;
 }
 </style>
