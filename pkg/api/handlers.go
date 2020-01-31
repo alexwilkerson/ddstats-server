@@ -7,6 +7,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 
@@ -19,6 +20,7 @@ const (
 	SilverDaggerThreshold float64 = 120
 	GoldDaggerThreshold   float64 = 250
 	DevilDaggerThreshold  float64 = 500
+	PacifistSpawnset              = "Pacifist"
 )
 
 func (api *API) getDaily(w http.ResponseWriter, r *http.Request) {
@@ -326,7 +328,7 @@ func (api *API) getGameFull(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetAll(id)
+	states, err := api.db.States.GetAll(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -354,7 +356,7 @@ func (api *API) getGameAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetAll(id)
+	states, err := api.db.States.GetAll(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -374,7 +376,7 @@ func (api *API) getGameGems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetGems(id)
+	states, err := api.db.States.GetGems(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -394,7 +396,7 @@ func (api *API) getGameHomingDaggers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetHomingDaggers(id)
+	states, err := api.db.States.GetHomingDaggers(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -414,7 +416,7 @@ func (api *API) getGameDaggersHit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetDaggersHit(id)
+	states, err := api.db.States.GetDaggersHit(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -434,7 +436,7 @@ func (api *API) getGameDaggersFired(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetDaggersFired(id)
+	states, err := api.db.States.GetDaggersFired(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -454,7 +456,7 @@ func (api *API) getGameAccuracy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetAccuracy(id)
+	states, err := api.db.States.GetAccuracy(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -474,7 +476,7 @@ func (api *API) getGameEnemiesAlive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetEnemiesAlive(id)
+	states, err := api.db.States.GetEnemiesAlive(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -494,7 +496,7 @@ func (api *API) getGameEnemiesKilled(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetEnemiesKilled(id)
+	states, err := api.db.States.GetEnemiesKilled(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -618,6 +620,8 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var games struct {
+		PlayerID       int                    `json:"player_id,omitempty"`
+		PlayerName     string                 `json:"player_name,omitempty"`
 		TotalPages     int                    `json:"total_pages"`
 		TotalGameCount int                    `json:"total_game_count"`
 		PageNumber     int                    `json:"page_number"`
@@ -626,7 +630,7 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		Games          []*models.GameWithName `json:"games"`
 	}
 
-	games.Games, err = api.db.Games.GetRecent(playerID, pageSize, pageNum)
+	games.Games, games.PlayerName, err = api.db.Games.GetRecent(playerID, pageSize, pageNum)
 	if err != nil {
 		api.serverError(w, err)
 		return
@@ -659,6 +663,8 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	spawnset = strings.ToLower(spawnset)
+
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	pageNum, _ := strconv.Atoi(r.URL.Query().Get("page_num"))
 
@@ -687,6 +693,8 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 			api.serverError(w, err)
 			return
 		}
+
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, PacifistSpawnset)
 
 		api.writeJSON(w, leaderboard)
 		return
