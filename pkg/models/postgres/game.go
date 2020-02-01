@@ -149,41 +149,72 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 	}
 
 	stmt := fmt.Sprintf(`
-		SELECT ROW_NUMBER() OVER (ORDER BY ggg.game_time DESC) AS rank, ggg.* FROM (
-			SELECT DISTINCT ON (player_id, game_time)
-				game.id,
-				p1.player_name,
+		WITH max_game AS (
+			SELECT
+				id,
 				game.player_id,
-				game.granularity,
-				round(game.game_time, 4) as game_time,
-				death_type.name as death_type,
-				game.gems,
+				granularity,
+				round(game_time, 4) AS game_time,
+				death_type,
+				gems,
 				homing_daggers,
-				game.daggers_fired,
-				game.daggers_hit,
-				round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
-				game.enemies_alive,
-				game.enemies_killed,
-				game.replay_player_id,
-				game.time_stamp,
-				CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
-				game.version,
-				game.level_two_time,
+				daggers_fired,
+				daggers_hit,
+				enemies_alive,
+				enemies_killed,
+				time_stamp,
+				replay_player_id,
+				survival_hash,
+				version,
+				level_two_time,
 				level_three_time,
 				level_four_time,
 				homing_daggers_max_time,
 				enemies_alive_max_time,
 				homing_daggers_max,
 				enemies_alive_max
-			FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
-			NATURAL LEFT JOIN spawnset
-			INNER JOIN (
-				SELECT player_id, MAX(game_time) AS max_game_time
+			FROM game INNER JOIN (
+				SELECT DISTINCT ON (player_id) player_id, round(MAX(game_time), 4) AS max_game_time
 				FROM game
 				NATURAL LEFT JOIN spawnset
 				%s
-				GROUP BY player_id
-			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time %s
+				GROUP BY player_id) gg ON game.player_id=gg.player_id AND round(game.game_time, 4)=gg.max_game_time %s),
+		min_replay AS(
+			SELECT player_id, MIN(replay_player_id) AS min_replay 
+			FROM max_game
+			group by player_id
+		)
+
+		SELECT ROW_NUMBER() OVER (ORDER BY ggg.game_time DESC) AS rank, ggg.* FROM (
+			SELECT DISTINCT ON (player_id, game_time)
+				max_game.id,
+				p1.player_name,
+				max_game.player_id,
+				max_game.granularity,
+				max_game.game_time,
+				death_type.name AS death_type,
+				max_game.gems,
+				max_game.homing_daggers,
+				max_game.daggers_fired,
+				max_game.daggers_hit,
+				round(divzero(max_game.daggers_hit, max_game.daggers_fired)*100, 2) as accuracy,
+				max_game.enemies_alive,
+				max_game.enemies_killed,
+				max_game.replay_player_id,
+				max_game.time_stamp,
+				CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
+				max_game.version,
+				max_game.level_two_time,
+				max_game.level_three_time,
+				max_game.level_four_time,
+				max_game.homing_daggers_max_time, 
+				max_game.enemies_alive_max_time,
+				max_game.homing_daggers_max,
+				max_game.enemies_alive_max
+			FROM min_replay JOIN max_game
+			ON min_replay.min_replay = max_game.replay_player_id AND min_replay.player_id = max_game.player_id
+			NATURAL LEFT JOIN spawnset
+			JOIN player p1 ON max_game.player_id=p1.id JOIN death_type ON max_game.death_type=death_type.id
 			ORDER BY game_time DESC LIMIT %d OFFSET %d
 		) ggg`, where, enemies, pageSize, (pageNum-1)*pageSize)
 	var err error
@@ -223,42 +254,73 @@ func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, err
 	}
 
 	stmt := fmt.Sprintf(`
-		SELECT ROW_NUMBER() OVER (ORDER BY ggg.game_time DESC) AS rank, ggg.* FROM (
-			SELECT DISTINCT ON (player_id, game_time)
-				game.id,
-				p1.player_name,
+		WITH max_game AS (
+			SELECT
+				id,
 				game.player_id,
-				game.granularity,
-				round(game.game_time, 4) as game_time,
-				death_type.name as death_type,
-				game.gems,
+				granularity,
+				round(game_time, 4) AS game_time,
+				death_type,
+				gems,
 				homing_daggers,
-				game.daggers_fired,
-				game.daggers_hit,
-				round(divzero(game.daggers_hit, game.daggers_fired)*100, 2) as accuracy,
-				game.enemies_alive,
-				game.enemies_killed,
-				game.replay_player_id,
-				game.time_stamp,
-				CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
-				game.version,
-				game.level_two_time,
+				daggers_fired,
+				daggers_hit,
+				enemies_alive,
+				enemies_killed,
+				time_stamp,
+				replay_player_id,
+				survival_hash,
+				version,
+				level_two_time,
 				level_three_time,
 				level_four_time,
 				homing_daggers_max_time,
 				enemies_alive_max_time,
 				homing_daggers_max,
 				enemies_alive_max
-			FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
-			NATURAL LEFT JOIN spawnset
-			INNER JOIN (
-				SELECT player_id, MAX(game_time) AS max_game_time
+			FROM game INNER JOIN (
+				SELECT DISTINCT ON (player_id) player_id, round(MAX(game_time), 4) AS max_game_time
 				FROM game
 				NATURAL LEFT JOIN spawnset
 				%s
-				GROUP BY player_id
-			) gg ON game.player_id=gg.player_id AND game.game_time=gg.max_game_time %s
-			ORDER BY game_time DESC
+				GROUP BY player_id) gg ON game.player_id=gg.player_id AND round(game.game_time, 4)=gg.max_game_time %s),
+		min_replay AS(
+			SELECT player_id, MIN(replay_player_id) AS min_replay 
+			FROM max_game
+			group by player_id
+		)
+
+		SELECT ROW_NUMBER() OVER (ORDER BY ggg.game_time DESC) AS rank, ggg.* FROM (
+			SELECT DISTINCT ON (player_id, game_time)
+				max_game.id,
+				p1.player_name,
+				max_game.player_id,
+				max_game.granularity,
+				max_game.game_time,
+				death_type.name AS death_type,
+				max_game.gems,
+				max_game.homing_daggers,
+				max_game.daggers_fired,
+				max_game.daggers_hit,
+				round(divzero(max_game.daggers_hit, max_game.daggers_fired)*100, 2) as accuracy,
+				max_game.enemies_alive,
+				max_game.enemies_killed,
+				max_game.replay_player_id,
+				max_game.time_stamp,
+				CASE WHEN spawnset.survival_hash IS NULL THEN 'unknown' ELSE spawnset.spawnset_name END AS spawnset,
+				max_game.version,
+				max_game.level_two_time,
+				max_game.level_three_time,
+				max_game.level_four_time,
+				max_game.homing_daggers_max_time, 
+				max_game.enemies_alive_max_time,
+				max_game.homing_daggers_max,
+				max_game.enemies_alive_max
+			FROM min_replay JOIN max_game
+			ON min_replay.min_replay = max_game.replay_player_id AND min_replay.player_id = max_game.player_id
+			NATURAL LEFT JOIN spawnset
+			JOIN player p1 ON max_game.player_id=p1.id JOIN death_type ON max_game.death_type=death_type.id
+			ORDER BY game_time
 		) ggg`, where, enemies)
 	var err error
 	if spawnset == pacifistSpawnset {

@@ -81,7 +81,16 @@
             </td>
           </tr>
           <tr v-if="gameInfo.replay_player_name !== undefined">
-            <td class="text-left">Replay Recorded By</td>
+            <td class="text-left">
+              <v-icon
+                class="icon"
+                :style="{ marginLeft: '4px', marginRight: '10px' }"
+                color="#c33409"
+                small
+                >mdi-video-account</v-icon
+              >
+              Replay Recorded By
+            </td>
             <td class="text-right">{{ gameInfo.replay_player_name }}</td>
           </tr>
         </tbody>

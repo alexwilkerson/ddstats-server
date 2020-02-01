@@ -7,6 +7,8 @@ import Gem from "../icons/Gem";
 import Dagger from "../icons/Dagger";
 import Target from "../icons/Target";
 import Splat from "../icons/Splat";
+import FlourishLeft from "../icons/FlourishLeft";
+import FlourishRight from "../icons/FlourishRight";
 import "material-design-icons-iconfont/dist/material-design-icons.css";
 
 Vue.use(Vuetify);
@@ -32,6 +34,12 @@ const DDSTATS_ICONS = {
   },
   splat: {
     component: Splat
+  },
+  flourish_left: {
+    component: FlourishLeft
+  },
+  flourish_right: {
+    component: FlourishRight
   }
 };
 
