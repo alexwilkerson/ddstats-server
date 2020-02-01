@@ -1,7 +1,11 @@
 <template>
   <div class="wrapper">
     <div v-if="!loading">
-      <h1>{{ data.player_name }}</h1>
+      <h1>
+        <v-icon class="icon" fill="#c33409">$flourish_left</v-icon>
+        {{ data.player_name }}
+        <v-icon class="icon" fill="#c33409">$flourish_right</v-icon>
+      </h1>
       <PlayerInfo :data="data" />
       <div>
         <h1 class="recorded-games-header">Recorded Games</h1>
