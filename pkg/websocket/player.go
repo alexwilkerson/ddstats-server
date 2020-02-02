@@ -6,8 +6,8 @@ import "sync"
 // playing the game. The fields are populated from the Devil Daggers
 // backend api in the ddapi package
 type Player struct {
-	ID       int     `json:"id"`
-	Name     string  `json:"name"`
+	ID       int     `json:"player_id"`
+	Name     string  `json:"player_name"`
 	GameTime float64 `json:"game_time"`
 	Status   string  `json:"status"`
 }
