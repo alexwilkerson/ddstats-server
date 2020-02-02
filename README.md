@@ -254,4 +254,16 @@ select * from live;
 select * from users;
 ```
 
+### little helper to delete non-ddstats-users from database
+
+````sql
+DELETE FROM player
+WHERE id<>-1 AND id IN (
+	SELECT player.id
+	FROM player LEFT JOIN game ON player.id=game.player_id
+	WHERE game.id IS NULL
+	GROUP BY player.id
+);```
+
 ![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)
+````

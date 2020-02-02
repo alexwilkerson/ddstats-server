@@ -109,12 +109,9 @@ func (hub *Hub) Start() {
 		case player := <-hub.RegisterPlayer:
 			hub.Players.Store(player, true)
 			for client := range hub.Clients {
-				message, err := NewMessage(client.Room, "player_logged_in", struct {
-					PlayerID   int    `json:"player_id"`
-					PlayerName string `json:"player_name"`
-				}{
-					PlayerID:   player.ID,
-					PlayerName: player.Name,
+				message, err := NewMessage(client.Room, "player_logged_in", Player{
+					ID:   player.ID,
+					Name: player.Name,
 				})
 				if err != nil {
 					fmt.Println(err)

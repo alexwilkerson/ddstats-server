@@ -9,7 +9,6 @@
 
 <script>
 import RecentGamesTable from "../components/RecentGamesTable";
-import "vue-select/dist/vue-select.css";
 
 export default {
   components: {

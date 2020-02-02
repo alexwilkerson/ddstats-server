@@ -23,9 +23,9 @@ const (
 	StatusNotConnected    = "Not Connected"
 	StatusConnecting      = "Connecting"
 	StatusAlive           = "Alive"
-	StatusWatchingAReplay = "WatchingAReplay"
+	StatusWatchingAReplay = "Watching A Replay"
 	StatusInMainMenu      = "In Main Menu"
-	StatusInDaggerLobby   = "In DaggerLobby"
+	StatusInDaggerLobby   = "In Dagger Lobby"
 	StatusDead            = "Dead"
 )
 
