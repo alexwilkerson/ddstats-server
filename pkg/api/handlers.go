@@ -104,8 +104,6 @@ func (api *API) getNews(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Println("pageSize", pageSize, "pageNum", pageNum)
-
 	var news struct {
 		TotalPages     int            `json:"total_pages"`
 		TotalNewsCount int            `json:"total_news_count"`
@@ -198,15 +196,6 @@ func (api *API) getReleases(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *API) serveWebsocket(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("WebSocket endpoint hit")
-	if _, ok := r.URL.Query()["room"]; !ok {
-		api.clientError(w, http.StatusNotFound)
-		return
-	}
-
-	room := r.URL.Query().Get("room")
-
-	// upgrade this connection to a Websocket connection
 	conn, err := websocket.Upgrade(w, r)
 	if err != nil {
 		fmt.Fprintf(w, "%+v", err)
@@ -216,7 +205,6 @@ func (api *API) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 	client := &websocket.Client{
 		Conn: conn,
 		Hub:  api.websocketHub,
-		Room: room,
 	}
 
 	api.websocketHub.Register <- client
@@ -777,6 +765,32 @@ func (api *API) getPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	exists, err := api.db.Players.Exists(id)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+	if !exists {
+		api.clientMessage(w, http.StatusNotFound, "not a ddstats player")
+		return
+	}
+
+	playerFromDDAPI, err := api.ddAPI.UserByID(id)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	err = api.db.Players.UpdateDDPlayer(playerFromDDAPI)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			api.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			api.serverError(w, err)
+		}
+		return
+	}
+
 	player, err := api.db.Players.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -784,6 +798,34 @@ func (api *API) getPlayer(w http.ResponseWriter, r *http.Request) {
 		} else {
 			api.serverError(w, err)
 		}
+		return
+	}
+
+	api.writeJSON(w, player)
+}
+
+func (api *API) playerUpsert(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		api.clientMessage(w, http.StatusBadRequest, "id must be an integer")
+		return
+	}
+
+	if id < 1 {
+		api.clientMessage(w, http.StatusBadRequest, "negative id not allowed")
+		return
+	}
+
+	player, err := api.ddAPI.UserByID(id)
+	if err != nil {
+		api.clientMessage(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	err = api.db.Players.UpsertDDPlayer(player)
+	if err != nil {
+		api.clientMessage(w, http.StatusNotFound, "error updating player in database")
+		fmt.Println(err)
 		return
 	}
 
@@ -808,10 +850,10 @@ func (api *API) playerUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = api.db.Players.UpsertDDPlayer(player)
+	err = api.db.Players.UpdateDDPlayer(player)
 	if err != nil {
-		api.clientMessage(w, http.StatusNotFound, "error updating player in database")
 		fmt.Println(err)
+		api.clientMessage(w, http.StatusNotFound, "no user found")
 		return
 	}
 

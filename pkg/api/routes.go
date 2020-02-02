@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/bmizerany/pat"
@@ -49,8 +50,6 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	mux.Post("/api/get_motd", http.HandlerFunc(api.clientConnect))
 	mux.Post("/api/submit_game", http.HandlerFunc(api.submitGame))
 
-	mux.Get("/ws", api.handleCORS(http.HandlerFunc(api.serveWebsocket)))
-
 	// Why? Well, because the pat application only accounts for REST requests,
 	// so if the server receives anything else (such as a websocket request),
 	// there's no way to register it.. these three lines will match the /socket-io/
@@ -64,6 +63,7 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	// reason it won't work otherwise
 	vueApp := api.handleCORS(http.FileServer(http.Dir("./ui/dist/")))
 	muxParent.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		fmt.Println("boom")
 		http.StripPrefix(r.URL.RequestURI(), vueApp).ServeHTTP(w, r)
 	}))
 	// these routes are needed to point to specific static files generated
@@ -84,7 +84,7 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 
 	muxParent.Handle("/api/", standardMiddleware.Then(mux))
 	muxParent.Handle("/api/v2/", standardMiddleware.Then(mux))
-	muxParent.Handle("/ws/", standardMiddleware.Then(mux))
+	muxParent.Handle("/ws", standardMiddleware.Then(http.HandlerFunc(api.serveWebsocket)))
 
 	return muxParent
 }
