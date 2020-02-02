@@ -13,9 +13,7 @@
                 :style="{ marginLeft: '4px', marginRight: '10px' }"
                 color="#c33409"
                 small
-                >mdi-account</v-icon
-              >
-              Player
+              >mdi-account</v-icon>Player
             </td>
             <td class="text-right">{{ gameInfo.player_name }}</td>
           </tr>
@@ -26,9 +24,7 @@
                 :style="{ marginLeft: '4px', marginRight: '10px' }"
                 color="#c33409"
                 small
-                >mdi-card-bulleted</v-icon
-              >
-              Game ID
+              >mdi-card-bulleted</v-icon>Game ID
             </td>
             <td class="text-right">{{ $route.params.id }}</td>
           </tr>
@@ -39,9 +35,7 @@
                 :style="{ marginLeft: '4px', marginRight: '10px' }"
                 color="#c33409"
                 small
-                >mdi-grave-stone</v-icon
-              >
-              Death Type
+              >mdi-grave-stone</v-icon>Death Type
             </td>
             <td class="text-right">{{ gameInfo.death_type }}</td>
           </tr>
@@ -52,9 +46,7 @@
                 :style="{ marginLeft: '4px', marginRight: '10px' }"
                 color="#c33409"
                 small
-                >mdi-sim</v-icon
-              >
-              Spawnset
+              >mdi-sim</v-icon>Spawnset
             </td>
             <td class="text-right">{{ gameInfo.spawnset }}</td>
           </tr>
@@ -65,31 +57,31 @@
                 :style="{ marginLeft: '4px', marginRight: '10px' }"
                 color="#c33409"
                 small
-                >mdi-calendar-month</v-icon
-              >
-              Recorded
+              >mdi-calendar-month</v-icon>Recorded
             </td>
             <td class="text-right">
               {{
-                dateHover
-                  ? moment
-                      .utc(gameInfo.time_stamp)
-                      .local()
-                      .format("lll")
-                  : moment(gameInfo.time_stamp).fromNow()
+              dateHover
+              ? moment
+              .utc(gameInfo.time_stamp)
+              .local()
+              .format("lll")
+              : moment(gameInfo.time_stamp).fromNow()
               }}
             </td>
           </tr>
-          <tr v-if="gameInfo.replay_player_name !== undefined">
+          <tr
+            @click="$router.push('/players/' + gameInfo.replay_player_id)"
+            v-if="gameInfo.replay_player_name !== undefined"
+            :style="{ cursor: 'pointer' }"
+          >
             <td class="text-left">
               <v-icon
                 class="icon"
                 :style="{ marginLeft: '4px', marginRight: '10px' }"
                 color="#c33409"
                 small
-                >mdi-video-account</v-icon
-              >
-              Replay Recorded By
+              >mdi-video-account</v-icon>Replay Recorded By
             </td>
             <td class="text-right">{{ gameInfo.replay_player_name }}</td>
           </tr>

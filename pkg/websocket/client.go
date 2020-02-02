@@ -58,7 +58,7 @@ func (c *Client) Read() {
 		_, p, err := c.Conn.ReadMessage()
 		if err != nil {
 			log.Println(err)
-			continue
+			break
 		}
 		v := struct {
 			Func string `json:"func"`

@@ -129,7 +129,6 @@ h1 {
 .style-chooser .vs__dropdown-toggle,
 .style-chooser .vs__dropdown-menu,
 .style-chooser .vs__selected {
-  margin-top: 10px;
   background: var(--v-footer-base);
   color: var(--v-primary-base);
   font-family: "alte_haas_grotesk", "Helvetica Neue", Helvetica, Arial;

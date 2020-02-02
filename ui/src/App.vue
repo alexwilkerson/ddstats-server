@@ -134,7 +134,6 @@ export default {
   font-style: normal;
 }
 body {
-  /* background-color: #fffefc; */
   -webkit-font-smoothing: antialiased !important;
   color: #34302e;
   font-family: "alte_haas_grotesk_regular", "Helvetica Neue", Helvetica, Arial;

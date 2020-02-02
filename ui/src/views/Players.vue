@@ -50,7 +50,7 @@ export default {
       axios
         .get(
           process.env.VUE_APP_API_URL +
-            `/api/v2/player?id=${this.$route.params.id}`
+            `/api/v2/player/update?id=${this.$route.params.id}`
         )
         .then(response => {
           this.data = response.data;

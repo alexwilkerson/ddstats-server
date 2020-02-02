@@ -180,3 +180,72 @@ func (p *PlayerModel) UpsertDDPlayer(player *ddapi.Player) error {
 	}
 	return nil
 }
+
+func (p *PlayerModel) Exists(playerID int) (bool, error) {
+	stmt := "SELECT FROM player WHERE player_id=$1"
+	err := p.DB.QueryRow(stmt).Scan()
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// UpdateDDPlayer takes the Player struct from the ddapi package and updates it into
+// the player table in the database
+func (p *PlayerModel) UpdateDDPlayer(player *ddapi.Player) error {
+	stmt := `
+		UPDATE player SET
+			player_name=$2,
+			rank=$3,
+			game_time=$4,
+			death_type=$5,
+			gems=$6,
+			daggers_hit=$7,
+			daggers_fired=$8,
+			enemies_killed=$9,
+			accuracy=$10,
+			overall_game_time=$11,
+			overall_average_game_time=$12,
+			overall_deaths=$13,
+			overall_gems=$14,
+			overall_enemies_killed=$15,
+			overall_daggers_hit=$16,
+			overall_daggers_fired=$17,
+			overall_accuracy=$18
+		WHERE id=$1`
+	res, err := p.DB.Exec(stmt,
+		player.PlayerID,
+		player.PlayerName,
+		player.Rank,
+		player.GameTime,
+		player.DeathType,
+		player.Gems,
+		player.DaggersHit,
+		player.DaggersFired,
+		player.EnemiesKilled,
+		player.Accuracy,
+		player.OverallGameTime,
+		player.OverallAverageGameTime,
+		player.OverallDeaths,
+		player.OverallGems,
+		player.OverallEnemiesKilled,
+		player.OverallDaggersHit,
+		player.OverallDaggersFired,
+		player.OverallAccuracy,
+	)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	fmt.Println(rowsAffected)
+	if rowsAffected == 0 {
+		return models.ErrNoRecord
+	}
+	return nil
+}
