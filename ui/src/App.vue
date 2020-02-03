@@ -164,4 +164,7 @@ h3 {
 .v-data-footer__pagination {
   margin-left: 12px !important;
 }
+.online-green {
+  color: #008c00 !important;
+}
 </style>

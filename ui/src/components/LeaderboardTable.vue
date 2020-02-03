@@ -16,20 +16,52 @@
   >
     <template v-slot:body="{ items }">
       <tbody v-if="$root.mobile">
-        <tr v-for="item in items" :key="item.player_id" @click="selectItem(item)" class="pointer">
+        <tr
+          v-for="item in items"
+          :key="item.player_id"
+          @click="selectItem(item)"
+          class="pointer"
+        >
           <td class="text-right grotesk">{{ item.rank }}</td>
-          <td class="grotesk-bold red-text">{{ item.player_name }}</td>
-          <td class="text-right grotesk">{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
+          <td class="grotesk-bold red-text">
+            {{ item.player_name }}
+            <v-icon
+              v-if="$root.checkPlayerLive(item.player_id)"
+              class="icon online-green"
+              small
+              >mdi-access-point</v-icon
+            >
+          </td>
+          <td class="text-right grotesk">
+            {{ Number.parseFloat(item.game_time).toFixed(4) }}
+          </td>
         </tr>
       </tbody>
       <tbody v-else>
-        <tr v-for="item in items" :key="item.player_id" @click="selectItem(item)" class="pointer">
+        <tr
+          v-for="item in items"
+          :key="item.player_id"
+          @click="selectItem(item)"
+          class="pointer"
+        >
           <td class="text-right grotesk">{{ item.rank }}</td>
-          <td class="grotesk-bold red-text">{{ item.player_name }}</td>
-          <td class="text-right grotesk">{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
+          <td class="grotesk-bold red-text">
+            {{ item.player_name }}
+            <v-icon
+              v-if="$root.checkPlayerLive(item.player_id)"
+              class="icon online-green"
+              small
+              >mdi-access-point</v-icon
+            >
+          </td>
+          <td class="text-right grotesk">
+            {{ Number.parseFloat(item.game_time).toFixed(4) }}
+          </td>
           <td class="text-right grotesk">{{ item.gems }}</td>
           <td class="text-right grotesk">{{ item.homing_daggers }}</td>
-          <td class="text-right grotesk">{{ Number.parseFloat(item.accuracy).toFixed(2) }}%</td>
+          <td class="text-right grotesk">
+            {{ Number.parseFloat(item.accuracy).toFixed(2) }}%
+          </td>
           <td class="text-right grotesk">{{ item.enemies_alive }}</td>
           <td class="text-right grotesk">{{ item.enemies_killed }}</td>
         </tr>

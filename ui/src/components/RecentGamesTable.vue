@@ -27,38 +27,20 @@
             <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
           </th>
           <th class="text-right" title="Recorded">
-            <v-icon class="icon" color="#c33409" small
-              >mdi-calendar-month</v-icon
-            >
+            <v-icon class="icon" color="#c33409" small>mdi-calendar-month</v-icon>
           </th>
         </tr>
       </thead>
       <thead v-else>
         <tr>
-          <th class="text-left">
-            Player Name
-          </th>
-          <th class="text-right">
-            Game Time
-          </th>
-          <th class="text-right">
-            Gems
-          </th>
-          <th class="text-right">
-            Homing Daggers
-          </th>
-          <th class="text-right">
-            Accuracy
-          </th>
-          <th class="text-right">
-            Enemies Alive
-          </th>
-          <th class="text-right">
-            Enemies Killed
-          </th>
-          <th class="text-right">
-            Recorded
-          </th>
+          <th class="text-left pointer" @click="sort('player_name')">Player Name</th>
+          <th class="text-right pointer" @click="sort('game_time')">Game Time</th>
+          <th class="text-right pointer" @click="sort('gems')">Gems</th>
+          <th class="text-right pointer" @click="sort('homing_daggers')">Homing Daggers</th>
+          <th class="text-right pointer" @click="sort('accuracy')">Accuracy</th>
+          <th class="text-right pointer" @click="sort('enemies_alive')">Enemies Alive</th>
+          <th class="text-right pointer" @click="sort('enemies_killed')">Enemies Killed</th>
+          <th class="text-right pointer" @click="sort('id')">Recorded</th>
         </tr>
       </thead>
     </template>
@@ -70,13 +52,18 @@
           @click="selectItem(item)"
           class="pointer"
         >
-          <td class="grotesk-bold red-text">{{ item.player_name }}</td>
-          <td class="text-right grotesk game-time">
-            {{ Number.parseFloat(item.game_time).toFixed(4) }}
+          <td class="grotesk-bold red-text">
+            {{ item.player_name }}
+            <v-icon
+              v-if="$root.checkPlayerLive(item.player_id)"
+              class="icon online-green"
+              small
+            >mdi-access-point</v-icon>
           </td>
-          <td class="text-right grotesk recorded">
-            {{ moment(item.time_stamp).fromNow() }}
-          </td>
+          <td
+            class="text-right grotesk game-time"
+          >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
+          <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
         </tr>
       </tbody>
       <tbody v-else>
@@ -86,20 +73,23 @@
           @click="selectItem(item)"
           class="pointer"
         >
-          <td class="grotesk-bold red-text">{{ item.player_name }}</td>
-          <td class="text-right grotesk game-time">
-            {{ Number.parseFloat(item.game_time).toFixed(4) }}s
+          <td class="grotesk-bold red-text">
+            {{ item.player_name }}
+            <v-icon
+              v-if="$root.checkPlayerLive(item.player_id)"
+              class="icon online-green"
+              small
+            >mdi-access-point</v-icon>
           </td>
+          <td
+            class="text-right grotesk game-time"
+          >{{ Number.parseFloat(item.game_time).toFixed(4) }}s</td>
           <td class="text-right grotesk">{{ item.gems }}</td>
           <td class="text-right grotesk">{{ item.homing_daggers }}</td>
-          <td class="text-right grotesk">
-            {{ Number.parseFloat(item.accuracy).toFixed(2) }}%
-          </td>
+          <td class="text-right grotesk">{{ Number.parseFloat(item.accuracy).toFixed(2) }}%</td>
           <td class="text-right grotesk">{{ item.enemies_alive }}</td>
           <td class="text-right grotesk">{{ item.enemies_killed }}</td>
-          <td class="text-right grotesk recorded">
-            {{ moment(item.time_stamp).fromNow() }}
-          </td>
+          <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
         </tr>
       </tbody>
     </template>
@@ -115,6 +105,8 @@ export default {
       moment: moment,
       loading: true,
       data: {},
+      sortBy: "id",
+      sortDir: "desc",
       options: {
         page: 1,
         rowsPerPage: 10
@@ -190,13 +182,21 @@ export default {
       axios
         .get(
           process.env.VUE_APP_API_URL +
-            `/api/v2/game/recent?page_size=${rowsPerPage}&page_num=${page}`
+            `/api/v2/game/recent?page_size=${rowsPerPage}&page_num=${page}&sort_by=${this.sortBy}&sort_dir=${this.sortDir}`
         )
         .then(response => {
           this.data = response.data;
           this.loading = false;
         })
         .catch(error => window.console.log(error));
+    },
+    sort(by) {
+      if (this.sortBy === by) {
+        this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
+      } else {
+        this.sortBy = by;
+      }
+      this.getGamesFromAPI();
     }
   },
   mounted() {

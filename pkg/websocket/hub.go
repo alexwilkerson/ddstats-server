@@ -199,7 +199,6 @@ func (hub *Hub) Start() {
 						break
 					}
 					for client := range hub.Rooms[client.Room] { // notify each other client in that room that a player left
-						fmt.Println(client.ID)
 						message, err := NewMessage(client.Room, "user_count", struct {
 							Count int `json:"count"`
 						}{
@@ -222,10 +221,8 @@ func (hub *Hub) Start() {
 				hub.Rooms[client.Room] = make(map[*Client]bool)
 			}
 			hub.Rooms[client.Room][client] = true // add client to room
-			fmt.Printf("Size of room %q connections: %d\n", client.Room, len(hub.Rooms[client.Room]))
 
 			for client := range hub.Rooms[client.Room] { // send user count update to each client including this client
-				fmt.Println(client.ID)
 				message, err := NewMessage(client.Room, "user_count", struct {
 					Count int `json:"count"`
 				}{
@@ -252,7 +249,6 @@ func (hub *Hub) Start() {
 				}
 
 				for client := range hub.Rooms[client.Room] { // notify each other client in that room that a player left
-					fmt.Println(client.ID)
 					message, err := NewMessage(client.Room, "user_count", struct {
 						Count int `json:"count"`
 					}{

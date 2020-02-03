@@ -6,6 +6,7 @@
         {{ data.player_name }}
         <v-icon class="icon" fill="#c33409">$flourish_right</v-icon>
       </h1>
+      <LivePlayer v-if="$root.checkPlayerLive($route.params.id)" />
       <PlayerInfo :data="data" />
       <div>
         <h1 class="recorded-games-header">Recorded Games</h1>
@@ -27,6 +28,7 @@
 import axios from "axios";
 import RecentPlayerGamesTable from "../components/RecentPlayerGamesTable";
 import PlayerInfo from "../components/PlayerInfo";
+import LivePlayer from "../components/LivePlayer";
 import "vue-select/dist/vue-select.css";
 
 export default {
@@ -38,6 +40,7 @@ export default {
     };
   },
   components: {
+    LivePlayer,
     PlayerInfo,
     RecentPlayerGamesTable
   },
@@ -59,8 +62,15 @@ export default {
         .catch(error => window.console.log(error));
     }
   },
+  beforeDestroy() {
+    this.$socket.send('{"func": "leave_room" }');
+    this.$root.state = {};
+  },
   mounted() {
     this.getPlayerFromAPI();
+    this.$socket.send(
+      '{"func": "join_room", "body": "' + this.$route.params.id + '"}'
+    );
   }
 };
 </script>
