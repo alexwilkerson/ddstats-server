@@ -40,7 +40,7 @@ GET http://localhost:5000/api/v2/game/enemies_killed?id=20
 ###
 GET http://localhost:5000/api/v2/player?id=229
 ###
-GET http://localhost:5000/api/v2/player/update?id=230
+GET http://localhost:5000/api/v2/player/update?id=2
 ###
 GET http://localhost:5000/api/v2/player/all?page_size=9&page_num=1
 ###

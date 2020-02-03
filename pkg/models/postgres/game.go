@@ -69,10 +69,15 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 }
 
 // GetRecent retrieves a slice of users using a specified page size and page num starting at 1
-func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWithName, string, error) {
+func (g *GameModel) GetRecent(playerID, pageSize, pageNum int, sortBy, sortDir string) ([]*models.GameWithName, string, error) {
 	var where string
 	if playerID != 0 {
 		where = fmt.Sprintf("WHERE game.player_id=$1 AND game.replay_player_id=0")
+	}
+
+	if sortBy == "" {
+		sortBy = "id"
+		sortDir = "desc"
 	}
 
 	games := []*models.GameWithName{}
@@ -107,7 +112,7 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int) ([]*models.GameWi
 		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
 			NATURAL LEFT JOIN spawnset
 			LEFT JOIN replay_player p2 ON game.replay_player_id=p2.id %s
-		ORDER BY id DESC LIMIT %d OFFSET %d`, where, pageSize, (pageNum-1)*pageSize)
+		ORDER BY %s %s LIMIT %d OFFSET %d`, where, sortBy, sortDir, pageSize, (pageNum-1)*pageSize)
 	var err error
 	if playerID != 0 {
 		err = g.DB.Select(&games, stmt, playerID)

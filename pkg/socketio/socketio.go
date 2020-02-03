@@ -90,8 +90,9 @@ type state struct {
 	LevelFourTime        float64 `json:"level_four_time"`
 	DeathType            int     `json:"death_type"`
 	IsReplay             bool    `json:"is_replay"`
-	NotifyPlayerBest     bool    `json:"notify_player_best"`
-	NotifyAboveThreshold bool    `json:"notify_above_1000"`
+	Status               string  `json:"status"`
+	NotifyPlayerBest     bool    `json:"-"`
+	NotifyAboveThreshold bool    `json:"-"`
 }
 
 // NewServer returns a Server from the go-socket.io package with all of the routes already
@@ -140,6 +141,11 @@ func (si *sio) onDisconnect(s socketio.Conn, msg string) {
 	}
 	player := v.(*player)
 	player.Lock()
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(player.PlayerID), "submit", struct{}{})
+	if err != nil {
+		si.errorLog.Println("socketio onSubmit: %w", err)
+	}
+	si.websocketHub.Broadcast <- websocketMessage
 	si.livePlayers.Delete(s.ID())
 	si.websocketHub.UnregisterPlayer <- player.websocketPlayer
 	player.Unlock()
@@ -176,6 +182,12 @@ func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
 	player.websocketPlayer.Status = status
 	player.websocketPlayer.Unlock()
 	player.Unlock()
+
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "status", status)
+	if err != nil {
+		si.errorLog.Println("socketio status: %w", err)
+	}
+	si.websocketHub.Broadcast <- websocketMessage
 }
 
 func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, notifyAboveThreshold bool) {
@@ -243,6 +255,12 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 
 	si.websocketHub.RegisterPlayer <- &websocketPlayer
 
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(p.PlayerID)), "submit", struct{}{})
+	if err != nil {
+		si.errorLog.Println("socketio onSubmit: %w", err)
+	}
+	si.websocketHub.Broadcast <- websocketMessage
+
 	si.infoLog.Println(id)
 	si.infoLog.Println("duration:", time.Since(start))
 }
@@ -276,6 +294,7 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	}
 	player := p.(*player)
 	player.Lock()
+	state.Status = player.getStatus()
 	defer player.Unlock()
 	if state.GameTime < player.GameTime {
 		player.aboveThresholdNotified = false

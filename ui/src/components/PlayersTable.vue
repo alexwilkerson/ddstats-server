@@ -32,24 +32,12 @@
       </thead>
       <thead v-else>
         <tr>
-          <th class="text-left">
-            Rank
-          </th>
-          <th class="text-left">
-            Player Name
-          </th>
-          <th class="text-right">
-            Highest Game Time
-          </th>
-          <th class="text-right">
-            Overall Game Time
-          </th>
-          <th class="text-right">
-            Overall Deaths
-          </th>
-          <th class="text-right">
-            Overall Accuracy
-          </th>
+          <th class="text-left pointer" @click="sort('rank')">Rank</th>
+          <th class="text-left pointer" @click="sort('player_name')">Player Name</th>
+          <th class="text-right pointer" @click="sort('game_time')">Highest Game Time</th>
+          <th class="text-right pointer" @click="sort('overall_game_time')">Overall Game Time</th>
+          <th class="text-right pointer" @click="sort('overall_deaths')">Overall Deaths</th>
+          <th class="text-right pointer" @click="sort('overall_accuracy')">Overall Accuracy</th>
         </tr>
       </thead>
     </template>
@@ -66,15 +54,13 @@
             {{ item.player_name }}
             <v-icon
               v-if="$root.checkPlayerLive(item.player_id)"
-              class="icon"
-              color="#008c00"
+              class="icon online-green"
               small
-              >mdi-access-point</v-icon
-            >
+            >mdi-access-point</v-icon>
           </td>
-          <td class="text-right grotesk highest-game-time">
-            {{ Number.parseFloat(item.game_time).toFixed(4) }}
-          </td>
+          <td
+            class="text-right grotesk highest-game-time"
+          >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
         </tr>
       </tbody>
       <tbody v-else>
@@ -89,24 +75,21 @@
             {{ item.player_name }}
             <v-icon
               v-if="$root.checkPlayerLive(item.player_id)"
-              class="icon"
-              color="#00b8ac"
+              class="icon online-green"
               small
-              >mdi-access-point</v-icon
-            >
+            >mdi-access-point</v-icon>
           </td>
-          <td class="text-right grotesk highest-game-time">
-            {{ Number.parseFloat(item.game_time).toFixed(4) }}s
-          </td>
-          <td class="text-right grotesk">
-            {{ moment.duration(item.overall_game_time, "seconds").humanize() }}
-          </td>
-          <td class="text-right grotesk" :style="{ width: '115px' }">
-            {{ item.overall_deaths }}
-          </td>
-          <td class="text-right grotesk" :style="{ width: '135px' }">
-            {{ Number.parseFloat(item.overall_accuracy).toFixed(2) }}%
-          </td>
+          <td
+            class="text-right grotesk highest-game-time"
+          >{{ Number.parseFloat(item.game_time).toFixed(4) }}s</td>
+          <td
+            class="text-right grotesk"
+          >{{ moment.duration(item.overall_game_time, "seconds").humanize() }}</td>
+          <td class="text-right grotesk" :style="{ width: '115px' }">{{ item.overall_deaths }}</td>
+          <td
+            class="text-right grotesk"
+            :style="{ width: '135px' }"
+          >{{ Number.parseFloat(item.overall_accuracy).toFixed(2) }}%</td>
         </tr>
       </tbody>
     </template>
@@ -121,6 +104,8 @@ export default {
     return {
       moment: moment,
       loading: true,
+      sortBy: "rank",
+      sortDir: "desc",
       data: {},
       options: {
         page: 1,
@@ -138,13 +123,21 @@ export default {
       axios
         .get(
           process.env.VUE_APP_API_URL +
-            `/api/v2/player/all?page_size=${rowsPerPage}&page_num=${page}`
+            `/api/v2/player/all?page_size=${rowsPerPage}&page_num=${page}&sort_by=${this.sortBy}&sort_dir=${this.sortDir}`
         )
         .then(response => {
           this.data = response.data;
           this.loading = false;
         })
         .catch(error => window.console.log(error));
+    },
+    sort(by) {
+      if (this.sortBy === by) {
+        this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
+      } else {
+        this.sortBy = by;
+      }
+      this.getPlayersFromAPI();
     }
   },
   mounted() {

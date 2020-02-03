@@ -538,6 +538,24 @@ func (api *API) getPlayers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sortBy := strings.ToLower(r.URL.Query().Get("sort_by"))
+	sortDir := strings.ToLower(r.URL.Query().Get("sort_dir"))
+
+	if sortBy != "" && !(sortBy == "rank" || sortBy == "player_name" || sortBy == "game_time" || sortBy == "overall_game_time" || sortBy == "overall_deaths" || sortBy == "overall_accuracy") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if (sortBy != "" && sortDir == "") || (sortBy == "" && sortDir != "") {
+		api.clientMessage(w, http.StatusBadRequest, "both 'sort_dir' and 'sort_by' params must be set when sorting")
+		return
+	}
+
+	if sortDir != "" && !(sortDir == "asc" || sortDir == "desc") {
+		api.clientMessage(w, http.StatusBadRequest, "'sort_dir' param must be 'asc' or 'desc'")
+		return
+	}
+
 	var players struct {
 		TotalPages       int              `json:"total_pages"`
 		TotalPlayerCount int              `json:"total_player_count"`
@@ -547,7 +565,7 @@ func (api *API) getPlayers(w http.ResponseWriter, r *http.Request) {
 		Players          []*models.Player `json:"players"`
 	}
 
-	players.Players, err = api.db.Players.GetAll(pageSize, pageNum)
+	players.Players, err = api.db.Players.GetAll(pageSize, pageNum, sortBy, sortDir)
 	if err != nil {
 		api.serverError(w, err)
 		return
@@ -607,6 +625,29 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sortBy := strings.ToLower(r.URL.Query().Get("sort_by"))
+	sortDir := strings.ToLower(r.URL.Query().Get("sort_dir"))
+
+	if playerID != 0 && sortBy != "" && !(sortBy == "id" || sortBy == "game_time" || sortBy == "gems" || sortBy == "homing_daggers" || sortBy == "accuracy" || sortBy == "enemies_alive" || sortBy == "enemies_killed" || sortBy == "time_stamp") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if playerID == 0 && sortBy != "" && !(sortBy == "id" || sortBy == "player_name" || sortBy == "game_time" || sortBy == "gems" || sortBy == "homing_daggers" || sortBy == "accuracy" || sortBy == "enemies_alive" || sortBy == "enemies_killed" || sortBy == "time_stamp") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if (sortBy != "" && sortDir == "") || (sortBy == "" && sortDir != "") {
+		api.clientMessage(w, http.StatusBadRequest, "both 'sort_dir' and 'sort_by' params must be set when sorting")
+		return
+	}
+
+	if sortDir != "" && !(sortDir == "asc" || sortDir == "desc") {
+		api.clientMessage(w, http.StatusBadRequest, "'sort_dir' param must be 'asc' or 'desc'")
+		return
+	}
+
 	var games struct {
 		PlayerID       int                    `json:"player_id,omitempty"`
 		PlayerName     string                 `json:"player_name,omitempty"`
@@ -618,7 +659,7 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		Games          []*models.GameWithName `json:"games"`
 	}
 
-	games.Games, games.PlayerName, err = api.db.Games.GetRecent(playerID, pageSize, pageNum)
+	games.Games, games.PlayerName, err = api.db.Games.GetRecent(playerID, pageSize, pageNum, sortBy, sortDir)
 	if err != nil {
 		api.serverError(w, err)
 		return

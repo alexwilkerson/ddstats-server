@@ -87,12 +87,19 @@
             {{ data.overall_enemies_killed.toLocaleString() }}
           </td>
         </tr>
-        <tr>
+        <tr
+          @mouseover="accuracyHover = true"
+          @mouseleave="accuracyHover = false"
+        >
           <td class="text-left">
             <v-icon class="icon" fill="#c33409" small>$target</v-icon>
             Overall Accuracy
           </td>
-          <td class="text-right">{{ data.accuracy }}%</td>
+          <td class="text-right" v-if="!accuracyHover">{{ data.accuracy }}%</td>
+          <td class="text-right" v-else>
+            {{ data.daggers_hit.toLocaleString() }} /
+            {{ data.daggers_fired.toLocaleString() }}
+          </td>
         </tr>
         <tr
           v-if="data.last_active"
@@ -132,7 +139,8 @@ export default {
   data() {
     return {
       moment: moment,
-      gameTimeHover: false
+      gameTimeHover: false,
+      accuracyHover: false
     };
   }
 };

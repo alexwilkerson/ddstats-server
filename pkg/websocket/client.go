@@ -2,6 +2,7 @@ package websocket
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -60,6 +61,7 @@ func (c *Client) Read() {
 			log.Println(err)
 			break
 		}
+		fmt.Println(string(p))
 		v := struct {
 			Func string `json:"func"`
 			Body string `json:"body"`

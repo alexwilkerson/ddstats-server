@@ -22,13 +22,15 @@ new Vue({
   data() {
     return {
       mobile: window.innerWidth <= 700,
-      players: []
+      players: [],
+      state: {},
+      status: ""
     };
   },
   methods: {
     checkPlayerLive(id) {
       for (let i = 0; i < this.players.length; i++) {
-        if (this.players[i].player_name == id) return true;
+        if (this.players[i].player_id == id) return true;
       }
       return false;
     }
@@ -51,6 +53,17 @@ new Vue({
           this.$root.players = this.$root.players.filter(
             player => player.id == body.player_id
           );
+          break;
+        case "submit":
+          this.$root.state = body;
+          if (body.status === undefined) {
+            this.$root.status = "";
+          } else {
+            this.$root.status = body.status;
+          }
+          break;
+        case "status":
+          this.$root.status = body;
           break;
       }
     };

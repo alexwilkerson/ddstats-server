@@ -80,13 +80,18 @@ func (p *PlayerModel) Get(id int) (*models.Player, error) {
 }
 
 // GetAll retreives a slice of users using a specified page size and page num starting at 1
-func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
+func (p *PlayerModel) GetAll(pageSize, pageNum int, sortBy, sortDir string) ([]*models.Player, error) {
+	if sortBy == "" {
+		sortBy = "rank"
+		sortDir = "desc"
+	}
+
 	var players []*models.Player
 	stmt := fmt.Sprintf(`
 		SELECT *
 		FROM player
 		WHERE id<>-1
-		ORDER BY game_time DESC LIMIT %d OFFSET %d`, pageSize, (pageNum-1)*pageSize)
+		ORDER BY %s %s LIMIT %d OFFSET %d`, sortBy, sortDir, pageSize, (pageNum-1)*pageSize)
 	err := p.DB.Select(&players, stmt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
