@@ -16,52 +16,60 @@
   >
     <template v-slot:body="{ items }">
       <tbody v-if="$root.mobile">
-        <tr
-          v-for="item in items"
-          :key="item.player_id"
-          @click="selectItem(item)"
-          class="pointer"
-        >
+        <tr v-for="item in items" :key="item.player_id" @click="selectItem(item)" class="pointer">
           <td class="text-right grotesk">{{ item.rank }}</td>
-          <td class="grotesk-bold red-text">
+          <td class="grotesk-bold">
+            <v-icon v-if="item.game_time >= data.devil_dagger_time" fill="#c33409" small>$dagger</v-icon>
+            <v-icon v-else-if="item.game_time >= data.gold_dagger_time" fill="#ffcd00" small>$dagger</v-icon>
+            <v-icon
+              v-else-if="item.game_time >= data.silver_dagger_time"
+              fill="#acacac"
+              small
+            >$dagger</v-icon>
+            <v-icon
+              v-else-if="item.game_time >= data.bronze_dagger_time"
+              fill="#ff8300"
+              small
+            >$dagger</v-icon>
+            <v-icon v-else fill="#000" small>$dagger</v-icon>
             {{ item.player_name }}
             <v-icon
               v-if="$root.checkPlayerLive(item.player_id)"
               class="icon online-green"
               small
-              >mdi-access-point</v-icon
-            >
+            >mdi-access-point</v-icon>
           </td>
-          <td class="text-right grotesk">
-            {{ Number.parseFloat(item.game_time).toFixed(4) }}
-          </td>
+          <td class="text-right grotesk">{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
         </tr>
       </tbody>
       <tbody v-else>
-        <tr
-          v-for="item in items"
-          :key="item.player_id"
-          @click="selectItem(item)"
-          class="pointer"
-        >
+        <tr v-for="item in items" :key="item.player_id" @click="selectItem(item)" class="pointer">
           <td class="text-right grotesk">{{ item.rank }}</td>
-          <td class="grotesk-bold red-text">
+          <td class="grotesk-bold">
+            <v-icon v-if="item.game_time >= data.devil_dagger_time" fill="#c33409" small>$dagger</v-icon>
+            <v-icon v-else-if="item.game_time >= data.gold_dagger_time" fill="#ffcd00" small>$dagger</v-icon>
+            <v-icon
+              v-else-if="item.game_time >= data.silver_dagger_time"
+              fill="#acacac"
+              small
+            >$dagger</v-icon>
+            <v-icon
+              v-else-if="item.game_time >= data.bronze_dagger_time"
+              fill="#ff8300"
+              small
+            >$dagger</v-icon>
+            <v-icon v-else fill="#000" small>$dagger</v-icon>
             {{ item.player_name }}
             <v-icon
               v-if="$root.checkPlayerLive(item.player_id)"
               class="icon online-green"
               small
-              >mdi-access-point</v-icon
-            >
+            >mdi-access-point</v-icon>
           </td>
-          <td class="text-right grotesk">
-            {{ Number.parseFloat(item.game_time).toFixed(4) }}
-          </td>
+          <td class="text-right grotesk">{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
           <td class="text-right grotesk">{{ item.gems }}</td>
           <td class="text-right grotesk">{{ item.homing_daggers }}</td>
-          <td class="text-right grotesk">
-            {{ Number.parseFloat(item.accuracy).toFixed(2) }}%
-          </td>
+          <td class="text-right grotesk">{{ Number.parseFloat(item.accuracy).toFixed(2) }}%</td>
           <td class="text-right grotesk">{{ item.enemies_alive }}</td>
           <td class="text-right grotesk">{{ item.enemies_killed }}</td>
         </tr>
@@ -77,7 +85,7 @@ export default {
     headers: [
       {
         text: "Rank",
-        align: "right",
+        align: "left",
         value: "rank"
       },
       {
@@ -119,7 +127,7 @@ export default {
     mobileHeaders: [
       {
         text: "Rank",
-        align: "right",
+        align: "left",
         value: "rank"
       },
       {
@@ -157,5 +165,8 @@ export default {
 }
 .pointer {
   cursor: pointer;
+}
+.leaderboard-dagger {
+  padding: 0px !important;
 }
 </style>

@@ -13,9 +13,7 @@
           :series="seriesGems"
         ></apexchart>
       </div>
-      <div class="chart-title" v-if="showHomingDaggers">
-        {{ titleHomingDaggers }}
-      </div>
+      <div class="chart-title" v-if="showHomingDaggers">{{ titleHomingDaggers }}</div>
       <div id="homing-daggers-chart" v-if="showHomingDaggers">
         <apexchart
           ref="homing-daggers"
@@ -35,9 +33,7 @@
           :series="seriesAccuracy"
         ></apexchart>
       </div>
-      <div class="chart-title" v-if="showEnemiesAlive">
-        {{ titleEnemiesAlive }}
-      </div>
+      <div class="chart-title" v-if="showEnemiesAlive">{{ titleEnemiesAlive }}</div>
       <div id="enemies-alive-chart" v-if="showEnemiesAlive">
         <apexchart
           ref="enemies-alive"
@@ -47,9 +43,7 @@
           :series="seriesEnemiesAlive"
         ></apexchart>
       </div>
-      <div class="chart-title" v-if="showEnemiesKilled">
-        {{ titleEnemiesKilled }}
-      </div>
+      <div class="chart-title" v-if="showEnemiesKilled">{{ titleEnemiesKilled }}</div>
       <div id="enemies-killed-chart" v-if="showEnemiesKilled">
         <apexchart
           ref="enemies-killed"
@@ -134,10 +128,16 @@ export default {
   computed: {
     theme() {
       return this.$vuetify.theme.dark ? "dark" : "light";
+    },
+    mobile() {
+      return this.$root.mobile;
     }
   },
   watch: {
     theme: function() {
+      this.resetChartOptions();
+    },
+    mobile: function() {
       this.resetChartOptions();
     }
   },
@@ -288,6 +288,19 @@ export default {
             enabled: false
           }
         },
+        responsive: [
+          {
+            breakpoint: 600,
+            options: {
+              chart: {
+                height: 150
+              },
+              xaxis: {
+                tickAmount: 8
+              }
+            }
+          }
+        ],
         dataLabels: {
           enabled: false
         },

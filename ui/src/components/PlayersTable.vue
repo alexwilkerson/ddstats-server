@@ -105,7 +105,7 @@ export default {
       moment: moment,
       loading: true,
       sortBy: "rank",
-      sortDir: "desc",
+      sortDir: "asc",
       data: {},
       options: {
         page: 1,
