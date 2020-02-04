@@ -24,3 +24,16 @@ func (sm *SpawnsetModel) SelectSpawnsetNames() ([]string, error) {
 	}
 	return spawnset_names, nil
 }
+
+func (sm *SpawnsetModel) Select(name string) (*models.Spawnset, error) {
+	var spawnset models.Spawnset
+	stmt := `
+		SELECT *
+		FROM spawnset
+		WHERE spawnset_name=$1 LIMIT 1`
+	err := sm.DB.Get(&spawnset, stmt, name)
+	if err != nil {
+		return nil, err
+	}
+	return &spawnset, nil
+}

@@ -703,9 +703,13 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 
 	if pageSize < 1 || pageNum < 1 {
 		var leaderboard struct {
-			GameCount int                    `json:"game_count"`
-			Games     []*models.GameWithName `json:"games"`
-			Spawnsets []string               `json:"spawnsets"`
+			GameCount        int                    `json:"game_count"`
+			BronzeDaggerTime float64                `json:"bronze_dagger_time"`
+			SilverDaggerTime float64                `json:"silver_dagger_time"`
+			GoldDaggerTime   float64                `json:"gold_dagger_time"`
+			DevilDaggerTime  float64                `json:"devil_dagger_time"`
+			Games            []*models.GameWithName `json:"games"`
+			Spawnsets        []string               `json:"spawnsets"`
 		}
 
 		leaderboard.Games, err = api.db.Games.GetLeaderboard(spawnset)
@@ -727,6 +731,24 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		if spawnset != "pacifist" {
+			spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
+			if err != nil {
+				api.clientMessage(w, http.StatusNotFound, "no spawnset found by this name")
+				return
+			}
+
+			leaderboard.BronzeDaggerTime = spawnsetFromDB.BronzeDaggerTime
+			leaderboard.SilverDaggerTime = spawnsetFromDB.SilverDaggerTime
+			leaderboard.GoldDaggerTime = spawnsetFromDB.GoldDaggerTime
+			leaderboard.DevilDaggerTime = spawnsetFromDB.DevilDaggerTime
+		} else {
+			leaderboard.BronzeDaggerTime = 50
+			leaderboard.SilverDaggerTime = 70
+			leaderboard.GoldDaggerTime = 90
+			leaderboard.DevilDaggerTime = 110
+		}
+
 		leaderboard.Spawnsets = append(leaderboard.Spawnsets, PacifistSpawnset)
 
 		api.writeJSON(w, leaderboard)
@@ -734,12 +756,16 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var games struct {
-		TotalPages     int                    `json:"total_pages"`
-		TotalGameCount int                    `json:"total_game_count"`
-		PageNumber     int                    `json:"page_number"`
-		PageSize       int                    `json:"page_size"`
-		GameCount      int                    `json:"game_count"`
-		Games          []*models.GameWithName `json:"games"`
+		TotalPages       int                    `json:"total_pages"`
+		TotalGameCount   int                    `json:"total_game_count"`
+		PageNumber       int                    `json:"page_number"`
+		PageSize         int                    `json:"page_size"`
+		GameCount        int                    `json:"game_count"`
+		BronzeDaggerTime float64                `json:"bronze_dagger_time"`
+		SilverDaggerTime float64                `json:"silver_dagger_time"`
+		GoldDaggerTime   float64                `json:"gold_dagger_time"`
+		DevilDaggerTime  float64                `json:"devil_dagger_time"`
+		Games            []*models.GameWithName `json:"games"`
 	}
 
 	games.Games, err = api.db.Games.GetLeaderboardPaginated(spawnset, pageSize, pageNum)
@@ -757,6 +783,24 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		api.serverError(w, err)
 		return
+	}
+
+	if spawnset != "pacifist" {
+		spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
+		if err != nil {
+			api.clientMessage(w, http.StatusNotFound, "no spawnset found by this name")
+			return
+		}
+
+		games.BronzeDaggerTime = spawnsetFromDB.BronzeDaggerTime
+		games.SilverDaggerTime = spawnsetFromDB.SilverDaggerTime
+		games.GoldDaggerTime = spawnsetFromDB.GoldDaggerTime
+		games.DevilDaggerTime = spawnsetFromDB.DevilDaggerTime
+	} else {
+		games.BronzeDaggerTime = 50
+		games.SilverDaggerTime = 70
+		games.GoldDaggerTime = 90
+		games.DevilDaggerTime = 110
 	}
 
 	games.TotalPages = int(math.Ceil(float64(games.TotalGameCount) / float64(pageSize)))

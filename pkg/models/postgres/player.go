@@ -83,7 +83,7 @@ func (p *PlayerModel) Get(id int) (*models.Player, error) {
 func (p *PlayerModel) GetAll(pageSize, pageNum int, sortBy, sortDir string) ([]*models.Player, error) {
 	if sortBy == "" {
 		sortBy = "rank"
-		sortDir = "desc"
+		sortDir = "asc"
 	}
 
 	var players []*models.Player

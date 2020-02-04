@@ -86,7 +86,11 @@ CREATE TABLE IF NOT EXISTS live (
 
 CREATE TABLE IF NOT EXISTS spawnset (
   survival_hash TEXT PRIMARY KEY NOT NULL,
-  spawnset_name TEXT NOT NULL
+  spawnset_name TEXT NOT NULL,
+  bronze_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0,
+  silver_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0,
+  gold_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0,
+  devil_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0,
 );
 
 CREATE TABLE IF NOT EXISTS death_type (

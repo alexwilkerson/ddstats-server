@@ -301,8 +301,12 @@ type CollectorNewPlayer struct {
 }
 
 type Spawnset struct {
-	SurvivalHash string `json:"survival_hash,omitempty" db:"survival_hash"`
-	SpawnsetName string `json:"spawnset_name,omitempty" db:"spawnset_name"`
+	SurvivalHash     string  `json:"survival_hash,omitempty" db:"survival_hash"`
+	SpawnsetName     string  `json:"spawnset_name,omitempty" db:"spawnset_name"`
+	BronzeDaggerTime float64 `json:"bronze_dagger_time" db:"bronze_dagger_time"`
+	SilverDaggerTime float64 `json:"silver_dagger_time" db:"silver_dagger_time"`
+	GoldDaggerTime   float64 `json:"gold_dagger_time" db:"gold_dagger_time"`
+	DevilDaggerTime  float64 `json:"devil_dagger_time" db:"devil_dagger_time"`
 }
 
 type Duration time.Duration

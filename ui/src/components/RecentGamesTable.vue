@@ -20,13 +20,13 @@
     <template v-slot:header>
       <thead v-if="$root.mobile">
         <tr>
-          <th class="text-left" title="Player Name">
+          <th class="text-left pointer" title="Player Name" @click="sort('player_name')">
             <v-icon class="icon" color="#c33409" small>mdi-account</v-icon>
           </th>
-          <th class="text-right" title="Game Time">
+          <th class="text-right pointer" title="Game Time" @click="sort('game_time')">
             <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
           </th>
-          <th class="text-right" title="Recorded">
+          <th class="text-right pointer" title="Recorded" @click="sort('id')">
             <v-icon class="icon" color="#c33409" small>mdi-calendar-month</v-icon>
           </th>
         </tr>
