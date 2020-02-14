@@ -4,6 +4,7 @@ DROP TABLE collector_high_score;
 DROP TABLE collector_player;
 DROP TABLE collector_run;
 DROP TABLE news;
+DROP TABLE release_note;
 DROP TABLE release;
 DROP TABLE message_of_the_day;
 DROP TABLE death_type;
