@@ -6,8 +6,8 @@
         {{ data.player_name }}
         <v-icon class="icon" fill="#c33409">$flourish_right</v-icon>
       </h1>
-      <LivePlayer v-if="$root.checkPlayerLive($route.params.id)" />
       <PlayerInfo :data="data" />
+      <LivePlayer v-if="$root.checkPlayerLive($route.params.id)" />
       <div>
         <h1 class="recorded-games-header">Recorded Games</h1>
         <RecentPlayerGamesTable @onPlayerNameLoad="onPlayerNameLoad" />

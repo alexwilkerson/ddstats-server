@@ -23,8 +23,19 @@ new Vue({
     return {
       mobile: window.innerWidth <= 700,
       players: [],
-      state: {},
-      status: ""
+      state: {
+        game_time: 0,
+        gems: 0,
+        homing_daggers: 0,
+        enemies_alive: 0,
+        enemies_killed: 0,
+        level_two_time: 0,
+        level_three_time: 0,
+        level_four_time: 0,
+        death_type: "",
+        is_replay: false
+      },
+      status: "Offline"
     };
   },
   methods: {

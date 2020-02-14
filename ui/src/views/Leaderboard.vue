@@ -21,7 +21,12 @@
         <v-icon fill="#000">$dagger</v-icon>
         &lt; {{data.bronze_dagger_time}}s
       </div>
-      <LeaderboardTable :loadingTable="loadingTable" :data="data" />
+      <LeaderboardTable
+        :loadingTable="loadingTable"
+        :data="data"
+        @optionsChanged="onOptionsChanged"
+        :sort="sort"
+      />
     </div>
     <v-progress-circular
       class="progress"
@@ -42,23 +47,36 @@ import "vue-select/dist/vue-select.css";
 
 export default {
   data: () => ({
+    sortBy: "rank",
+    sortDir: "asc",
     loadingTable: false,
     loaded: false,
     spawnset: null,
     data: null,
-    spawnsets: null
+    spawnsets: null,
+    options: {
+      page: 1,
+      rowsPerPage: 10
+    }
   }),
   methods: {
+    onOptionsChanged(options) {
+      this.options = options;
+      this.getLeaderboardFromAPI();
+    },
     go: function(spawnset) {
       this.$router.push("/leaderboard/" + spawnset);
       this.spawnset = spawnset;
       this.loadingTable = true;
       this.loaded = false;
+      this.getLeaderboardFromAPI();
+    },
+    getLeaderboardFromAPI() {
+      const { page, rowsPerPage } = this.options;
       axios
         .get(
           process.env.VUE_APP_API_URL +
-            "/api/v2/leaderboard?spawnset=" +
-            spawnset
+            `/api/v2/leaderboard?spawnset=${this.spawnset}&page_size=${rowsPerPage}&page_num=${page}&sort_by=${this.sortBy}&sort_dir=${this.sortDir}`
         )
         .then(response => {
           let spawnsets = [];
@@ -78,6 +96,14 @@ export default {
           this.loadingTable = false;
         })
         .catch(error => window.console.log(error));
+    },
+    sort(by) {
+      if (this.sortBy === by) {
+        this.sortDir = this.sortDir === "asc" ? "desc" : "asc";
+      } else {
+        this.sortBy = by;
+      }
+      this.getLeaderboardFromAPI();
     }
   },
   components: {
@@ -90,27 +116,7 @@ export default {
       spawnset = "v3";
     }
     this.spawnset = spawnset;
-    axios
-      .get(
-        process.env.VUE_APP_API_URL + "/api/v2/leaderboard?spawnset=" + spawnset
-      )
-      .then(response => {
-        let spawnsets = [];
-        for (let i = 0; i < response.data.spawnsets.length; i++) {
-          if (
-            (this.$route.params.name === undefined &&
-              response.data.spawnsets[i] === "v3") ||
-            response.data.spawnsets[i] === this.$route.params.name
-          ) {
-            continue;
-          }
-          spawnsets.push(response.data.spawnsets[i]);
-        }
-        this.spawnsets = spawnsets;
-        this.data = response.data;
-        this.loaded = true;
-      })
-      .catch(error => window.console.log(error));
+    this.getLeaderboardFromAPI();
   }
 };
 </script>

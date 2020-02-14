@@ -134,11 +134,16 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int, sortBy, sortDir s
 }
 
 // GetLeaderboardPaginated is a function
-func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum int) ([]*models.GameWithName, error) {
+func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum int, sortBy, sortDir string) ([]*models.GameWithName, error) {
 	games := []*models.GameWithName{}
 
 	var where string
 	var enemies string
+
+	if sortBy == "" || sortDir == "" {
+		sortBy = "game_time"
+		sortDir = "desc"
+	}
 
 	if spawnset == pacifistSpawnset {
 		where = `
@@ -220,8 +225,7 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 			ON min_replay.min_replay = max_game.replay_player_id AND min_replay.player_id = max_game.player_id
 			NATURAL LEFT JOIN spawnset
 			JOIN player p1 ON max_game.player_id=p1.id JOIN death_type ON max_game.death_type=death_type.id
-			ORDER BY game_time DESC LIMIT %d OFFSET %d
-		) ggg`, where, enemies, pageSize, (pageNum-1)*pageSize)
+		) ggg ORDER BY %s %s LIMIT %d OFFSET %d`, where, enemies, sortBy, sortDir, pageSize, (pageNum-1)*pageSize)
 	var err error
 	if spawnset == pacifistSpawnset {
 		err = g.DB.Select(&games, stmt)
@@ -239,7 +243,7 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 }
 
 // GetLeaderboard is a function
-func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, error) {
+func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.GameWithName, error) {
 	games := []*models.GameWithName{}
 
 	var where string
@@ -256,6 +260,11 @@ func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, err
 		enemies = "AND game.enemies_killed=0"
 	} else {
 		where = "WHERE spawnset_name=$1 AND (replay_player_id=0 OR replay_player_id=player_id)"
+	}
+
+	if sortBy == "" || sortDir == "" {
+		sortBy = "game_time"
+		sortDir = "desc"
 	}
 
 	stmt := fmt.Sprintf(`
@@ -325,8 +334,7 @@ func (g *GameModel) GetLeaderboard(spawnset string) ([]*models.GameWithName, err
 			ON min_replay.min_replay = max_game.replay_player_id AND min_replay.player_id = max_game.player_id
 			NATURAL LEFT JOIN spawnset
 			JOIN player p1 ON max_game.player_id=p1.id JOIN death_type ON max_game.death_type=death_type.id
-			ORDER BY game_time
-		) ggg`, where, enemies)
+		) ggg ORDER BY %s %s`, where, enemies, sortBy, sortDir)
 	var err error
 	if spawnset == pacifistSpawnset {
 		err = g.DB.Select(&games, stmt)

@@ -1,11 +1,12 @@
 <template>
   <v-data-table
     :items="data.games"
-    :headers="this.$root.mobile ? mobileHeaders : headers"
     :loading="loadingTable"
     :items-per-page="data.page_size"
     :server-items-length="data.total_game_count"
+    :options.sync="options"
     :disable-sort="true"
+    :hide-default-header="true"
     :footer-props="{
       itemsPerPageOptions: [10],
       showFirstLastPage: true,
@@ -14,6 +15,31 @@
     no-data-text="No leaderboard found."
     :mobile-breakpoint="NaN"
   >
+    <template v-slot:header>
+      <thead v-if="$root.mobile">
+        <tr>
+          <th></th>
+          <th class="text-left pointer" title="Player Name" @click="sort('player_name')">
+            <v-icon class="icon" color="#c33409" small>mdi-account</v-icon>
+          </th>
+          <th class="text-right pointer" title="Game Time" @click="sort('game_time')">
+            <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
+          </th>
+        </tr>
+      </thead>
+      <thead v-else>
+        <tr>
+          <th class="text-left pointer" @click="sort('rank')">Rank</th>
+          <th class="text-left pointer" @click="sort('player_name')">Player Name</th>
+          <th class="text-right pointer" @click="sort('game_time')">Game Time</th>
+          <th class="text-right pointer" @click="sort('gems')">Gems</th>
+          <th class="text-right pointer" @click="sort('homing_daggers')">Homing Daggers</th>
+          <th class="text-right pointer" @click="sort('accuracy')">Accuracy</th>
+          <th class="text-right pointer" @click="sort('enemies_alive')">Enemies Alive</th>
+          <th class="text-right pointer" @click="sort('enemies_killed')">Enemies Killed</th>
+        </tr>
+      </thead>
+    </template>
     <template v-slot:body="{ items }">
       <tbody v-if="$root.mobile">
         <tr v-for="item in items" :key="item.player_id" @click="selectItem(item)" class="pointer">
@@ -80,71 +106,24 @@
 
 <script>
 export default {
-  props: ["data", "loadingTable"],
+  props: ["data", "loadingTable", "sort", "optionsChanged"],
   data: () => ({
-    headers: [
-      {
-        text: "Rank",
-        align: "left",
-        value: "rank"
-      },
-      {
-        text: "Player Name",
-        align: "left",
-        value: "player_name"
-      },
-      {
-        text: "Game Time",
-        align: "right",
-        value: "game_time"
-      },
-      {
-        text: "Gems",
-        align: "right",
-        value: "gems"
-      },
-      {
-        text: "Homing Daggers",
-        align: "right",
-        value: "homing_daggers"
-      },
-      {
-        text: "Accuracy",
-        align: "right",
-        value: "accuracy"
-      },
-      {
-        text: "Enemies Alive",
-        align: "right",
-        value: "enemies_alive"
-      },
-      {
-        text: "Enemies Killed",
-        align: "right",
-        value: "enemies_killed"
-      }
-    ],
-    mobileHeaders: [
-      {
-        text: "Rank",
-        align: "left",
-        value: "rank"
-      },
-      {
-        text: "Player Name",
-        align: "left",
-        value: "player_name"
-      },
-      {
-        text: "Game Time",
-        align: "right",
-        value: "game_time"
-      }
-    ]
+    options: {
+      page: 1,
+      rowsPerPage: 10
+    }
   }),
   methods: {
     selectItem: function(item) {
       this.$router.push("/games/" + item.id);
+    }
+  },
+  watch: {
+    options: {
+      handler() {
+        this.$emit("optionsChanged", this.options);
+      },
+      deep: true
     }
   }
 };

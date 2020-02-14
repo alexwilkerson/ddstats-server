@@ -701,6 +701,24 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
 	pageNum, _ := strconv.Atoi(r.URL.Query().Get("page_num"))
 
+	sortBy := strings.ToLower(r.URL.Query().Get("sort_by"))
+	sortDir := strings.ToLower(r.URL.Query().Get("sort_dir"))
+
+	if sortBy != "" && !(sortBy == "rank" || sortBy == "game_time" || sortBy == "gems" || sortBy == "homing_daggers" || sortBy == "accuracy" || sortBy == "enemies_alive" || sortBy == "enemies_killed" || sortBy == "player_name") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if (sortBy != "" && sortDir == "") || (sortBy == "" && sortDir != "") {
+		api.clientMessage(w, http.StatusBadRequest, "both 'sort_dir' and 'sort_by' params must be set when sorting")
+		return
+	}
+
+	if sortDir != "" && !(sortDir == "asc" || sortDir == "desc") {
+		api.clientMessage(w, http.StatusBadRequest, "'sort_dir' param must be 'asc' or 'desc'")
+		return
+	}
+
 	if pageSize < 1 || pageNum < 1 {
 		var leaderboard struct {
 			GameCount        int                    `json:"game_count"`
@@ -712,7 +730,7 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 			Spawnsets        []string               `json:"spawnsets"`
 		}
 
-		leaderboard.Games, err = api.db.Games.GetLeaderboard(spawnset)
+		leaderboard.Games, err = api.db.Games.GetLeaderboard(spawnset, sortBy, sortDir)
 		if err != nil {
 			api.serverError(w, err)
 			return
@@ -766,9 +784,10 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		GoldDaggerTime   float64                `json:"gold_dagger_time"`
 		DevilDaggerTime  float64                `json:"devil_dagger_time"`
 		Games            []*models.GameWithName `json:"games"`
+		Spawnsets        []string               `json:"spawnsets"`
 	}
 
-	games.Games, err = api.db.Games.GetLeaderboardPaginated(spawnset, pageSize, pageNum)
+	games.Games, err = api.db.Games.GetLeaderboardPaginated(spawnset, pageSize, pageNum, sortBy, sortDir)
 	if err != nil {
 		api.serverError(w, err)
 		return
@@ -780,6 +799,12 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	}
 
 	games.TotalGameCount, err = api.db.Games.GetLeaderboardTotalCount(spawnset)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	games.Spawnsets, err = api.db.Spawnsets.SelectSpawnsetNames()
 	if err != nil {
 		api.serverError(w, err)
 		return
@@ -807,6 +832,7 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	games.PageNumber = pageNum
 	games.PageSize = pageSize
 	games.GameCount = len(games.Games)
+	games.Spawnsets = append(games.Spawnsets, PacifistSpawnset)
 
 	api.writeJSON(w, games)
 }

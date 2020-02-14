@@ -183,8 +183,14 @@ type DiscordUser struct {
 type Release struct {
 	Version   string    `json:"version" db:"version"`
 	TimeStamp time.Time `json:"time_stamp" db:"time_stamp"`
-	Body      string    `json:"body" db:"body"`
+	Notes     []string  `json:"notes"`
 	FileName  string    `json:"file_name" db:"file_name"`
+}
+
+type ReleaseNote struct {
+	ID             int    `db:"id"`
+	ReleaseVersion string `db:"release_version"`
+	Note           string `db:"note"`
 }
 
 type News struct {
