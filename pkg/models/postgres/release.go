@@ -25,6 +25,23 @@ func (rm *ReleaseModel) Select(version string) (*models.Release, error) {
 			return nil, models.ErrNoRecord
 		}
 	}
+
+	var releaseNotes []models.ReleaseNote
+	stmt = `
+		SELECT *
+		FROM release_note
+		WHERE release_version=$1
+		ORDER BY id ASC`
+	err = rm.DB.Select(&releaseNotes, stmt, version)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+
+	release.Notes = make([]string, 0, len(releaseNotes))
+	for _, releaseNote := range releaseNotes {
+		release.Notes = append(release.Notes, releaseNote.Note)
+	}
+
 	return &release, nil
 }
 
@@ -40,6 +57,25 @@ func (rm *ReleaseModel) GetAll(pageSize, pageNum int) ([]*models.Release, error)
 			return nil, models.ErrNoRecord
 		}
 	}
+
+	for _, release := range releases {
+		var releaseNotes []models.ReleaseNote
+		stmt = `
+			SELECT *
+			FROM release_note
+			WHERE release_version=$1
+			ORDER BY id ASC`
+		err = rm.DB.Select(&releaseNotes, stmt, release.Version)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		}
+
+		release.Notes = make([]string, 0, len(releaseNotes))
+		for _, releaseNote := range releaseNotes {
+			release.Notes = append(release.Notes, releaseNote.Note)
+		}
+	}
+
 	return releases, nil
 }
 

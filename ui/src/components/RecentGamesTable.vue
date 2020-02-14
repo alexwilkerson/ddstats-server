@@ -8,7 +8,6 @@
     :options.sync="options"
     :server-items-length="data.total_game_count"
     :hide-default-header="true"
-    :disable-sort="true"
     :footer-props="{
       itemsPerPageOptions: [10],
       showFirstLastPage: true,
