@@ -26,7 +26,7 @@ func (crm *CollectorRunModel) SelectLastRunID() (*models.CollectorRun, error) {
 		SELECT *
 		FROM collector_run
 		WHERE run_time != 0
-		ORDER BY id DESC LIMIT 1`
+		ORDER BY time_stamp DESC LIMIT 1`
 	err := crm.DB.Get(&cr, stmt)
 	if err != nil {
 		return nil, err

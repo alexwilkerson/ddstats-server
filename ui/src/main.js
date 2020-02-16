@@ -4,6 +4,7 @@ import vuetify from "./plugins/vuetify";
 import router from "./router";
 import VueCookies from "vue-cookies";
 import VueNativeSock from "vue-native-websocket";
+import EventBus from "./event-bus";
 
 Vue.use(VueNativeSock, "ws://localhost:5000/ws", {
   reconnection: true,
@@ -32,10 +33,11 @@ new Vue({
         level_two_time: 0,
         level_three_time: 0,
         level_four_time: 0,
-        death_type: "",
+        death_type: -1,
         is_replay: false
       },
-      status: "Offline"
+      status: "Dead",
+      watchers: 0
     };
   },
   methods: {
@@ -66,15 +68,46 @@ new Vue({
           );
           break;
         case "submit":
-          this.$root.state = body;
+          if (body !== undefined) {
+            this.state = body;
+          }
           if (body.status === undefined) {
-            this.$root.status = "";
+            this.status = "";
           } else {
-            this.$root.status = body.status;
+            if (body.death_type != -1) {
+              this.status = "Dead";
+            } else {
+              if (body.status !== "Dead" && body.status !== "Alive") {
+                this.state.level_two_time = 0;
+                this.state.level_three_time = 0;
+                this.state.level_four_time = 0;
+              }
+              this.$root.status = body.status;
+            }
           }
           break;
         case "status":
-          this.$root.status = body;
+          this.status = body;
+          if (body != "Dead") {
+            this.state = {
+              game_time: 0,
+              gems: 0,
+              homing_daggers: 0,
+              enemies_alive: 0,
+              enemies_killed: 0,
+              level_two_time: 0,
+              level_three_time: 0,
+              level_four_time: 0,
+              death_type: -1,
+              is_replay: false
+            };
+          }
+          break;
+        case "user_count":
+          this.watchers = body.count;
+          break;
+        case "game_submitted":
+          EventBus.$emit("game_submitted", body);
           break;
       }
     };

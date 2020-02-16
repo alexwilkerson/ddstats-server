@@ -18,6 +18,11 @@ import (
 	_ "github.com/lib/pq"
 )
 
+const (
+	MaxOpenConns = 10
+	MaxIdleConns = 10
+)
+
 func main() {
 	dsn := flag.String("dsn", "host=localhost port=5432 user=ddstats password=ddstats dbname=ddstats sslmode=disable", "PostgreSQL data source name")
 	flag.Parse()
@@ -66,6 +71,8 @@ func openDB(dsn string) (*sqlx.DB, error) {
 	if err != nil {
 		return nil, err
 	}
+	db.SetMaxOpenConns(MaxOpenConns)
+	db.SetMaxIdleConns(MaxIdleConns)
 	if err = db.Ping(); err != nil {
 		return nil, err
 	}

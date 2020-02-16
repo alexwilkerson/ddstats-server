@@ -91,6 +91,8 @@
 <script>
 const moment = require("moment");
 import axios from "axios";
+import EventBus from "../event-bus";
+
 export default {
   data() {
     return {
@@ -184,6 +186,14 @@ export default {
   },
   mounted() {
     this.getGamesFromAPI();
+    EventBus.$on(
+      "game_submitted",
+      function(body) {
+        if (body.player_id == this.$route.params.id) {
+          this.getGamesFromAPI();
+        }
+      }.bind(this)
+    );
   },
   watch: {
     options: {
