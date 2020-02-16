@@ -4,6 +4,7 @@
 package socketio
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -74,6 +75,11 @@ func (p *player) getStatus() string {
 		status = StatusAlive
 	}
 	return status
+}
+
+type gameSubmitted struct {
+	PlayerID int `json:"player_id"`
+	GameID   int `json:"game_id"`
 }
 
 type state struct {
@@ -202,6 +208,17 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 	if err != nil {
 		si.errorLog.Printf("%+v", err)
 	}
+
+	// submit new game notification to website
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(player.PlayerID)), "game_submitted", gameSubmitted{
+		PlayerID: player.PlayerID,
+		GameID:   gameID,
+	})
+	if err != nil {
+		si.errorLog.Println("socketio on game_submitted: %w", err)
+	}
+	si.websocketHub.BroadcastToAll <- websocketMessage
+
 	if notifyPlayerBest && game.GameTime > player.BestGameTime {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestSubmitted{
 			PlayerName:       player.PlayerName,
@@ -313,6 +330,7 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		si.errorLog.Println("socketio onSubmit: %w", err)
 		return
 	}
+	fmt.Println(state.DeathType)
 	si.websocketHub.Broadcast <- websocketMessage
 	// if the notification hasn't yet happened and a player beats their previous score,
 	if notifyPlayerBest && !player.bestTimeNotified && gameTime > player.BestGameTime {
