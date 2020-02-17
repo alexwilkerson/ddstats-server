@@ -1,91 +1,93 @@
 <template>
-  <v-data-table
-    :items="data.games"
-    :headers="this.$root.mobile ? mobileHeaders : headers"
-    :loading="loading"
-    :items-per-page="data.page_size"
-    :page="data.page_number"
-    :options.sync="options"
-    :server-items-length="data.total_game_count"
-    :disable-sort="true"
-    :hide-default-header="true"
-    :footer-props="{
+  <v-card>
+    <v-data-table
+      :items="data.games"
+      :headers="this.$root.mobile ? mobileHeaders : headers"
+      :loading="loading"
+      :items-per-page="data.page_size"
+      :page="data.page_number"
+      :options.sync="options"
+      :server-items-length="data.total_game_count"
+      :disable-sort="true"
+      :hide-default-header="true"
+      :footer-props="{
       itemsPerPageOptions: [10],
       showFirstLastPage: true,
       showCurrentPage: true
     }"
-    no-data-text="No games found."
-    :mobile-breakpoint="NaN"
-  >
-    <template v-slot:header>
-      <thead v-if="$root.mobile">
-        <tr>
-          <th class="text-right pointer" title="Game Time" @click="sort('game_time')">
-            <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
-          </th>
-          <th class="text-right pointer" title="Recorded" @click="sort('id')">
-            <v-icon class="icon" color="#c33409" small>mdi-calendar-month</v-icon>
-          </th>
-        </tr>
-      </thead>
-      <thead v-else>
-        <tr>
-          <th class="text-right pointer" title="Game Time" @click="sort('game_time')">Game Time</th>
-          <th class="text-right pointer" title="Gems" @click="sort('gems')">Gems</th>
-          <th
-            class="text-right pointer"
-            title="Homing Daggers"
-            @click="sort('homing_daggers')"
-          >Homing Daggers</th>
-          <th class="text-right pointer" title="Accuracy" @click="sort('accuracy')">Accuracy</th>
-          <th
-            class="text-right pointer"
-            title="Enemies Alive"
-            @click="sort('enemies_alive')"
-          >Enemies Alive</th>
-          <th
-            class="text-right pointer"
-            title="Enemies Killed"
-            @click="sort('enemies_killed')"
-          >Enemies Killed</th>
-          <th class="text-right pointer" title="Recorded" @click="sort('id')">Recorded</th>
-        </tr>
-      </thead>
-    </template>
-    <template v-slot:body="{ items }">
-      <tbody v-if="$root.mobile">
-        <tr
-          v-for="(item, i) in items"
-          :key="i + item.player_id"
-          @click="selectItem(item)"
-          class="pointer"
-        >
-          <td
-            class="text-right grotesk game-time"
-          >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
-          <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
-        </tr>
-      </tbody>
-      <tbody v-else>
-        <tr
-          v-for="(item, i) in items"
-          :key="i + item.player_id"
-          @click="selectItem(item)"
-          class="pointer"
-        >
-          <td
-            class="text-right grotesk game-time"
-          >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
-          <td class="text-right grotesk">{{ item.gems }}</td>
-          <td class="text-right grotesk">{{ item.homing_daggers }}</td>
-          <td class="text-right grotesk">{{ Number.parseFloat(item.accuracy).toFixed(2) }}%</td>
-          <td class="text-right grotesk">{{ item.enemies_alive }}</td>
-          <td class="text-right grotesk">{{ item.enemies_killed }}</td>
-          <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
-        </tr>
-      </tbody>
-    </template>
-  </v-data-table>
+      no-data-text="No games found."
+      :mobile-breakpoint="NaN"
+    >
+      <template v-slot:header>
+        <thead v-if="$root.mobile">
+          <tr>
+            <th class="text-right pointer" title="Game Time" @click="sort('game_time')">
+              <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
+            </th>
+            <th class="text-right pointer" title="Recorded" @click="sort('id')">
+              <v-icon class="icon" color="#c33409" small>mdi-calendar-month</v-icon>
+            </th>
+          </tr>
+        </thead>
+        <thead v-else>
+          <tr>
+            <th class="text-right pointer" title="Game Time" @click="sort('game_time')">Game Time</th>
+            <th class="text-right pointer" title="Gems" @click="sort('gems')">Gems</th>
+            <th
+              class="text-right pointer"
+              title="Homing Daggers"
+              @click="sort('homing_daggers')"
+            >Homing Daggers</th>
+            <th class="text-right pointer" title="Accuracy" @click="sort('accuracy')">Accuracy</th>
+            <th
+              class="text-right pointer"
+              title="Enemies Alive"
+              @click="sort('enemies_alive')"
+            >Enemies Alive</th>
+            <th
+              class="text-right pointer"
+              title="Enemies Killed"
+              @click="sort('enemies_killed')"
+            >Enemies Killed</th>
+            <th class="text-right pointer" title="Recorded" @click="sort('id')">Recorded</th>
+          </tr>
+        </thead>
+      </template>
+      <template v-slot:body="{ items }">
+        <tbody v-if="$root.mobile">
+          <tr
+            v-for="(item, i) in items"
+            :key="i + item.player_id"
+            @click="selectItem(item)"
+            class="pointer"
+          >
+            <td
+              class="text-right grotesk game-time"
+            >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
+            <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
+          </tr>
+        </tbody>
+        <tbody v-else>
+          <tr
+            v-for="(item, i) in items"
+            :key="i + item.player_id"
+            @click="selectItem(item)"
+            class="pointer"
+          >
+            <td
+              class="text-right grotesk game-time"
+            >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
+            <td class="text-right grotesk">{{ item.gems }}</td>
+            <td class="text-right grotesk">{{ item.homing_daggers }}</td>
+            <td class="text-right grotesk">{{ Number.parseFloat(item.accuracy).toFixed(2) }}%</td>
+            <td class="text-right grotesk">{{ item.enemies_alive }}</td>
+            <td class="text-right grotesk">{{ item.enemies_killed }}</td>
+            <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
+          </tr>
+        </tbody>
+      </template>
+    </v-data-table>
+  </v-card>
 </template>
 
 <script>
