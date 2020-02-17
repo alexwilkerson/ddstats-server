@@ -49,7 +49,6 @@ export default {
             `/api/v2/game/recent?page_size=5&page_num=1`
         )
         .then(response => {
-          window.console.log(response.data);
           this.data = response.data;
           this.loading = false;
         })

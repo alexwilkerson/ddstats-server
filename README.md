@@ -35,6 +35,16 @@ Total : 42 files, 3887 codes, 176 comments, 528 blanks, all 4591 lines
 | pkg/socketio        |     1 |   266 |       9 |    25 |   300 |
 | pkg/websocket       |     4 |   307 |      19 |    32 |   358 |
 
+## Building for linux
+
+```
+GOOS=linux GOARCH=amd64 go build -o dist/server -v ./cmd/server
+```
+
+```
+GOOS=linux GOARCH=amd64 go build -o dist/collector -v ./cmd/collector
+```
+
 ## Automatically restarting server during dev
 
 Go 1.11+ installation required

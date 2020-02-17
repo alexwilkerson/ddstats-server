@@ -1,6 +1,7 @@
 <template>
   <v-card>
     <v-card-title class="dd-card-title dd-card-title-bottom-border">News</v-card-title>
+    <p class="dd-card-list-item"></p>
     <p
       v-if="data.devil_daggers_list.length > 0"
       class="dd-card-list-item"
