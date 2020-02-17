@@ -59,6 +59,7 @@ export default new Vuetify({
         // background: "#fffefc",
         header: "#fffefc",
         // header: "#f6f2ee",
+        th: "#f0eeed",
         footer: "#EBE7E4",
         primary: "#34302e",
         secondary: "#424242",
@@ -77,7 +78,8 @@ export default new Vuetify({
         primary: "#f6f2ee",
         footer: "#1F1F1F",
         accent: "#c33409",
-        deselected: "#a7a6a6"
+        deselected: "#a7a6a6",
+        th: "#1a1a1a"
       }
     }
   }

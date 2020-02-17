@@ -1,9 +1,5 @@
 <template>
-  <v-app
-    id="main"
-    dark
-    :style="{ background: $vuetify.theme.themes[theme].background }"
-  >
+  <v-app id="main" dark :style="{ background: $vuetify.theme.themes[theme].background }">
     <v-app-bar
       app
       color="header"
@@ -11,10 +7,7 @@
       elevation="1"
       :style="{ textAlign: 'center', zIndex: 500 }"
     >
-      <v-app-bar-nav-icon
-        v-if="$vuetify.breakpoint.xsOnly"
-        @click.stop="drawer = !drawer"
-      ></v-app-bar-nav-icon>
+      <v-app-bar-nav-icon v-if="$vuetify.breakpoint.xsOnly" @click.stop="drawer = !drawer"></v-app-bar-nav-icon>
       <v-spacer />
       <Logo
         width="40"
@@ -28,13 +21,7 @@
 
     <v-content>
       <NavBar v-if="!$vuetify.breakpoint.xsOnly" />
-      <v-navigation-drawer
-        v-model="drawer"
-        fixed
-        temporary
-        app
-        :style="{ top: '60px' }"
-      >
+      <v-navigation-drawer v-model="drawer" fixed temporary app :style="{ top: '60px' }">
         <v-list nav dense>
           <v-list-item-group v-model="group">
             <v-list-item to="/">
@@ -141,7 +128,7 @@ body {
 h1 {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   font-size: 22px;
-  color: #34302e;
+  color: var(--v-primary-base);
 }
 h2 {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
@@ -166,5 +153,33 @@ h3 {
 }
 .online-green {
   color: #008c00 !important;
+}
+
+.dd-card-title {
+  font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
+  font-size: 15px !important;
+  padding: 6px !important;
+  color: #c33409;
+  background-color: var(--v-th-base);
+}
+
+.dd-card-title-bottom-border {
+  border-bottom: 1px solid #aeaeae;
+}
+
+.dd-card-list-item-bold {
+  font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
+  font-size: 14px !important;
+  padding: 8px !important;
+}
+
+.dd-card-list-item {
+  font-family: "alte_haas_grotesk", "Helvetica Neue", Helvetica, Arial;
+  font-size: 14px !important;
+  padding: 8px !important;
+}
+
+.pointer {
+  cursor: pointer;
 }
 </style>
