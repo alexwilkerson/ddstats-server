@@ -59,7 +59,7 @@ export default new Vuetify({
         // background: "#fffefc",
         header: "#fffefc",
         // header: "#f6f2ee",
-        th: "#f0eeed",
+        th: "#35302e",
         footer: "#EBE7E4",
         primary: "#34302e",
         secondary: "#424242",

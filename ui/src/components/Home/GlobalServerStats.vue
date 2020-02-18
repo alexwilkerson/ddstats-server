@@ -1,6 +1,8 @@
 <template>
   <v-card>
-    <v-card-title class="dd-card-title dd-card-title-bottom-border">Global Stats</v-card-title>
+    <v-toolbar flat color="th" dark dense>
+      <v-toolbar-title>Global Stats</v-toolbar-title>
+    </v-toolbar>
     <v-simple-table dense>
       <tbody>
         <tr>
