@@ -30,6 +30,7 @@ func (crsm *CollectorHighScoreModel) Select(collectorRunID int) ([]*models.Colle
 			collector_run_id,
 			collector_player_id,
 			collector_player.player_name AS collector_player_name,
+			collector_player.rank AS collector_player_rank,
 			score
 		FROM collector_high_score
 		JOIN collector_player ON collector_player_id=collector_player.id

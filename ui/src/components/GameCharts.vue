@@ -3,56 +3,58 @@
     <h1>Game Stats</h1>
     <div v-if="loaded">
       <GameInfo :gameInfo="gameInfo"></GameInfo>
-      <div class="chart-title" v-if="showGems">{{ titleGems }}</div>
-      <div id="gems-chart" v-if="showGems">
-        <apexchart
-          ref="gems"
-          type="area"
-          height="200"
-          :options="chartOptionsGems"
-          :series="seriesGems"
-        ></apexchart>
-      </div>
-      <div class="chart-title" v-if="showHomingDaggers">{{ titleHomingDaggers }}</div>
-      <div id="homing-daggers-chart" v-if="showHomingDaggers">
-        <apexchart
-          ref="homing-daggers"
-          type="area"
-          height="200"
-          :options="chartOptionsHomingDaggers"
-          :series="seriesHomingDaggers"
-        ></apexchart>
-      </div>
-      <div class="chart-title" v-if="showAccuracy">{{ titleAccuracy }}</div>
-      <div id="accuracy-chart" v-if="showAccuracy">
-        <apexchart
-          ref="accuracy"
-          type="area"
-          height="200"
-          :options="chartOptionsAccuracy"
-          :series="seriesAccuracy"
-        ></apexchart>
-      </div>
-      <div class="chart-title" v-if="showEnemiesAlive">{{ titleEnemiesAlive }}</div>
-      <div id="enemies-alive-chart" v-if="showEnemiesAlive">
-        <apexchart
-          ref="enemies-alive"
-          type="area"
-          height="200"
-          :options="chartOptionsEnemiesAlive"
-          :series="seriesEnemiesAlive"
-        ></apexchart>
-      </div>
-      <div class="chart-title" v-if="showEnemiesKilled">{{ titleEnemiesKilled }}</div>
-      <div id="enemies-killed-chart" v-if="showEnemiesKilled">
-        <apexchart
-          ref="enemies-killed"
-          type="area"
-          height="200"
-          :options="chartOptionsEnemiesKilled"
-          :series="seriesEnemiesKilled"
-        ></apexchart>
-      </div>
+      <v-card :style="{padding: '12px'}">
+        <div class="chart-title" v-if="showGems">{{ titleGems }}</div>
+        <div id="gems-chart" v-if="showGems">
+          <apexchart
+            ref="gems"
+            type="area"
+            height="200"
+            :options="chartOptionsGems"
+            :series="seriesGems"
+          ></apexchart>
+        </div>
+        <div class="chart-title" v-if="showHomingDaggers">{{ titleHomingDaggers }}</div>
+        <div id="homing-daggers-chart" v-if="showHomingDaggers">
+          <apexchart
+            ref="homing-daggers"
+            type="area"
+            height="200"
+            :options="chartOptionsHomingDaggers"
+            :series="seriesHomingDaggers"
+          ></apexchart>
+        </div>
+        <div class="chart-title" v-if="showAccuracy">{{ titleAccuracy }}</div>
+        <div id="accuracy-chart" v-if="showAccuracy">
+          <apexchart
+            ref="accuracy"
+            type="area"
+            height="200"
+            :options="chartOptionsAccuracy"
+            :series="seriesAccuracy"
+          ></apexchart>
+        </div>
+        <div class="chart-title" v-if="showEnemiesAlive">{{ titleEnemiesAlive }}</div>
+        <div id="enemies-alive-chart" v-if="showEnemiesAlive">
+          <apexchart
+            ref="enemies-alive"
+            type="area"
+            height="200"
+            :options="chartOptionsEnemiesAlive"
+            :series="seriesEnemiesAlive"
+          ></apexchart>
+        </div>
+        <div class="chart-title" v-if="showEnemiesKilled">{{ titleEnemiesKilled }}</div>
+        <div id="enemies-killed-chart" v-if="showEnemiesKilled">
+          <apexchart
+            ref="enemies-killed"
+            type="area"
+            height="200"
+            :options="chartOptionsEnemiesKilled"
+            :series="seriesEnemiesKilled"
+          ></apexchart>
+        </div>
+      </v-card>
     </div>
     <v-progress-circular
       class="progress"

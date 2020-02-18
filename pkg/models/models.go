@@ -281,6 +281,7 @@ type CollectorPlayer struct {
 
 type CollectorHighScore struct {
 	CollectorRunID      int     `json:"-" db:"collector_run_id"`
+	CollectorPlayerRank int     `json:"rank" db:"collector_player_rank"`
 	CollectorPlayerID   int     `json:"player_id" db:"collector_player_id"`
 	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
 	Score               float64 `json:"game_time" db:"score"`

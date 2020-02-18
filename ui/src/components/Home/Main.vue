@@ -6,6 +6,11 @@
           <News :data="data" />
         </v-col>
       </v-row>
+      <v-row v-if="!$root.mobile">
+        <v-col cols="12">
+          <PlayerCard :data="data" />
+        </v-col>
+      </v-row>
       <v-row>
         <v-col cols="12">
           <DailyServerStats :data="data" />
@@ -31,6 +36,7 @@
 <script>
 import News from "./News";
 import GlobalServerStats from "./GlobalServerStats";
+import PlayerCard from "./PlayerCard";
 import DailyServerStats from "./DailyServerStats";
 
 const moment = require("moment");
@@ -45,7 +51,8 @@ export default {
   components: {
     News,
     GlobalServerStats,
-    DailyServerStats
+    DailyServerStats,
+    PlayerCard
   }
 };
 </script>

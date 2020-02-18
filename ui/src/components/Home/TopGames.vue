@@ -1,6 +1,8 @@
 <template>
   <v-card>
-    <v-card-title class="dd-card-title dd-card-title-bottom-border">Top Games</v-card-title>
+    <v-toolbar flat color="th" dark dense>
+      <v-toolbar-title>Top Games</v-toolbar-title>
+    </v-toolbar>
     <v-simple-table v-if="!loading">
       <tbody>
         <tr v-for="game in data.games" :key="game.id" @click="selectGame(game)" class="pointer">

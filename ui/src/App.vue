@@ -182,4 +182,10 @@ h3 {
 .pointer {
   cursor: pointer;
 }
+
+.v-toolbar__title {
+  font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial !important;
+  font-size: 15px !important;
+  color: #c33409 !important;
+}
 </style>

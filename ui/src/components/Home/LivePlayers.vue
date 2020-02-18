@@ -1,7 +1,11 @@
 <template>
   <v-card>
-    <v-card-title class="dd-card-title" v-if="$root.players.length === 0">No Live Players</v-card-title>
-    <v-card-title class="dd-card-title dd-card-title-bottom-border" v-else>Live Players</v-card-title>
+    <v-toolbar flat color="th" dark dense v-if="$root.players.length === 0">
+      <v-toolbar-title>No Live Players</v-toolbar-title>
+    </v-toolbar>
+    <v-toolbar flat color="th" dark dense v-else>
+      <v-toolbar-title>Live Players</v-toolbar-title>
+    </v-toolbar>
     <v-simple-table>
       <tbody>
         <tr
