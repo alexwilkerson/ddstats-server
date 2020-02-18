@@ -46,6 +46,19 @@ new Vue({
         if (this.players[i].player_id == id) return true;
       }
       return false;
+    },
+    daggerColor(game_time) {
+      if (game_time >= 500) {
+        return "#c33409";
+      } else if (game_time >= 250) {
+        return "#ffcd00";
+      } else if (game_time >= 120) {
+        return "#acacac";
+      } else if (game_time >= 60) {
+        return "#ff8300";
+      } else {
+        return "#000";
+      }
     }
   },
   created() {

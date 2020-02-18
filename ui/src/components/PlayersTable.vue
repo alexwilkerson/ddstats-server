@@ -51,7 +51,8 @@
             class="pointer"
           >
             <td class="grotesk rank">{{ item.rank }}</td>
-            <td class="grotesk-bold red-text">
+            <td class="grotesk-bold">
+              <v-icon :fill="$root.daggerColor(item.game_time)" small>$dagger</v-icon>
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"
@@ -72,7 +73,8 @@
             class="pointer"
           >
             <td class="grotesk rank">{{ item.rank }}</td>
-            <td class="grotesk-bold red-text">
+            <td class="grotesk-bold">
+              <v-icon :fill="$root.daggerColor(item.game_time)" small>$dagger</v-icon>
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"

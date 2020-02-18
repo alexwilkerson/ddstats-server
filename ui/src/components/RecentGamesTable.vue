@@ -52,7 +52,8 @@
             @click="selectItem(item)"
             class="pointer"
           >
-            <td class="grotesk-bold red-text">
+            <td class="grotesk-bold">
+              <v-icon :fill="$root.daggerColor(item.player_game_time)" small>$dagger</v-icon>
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"
@@ -73,7 +74,8 @@
             @click="selectItem(item)"
             class="pointer"
           >
-            <td class="grotesk-bold red-text">
+            <td class="grotesk-bold">
+              <v-icon :fill="$root.daggerColor(item.player_game_time)" small>$dagger</v-icon>
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"

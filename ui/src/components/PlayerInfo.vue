@@ -123,10 +123,6 @@ export default {
 </script>
 
 <style scoped>
-tr:hover {
-  /* background: #fffefc !important; */
-  /* background: var(--v-highlight-base) !important; */
-}
 .stats-table {
   font-family: "alte_haas_grotesk_bold", "Helvetica Neue", Helvetica, Arial;
   border-radius: 2px;
@@ -134,16 +130,9 @@ tr:hover {
   margin: 0 auto 20px auto;
   padding: 12px;
 }
-.stats-table tr {
-  /* background: #f6f2ee; */
-  /* background: var(--v-background-base); */
-}
 .icon {
   margin-top: -4px;
   margin-right: 6px;
-}
-tbody {
-  /* background: #ebe7e4; */
 }
 ul {
   list-style: none;

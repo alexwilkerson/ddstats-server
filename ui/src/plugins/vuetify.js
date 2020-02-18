@@ -69,7 +69,8 @@ export default new Vuetify({
         success: "#4CAF50",
         warning: "#FFC107",
         highlight: "#fffefc",
-        deselected: "#716f6d"
+        deselected: "#716f6d",
+        button: "#34302e"
       },
       dark: {
         logo: "#c33409",
@@ -79,7 +80,8 @@ export default new Vuetify({
         footer: "#1F1F1F",
         accent: "#c33409",
         deselected: "#a7a6a6",
-        th: "#1a1a1a"
+        th: "#1a1a1a",
+        button: "#c33409"
       }
     }
   }
