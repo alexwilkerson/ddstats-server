@@ -87,6 +87,7 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int, sortBy, sortDir s
 			game.id,
 			player_id,
 			p1.player_name,
+			round(p1.game_time) as player_game_time,
 			granularity,
 			round(game.game_time, 4) as game_time,
 			death_type.name as death_type,

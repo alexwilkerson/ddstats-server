@@ -20,6 +20,7 @@ type Game struct {
 	ID                   int         `json:"id" db:"id"`
 	Rank                 int         `json:"rank,omitempty" db:"rank"`
 	PlayerID             int         `json:"player_id" db:"player_id"`
+	PlayerGameTime       float64     `json:"player_game_time" db:"player_game_time"`
 	Granularity          int         `json:"granularity" db:"granularity"`
 	GameTime             float64     `json:"game_time" db:"game_time"`
 	DeathType            string      `json:"death_type" db:"death_type"`
