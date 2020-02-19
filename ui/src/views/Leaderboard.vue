@@ -11,15 +11,15 @@
       ></v-select>
       <div v-if="!$root.mobile" class="dagger-legend">
         <v-icon fill="#c33409">$dagger</v-icon>
-        >= {{data.devil_dagger_time}}s
+        >= {{ data.devil_dagger_time }}s
         <v-icon fill="#ffcd00">$dagger</v-icon>
-        >= {{data.gold_dagger_time}}s
+        >= {{ data.gold_dagger_time }}s
         <v-icon fill="#acacac">$dagger</v-icon>
-        >= {{data.silver_dagger_time}}s
+        >= {{ data.silver_dagger_time }}s
         <v-icon fill="#ff8300">$dagger</v-icon>
-        >= {{data.bronze_dagger_time}}s
+        >= {{ data.bronze_dagger_time }}s
         <v-icon fill="#000">$dagger</v-icon>
-        &lt; {{data.bronze_dagger_time}}s
+        &lt; {{ data.bronze_dagger_time }}s
       </div>
       <LeaderboardTable
         :loadingTable="loadingTable"
@@ -73,6 +73,7 @@ export default {
     },
     getLeaderboardFromAPI() {
       const { page, rowsPerPage } = this.options;
+      this.loadingTable = true;
       axios
         .get(
           process.env.VUE_APP_API_URL +

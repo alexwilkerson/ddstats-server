@@ -1,6 +1,6 @@
 <template>
   <div class="wrapper">
-    <v-card :style="{padding: '12px'}">
+    <v-card :style="{ padding: '12px' }">
       <v-row no-gutters justify="center">
         <v-col cols="12" sm="2" align="center">
           <v-tooltip bottom nudgeRight="6" nudgeTop="6" contentClass="tooltip">
@@ -69,7 +69,7 @@
           </v-tooltip>
         </v-col>
       </v-row>
-      <hr :style="{margin: '12px 0'}" />
+      <hr :style="{ margin: '12px 0' }" />
       <v-simple-table dense>
         <template v-slot:default>
           <tbody>
@@ -83,9 +83,18 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                >mdi-account</v-icon>Player
+                  >mdi-account</v-icon
+                >Player
               </td>
-              <td class="text-right">{{ gameInfo.player_name }}</td>
+              <td class="text-right">
+                {{ gameInfo.player_name }}
+                <v-icon
+                  v-if="$root.checkPlayerLive(gameInfo.player_id)"
+                  class="icon online-green"
+                  small
+                  >mdi-access-point</v-icon
+                >
+              </td>
             </tr>
             <tr>
               <td class="text-left">
@@ -94,7 +103,8 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                >mdi-card-bulleted</v-icon>Game ID
+                  >mdi-card-bulleted</v-icon
+                >Game ID
               </td>
               <td class="text-right">{{ $route.params.id }}</td>
             </tr>
@@ -105,7 +115,8 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                >mdi-grave-stone</v-icon>Death Type
+                  >mdi-grave-stone</v-icon
+                >Death Type
               </td>
               <td class="text-right">{{ gameInfo.death_type }}</td>
             </tr>
@@ -116,7 +127,8 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                >mdi-sim</v-icon>Spawnset
+                  >mdi-sim</v-icon
+                >Spawnset
               </td>
               <td class="text-right">{{ gameInfo.spawnset }}</td>
             </tr>
@@ -127,16 +139,17 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                >mdi-calendar-month</v-icon>Recorded
+                  >mdi-calendar-month</v-icon
+                >Recorded
               </td>
               <td class="text-right">
                 {{
-                dateHover
-                ? moment
-                .utc(gameInfo.time_stamp)
-                .local()
-                .format("lll")
-                : moment(gameInfo.time_stamp).fromNow()
+                  dateHover
+                    ? moment
+                        .utc(gameInfo.time_stamp)
+                        .local()
+                        .format("lll")
+                    : moment(gameInfo.time_stamp).fromNow()
                 }}
               </td>
             </tr>
@@ -151,7 +164,8 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                >mdi-video-account</v-icon>Replay Recorded By
+                  >mdi-video-account</v-icon
+                >Replay Recorded By
               </td>
               <td class="text-right">{{ gameInfo.replay_player_name }}</td>
             </tr>

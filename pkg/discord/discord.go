@@ -80,7 +80,7 @@ func (d *Discord) listenForNotifications() {
 				go func() {
 					err := d.broadcast(&discordgo.MessageEmbed{
 						Title:       fmt.Sprintf("%s just passed their best time of %.4fs!", v.PlayerName, v.PreviousGameTime),
-						Description: fmt.Sprintf("Watch here: https://ddstats.com/user/%d", v.PlayerID),
+						Description: fmt.Sprintf("Watch here: https://ddstats.com/players/%d", v.PlayerID),
 					})
 					if err != nil {
 						d.errorLog.Printf("%+v", err)
@@ -90,7 +90,7 @@ func (d *Discord) listenForNotifications() {
 				go func() {
 					err := d.broadcast(&discordgo.MessageEmbed{
 						Title:       fmt.Sprintf("%s just got a new score of %.4fs!", v.PlayerName, v.GameTime),
-						Description: fmt.Sprintf("...beating their old high score of %.4fs by %.4f seconds!\nGame log here: https://ddstats.com/game_log/%d", v.PreviousGameTime, v.GameTime-v.PreviousGameTime, v.GameID),
+						Description: fmt.Sprintf("...beating their old high score of %.4fs by %.4f seconds!\nGame log here: https://ddstats.com/games/%d", v.PreviousGameTime, v.GameTime-v.PreviousGameTime, v.GameID),
 					})
 					if err != nil {
 						d.errorLog.Printf("%+v", err)
@@ -100,7 +100,7 @@ func (d *Discord) listenForNotifications() {
 				go func() {
 					err := d.broadcast(&discordgo.MessageEmbed{
 						Title:       fmt.Sprintf("%s is above 1000!", v.PlayerName),
-						Description: fmt.Sprintf("Watch here: https://ddstats.com/user/%d", v.PlayerID),
+						Description: fmt.Sprintf("Watch here: https://ddstats.com/players/%d", v.PlayerID),
 					})
 					if err != nil {
 						d.errorLog.Printf("%+v", err)
@@ -110,7 +110,7 @@ func (d *Discord) listenForNotifications() {
 				go func() {
 					err := d.broadcast(&discordgo.MessageEmbed{
 						Title:       fmt.Sprintf("%s died at %.4f", v.PlayerName, v.GameTime),
-						Description: fmt.Sprintf("...%s\nGame log: https://ddstats.com/game_log/%d", strings.ToLower(v.DeathType), v.GameID),
+						Description: fmt.Sprintf("...%s\nGame log: https://ddstats.com/games/%d", strings.ToLower(v.DeathType), v.GameID),
 					})
 					if err != nil {
 						d.errorLog.Printf("%+v", err)
