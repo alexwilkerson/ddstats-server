@@ -280,3 +280,8 @@ WHERE id<>-1 AND id IN (
 
 ![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)
 ````
+
+#### deployment commands
+
+yarn build --mode production (from ui dir)
+scp -r dist casd:~/ddstats/ui (from ui dir)

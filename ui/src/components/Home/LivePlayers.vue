@@ -1,6 +1,13 @@
 <template>
   <v-card>
-    <v-toolbar flat color="th" dark dense v-if="$root.players.length === 0">
+    <v-toolbar
+      flat
+      color="th"
+      dark
+      dense
+      v-if="$root.players.length === 0"
+      :style="{ borderRadius: 'inherit' }"
+    >
       <v-toolbar-title>No Live Players</v-toolbar-title>
     </v-toolbar>
     <v-toolbar flat color="th" dark dense v-else>
@@ -37,5 +44,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

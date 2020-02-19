@@ -13,6 +13,11 @@ const (
 )
 
 func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("message create panic:", r)
+		}
+	}()
 	// ignore all messages by bot
 	if m.Author.Bot || !startsWith(m.Content, prefix) {
 		return

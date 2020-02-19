@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	defaultColor = 0x9A1000 // dark reddish color
-	iconURL      = "https://ddstats.com/static/img/logo_red_100x100.png"
+	defaultColor = 0xC33409 // dark reddish color
+	iconURL      = "https://ddstats.com/static/ddstats_logo_v2_red_100px.png"
 )
 
 const (

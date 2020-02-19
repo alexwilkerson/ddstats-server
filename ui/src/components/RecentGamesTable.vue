@@ -10,36 +10,59 @@
       :server-items-length="data.total_game_count"
       :hide-default-header="true"
       :footer-props="{
-      itemsPerPageOptions: [10],
-      showFirstLastPage: true,
-      showCurrentPage: true
-    }"
+        itemsPerPageOptions: [10],
+        showFirstLastPage: true,
+        showCurrentPage: true,
+        disablePagination: loading
+      }"
       no-data-text="No games found."
       :mobile-breakpoint="NaN"
     >
       <template v-slot:header>
         <thead v-if="$root.mobile">
           <tr>
-            <th class="text-left pointer" title="Player Name" @click="sort('player_name')">
+            <th
+              class="text-left pointer"
+              title="Player Name"
+              @click="sort('player_name')"
+            >
               <v-icon class="icon" color="#c33409" small>mdi-account</v-icon>
             </th>
-            <th class="text-right pointer" title="Game Time" @click="sort('game_time')">
+            <th
+              class="text-right pointer"
+              title="Game Time"
+              @click="sort('game_time')"
+            >
               <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>
             </th>
             <th class="text-right pointer" title="Recorded" @click="sort('id')">
-              <v-icon class="icon" color="#c33409" small>mdi-calendar-month</v-icon>
+              <v-icon class="icon" color="#c33409" small
+                >mdi-calendar-month</v-icon
+              >
             </th>
           </tr>
         </thead>
         <thead v-else>
           <tr>
-            <th class="text-left pointer" @click="sort('player_name')">Player Name</th>
-            <th class="text-right pointer" @click="sort('game_time')">Game Time</th>
+            <th class="text-left pointer" @click="sort('player_name')">
+              Player Name
+            </th>
+            <th class="text-right pointer" @click="sort('game_time')">
+              Game Time
+            </th>
             <th class="text-right pointer" @click="sort('gems')">Gems</th>
-            <th class="text-right pointer" @click="sort('homing_daggers')">Homing Daggers</th>
-            <th class="text-right pointer" @click="sort('accuracy')">Accuracy</th>
-            <th class="text-right pointer" @click="sort('enemies_alive')">Enemies Alive</th>
-            <th class="text-right pointer" @click="sort('enemies_killed')">Enemies Killed</th>
+            <th class="text-right pointer" @click="sort('homing_daggers')">
+              Homing Daggers
+            </th>
+            <th class="text-right pointer" @click="sort('accuracy')">
+              Accuracy
+            </th>
+            <th class="text-right pointer" @click="sort('enemies_alive')">
+              Enemies Alive
+            </th>
+            <th class="text-right pointer" @click="sort('enemies_killed')">
+              Enemies Killed
+            </th>
             <th class="text-right pointer" @click="sort('id')">Recorded</th>
           </tr>
         </thead>
@@ -53,18 +76,23 @@
             class="pointer"
           >
             <td class="grotesk-bold">
-              <v-icon :fill="$root.daggerColor(item.player_game_time)" small>$dagger</v-icon>
+              <v-icon :fill="$root.daggerColor(item.player_game_time)" small
+                >$dagger</v-icon
+              >
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"
                 class="icon online-green"
                 small
-              >mdi-access-point</v-icon>
+                >mdi-access-point</v-icon
+              >
             </td>
-            <td
-              class="text-right grotesk game-time"
-            >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
-            <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
+            <td class="text-right grotesk game-time">
+              {{ Number.parseFloat(item.game_time).toFixed(4) }}
+            </td>
+            <td class="text-right grotesk recorded">
+              {{ moment(item.time_stamp).fromNow() }}
+            </td>
           </tr>
         </tbody>
         <tbody v-else>
@@ -75,23 +103,30 @@
             class="pointer"
           >
             <td class="grotesk-bold">
-              <v-icon :fill="$root.daggerColor(item.player_game_time)" small>$dagger</v-icon>
+              <v-icon :fill="$root.daggerColor(item.player_game_time)" small
+                >$dagger</v-icon
+              >
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"
                 class="icon online-green"
                 small
-              >mdi-access-point</v-icon>
+                >mdi-access-point</v-icon
+              >
             </td>
-            <td
-              class="text-right grotesk game-time"
-            >{{ Number.parseFloat(item.game_time).toFixed(4) }}s</td>
+            <td class="text-right grotesk game-time">
+              {{ Number.parseFloat(item.game_time).toFixed(4) }}s
+            </td>
             <td class="text-right grotesk">{{ item.gems }}</td>
             <td class="text-right grotesk">{{ item.homing_daggers }}</td>
-            <td class="text-right grotesk">{{ Number.parseFloat(item.accuracy).toFixed(2) }}%</td>
+            <td class="text-right grotesk">
+              {{ Number.parseFloat(item.accuracy).toFixed(2) }}%
+            </td>
             <td class="text-right grotesk">{{ item.enemies_alive }}</td>
             <td class="text-right grotesk">{{ item.enemies_killed }}</td>
-            <td class="text-right grotesk recorded">{{ moment(item.time_stamp).fromNow() }}</td>
+            <td class="text-right grotesk recorded">
+              {{ moment(item.time_stamp).fromNow() }}
+            </td>
           </tr>
         </tbody>
       </template>
@@ -205,7 +240,7 @@ export default {
     }
   },
   mounted() {
-    this.getGamesFromAPI();
+    // this.getGamesFromAPI();
     EventBus.$on(
       "game_submitted",
       function() {

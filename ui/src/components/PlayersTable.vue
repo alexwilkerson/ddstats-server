@@ -4,16 +4,18 @@
       :items="data.players"
       :loading="loading"
       :items-per-page="data.page_size"
+      :headers="headers"
       :page="data.page_number"
       :options.sync="options"
       :server-items-length="data.total_player_count"
       :hide-default-header="true"
       :disable-sort="true"
       :footer-props="{
-      itemsPerPageOptions: [10],
-      showFirstLastPage: true,
-      showCurrentPage: true
-    }"
+        itemsPerPageOptions: [10],
+        showFirstLastPage: true,
+        showCurrentPage: true,
+        disablePagination: loading
+      }"
       no-data-text="No players found."
       :mobile-breakpoint="NaN"
     >
@@ -34,11 +36,21 @@
         <thead v-else>
           <tr>
             <th class="text-left pointer" @click="sort('rank')">Rank</th>
-            <th class="text-left pointer" @click="sort('player_name')">Player Name</th>
-            <th class="text-right pointer" @click="sort('game_time')">Highest Game Time</th>
-            <th class="text-right pointer" @click="sort('overall_game_time')">Overall Game Time</th>
-            <th class="text-right pointer" @click="sort('overall_deaths')">Overall Deaths</th>
-            <th class="text-right pointer" @click="sort('overall_accuracy')">Overall Accuracy</th>
+            <th class="text-left pointer" @click="sort('player_name')">
+              Player Name
+            </th>
+            <th class="text-right pointer" @click="sort('game_time')">
+              Highest Game Time
+            </th>
+            <th class="text-right pointer" @click="sort('overall_game_time')">
+              Overall Game Time
+            </th>
+            <th class="text-right pointer" @click="sort('overall_deaths')">
+              Overall Deaths
+            </th>
+            <th class="text-right pointer" @click="sort('overall_accuracy')">
+              Overall Accuracy
+            </th>
           </tr>
         </thead>
       </template>
@@ -52,17 +64,20 @@
           >
             <td class="grotesk rank">{{ item.rank }}</td>
             <td class="grotesk-bold">
-              <v-icon :fill="$root.daggerColor(item.game_time)" small>$dagger</v-icon>
+              <v-icon :fill="$root.daggerColor(item.game_time)" small
+                >$dagger</v-icon
+              >
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"
                 class="icon online-green"
                 small
-              >mdi-access-point</v-icon>
+                >mdi-access-point</v-icon
+              >
             </td>
-            <td
-              class="text-right grotesk highest-game-time"
-            >{{ Number.parseFloat(item.game_time).toFixed(4) }}</td>
+            <td class="text-right grotesk highest-game-time">
+              {{ Number.parseFloat(item.game_time).toFixed(4) }}
+            </td>
           </tr>
         </tbody>
         <tbody v-else>
@@ -74,25 +89,31 @@
           >
             <td class="grotesk rank">{{ item.rank }}</td>
             <td class="grotesk-bold">
-              <v-icon :fill="$root.daggerColor(item.game_time)" small>$dagger</v-icon>
+              <v-icon :fill="$root.daggerColor(item.game_time)" small
+                >$dagger</v-icon
+              >
               {{ item.player_name }}
               <v-icon
                 v-if="$root.checkPlayerLive(item.player_id)"
                 class="icon online-green"
                 small
-              >mdi-access-point</v-icon>
+                >mdi-access-point</v-icon
+              >
             </td>
-            <td
-              class="text-right grotesk highest-game-time"
-            >{{ Number.parseFloat(item.game_time).toFixed(4) }}s</td>
-            <td
-              class="text-right grotesk"
-            >{{ moment.duration(item.overall_game_time, "seconds").humanize() }}</td>
-            <td class="text-right grotesk" :style="{ width: '115px' }">{{ item.overall_deaths }}</td>
-            <td
-              class="text-right grotesk"
-              :style="{ width: '135px' }"
-            >{{ Number.parseFloat(item.overall_accuracy).toFixed(2) }}%</td>
+            <td class="text-right grotesk highest-game-time">
+              {{ Number.parseFloat(item.game_time).toFixed(4) }}s
+            </td>
+            <td class="text-right grotesk">
+              {{
+                moment.duration(item.overall_game_time, "seconds").humanize()
+              }}
+            </td>
+            <td class="text-right grotesk" :style="{ width: '115px' }">
+              {{ item.overall_deaths }}
+            </td>
+            <td class="text-right grotesk" :style="{ width: '135px' }">
+              {{ Number.parseFloat(item.overall_accuracy).toFixed(2) }}%
+            </td>
           </tr>
         </tbody>
       </template>
@@ -111,6 +132,7 @@ export default {
       sortBy: "rank",
       sortDir: "asc",
       data: {},
+      headers: [{}, {}, {}, {}, {}, {}], // this is required to make the stupid loading progress bar the correct length
       options: {
         page: 1,
         rowsPerPage: 10
