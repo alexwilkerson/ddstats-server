@@ -6,7 +6,7 @@ import VueCookies from "vue-cookies";
 import VueNativeSock from "vue-native-websocket";
 import EventBus from "./event-bus";
 
-Vue.use(VueNativeSock, "ws://localhost:5000/ws", {
+Vue.use(VueNativeSock, process.env.VUE_APP_WS_URL, {
   reconnection: true,
   reconnectionAttempts: 5,
   reconnectionDelay: 3000

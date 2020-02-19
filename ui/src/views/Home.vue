@@ -1,16 +1,20 @@
 <template>
   <v-container class="home-container">
-    <h1
-      class="text-center"
-    >{{ loading ? 'Loading...' : 'Stats from ' + moment(data.time_stamp).format("MMMM Do, YYYY") }}</h1>
+    <h1 class="text-center">
+      {{
+        loading
+          ? "Loading..."
+          : "Stats from " + moment(data.time_stamp).format("MMMM Do, YYYY")
+      }}
+    </h1>
     <v-row>
       <v-col cols="12" sm="9">
         <Main :data="data" :loading="loading" />
       </v-col>
       <v-col cols="12" sm="3">
         <LivePlayers />
-        <TopGames :style="{marginTop: '24px'}" />
-        <RecentGames :style="{marginTop: '24px'}" />
+        <TopGames :style="{ marginTop: '24px' }" />
+        <RecentGames :style="{ marginTop: '24px' }" />
       </v-col>
     </v-row>
   </v-container>
@@ -52,7 +56,6 @@ export default {
     }
   },
   mounted() {
-    this.$root.players = [{ player_id: 229, player_name: "Olof" }];
     this.getDailyFromAPI();
   }
 };
