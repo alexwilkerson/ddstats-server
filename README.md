@@ -224,6 +224,9 @@ delete from state where game_id not in (select id from game where id is not null
 select id, game_id, printf("%.6f", game_time) as game_time, gems, homing_daggers, daggers_hit, daggers_fired, enemies_alive, enemies_killed from state;
 ```
 
+might have to split up state to get it into postgres
+`split -l 2500000 state.csv` works
+
 #### spawnset
 
 ```sql

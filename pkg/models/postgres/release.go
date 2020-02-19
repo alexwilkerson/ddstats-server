@@ -18,7 +18,8 @@ func (rm *ReleaseModel) Select(version string) (*models.Release, error) {
 	stmt := `
 		SELECT *
 		FROM release
-		WHERE version=$1`
+		WHERE version=$1
+		ORDER BY time_stamp DESC`
 	err := rm.DB.Get(&release, stmt, version)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {

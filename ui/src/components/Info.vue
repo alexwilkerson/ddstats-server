@@ -50,6 +50,11 @@
         </span>
       </p>
       <p>
+        First off, the v3 leaderboard is only related to v3 games which have
+        been recorded *using DDSTATS*. It does not reflect the official
+        leaderboard.
+      </p>
+      <p>
         In order to have games show up in the custom leaderboard, it must first
         be registered in the database. Currently, this is a manual process. If
         you'd like me to add a custom leaderboard, play a game with the
