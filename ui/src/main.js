@@ -37,7 +37,8 @@ new Vue({
         is_replay: false
       },
       status: "Dead",
-      watchers: 0
+      watchers: 0,
+      ws_queue: []
     };
   },
   methods: {
@@ -65,6 +66,11 @@ new Vue({
     addEventListener("resize", () => {
       this.mobile = innerWidth <= 700;
     });
+    this.$options.sockets.onopen = function() {
+      while (this.ws_queue.length > 0) {
+        this.$socket.send(this.ws_queue.pop());
+      }
+    };
     this.$options.sockets.onmessage = function(msg) {
       let data = JSON.parse(msg.data);
       let body = JSON.parse(data.body);

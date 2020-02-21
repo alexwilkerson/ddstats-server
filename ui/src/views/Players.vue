@@ -67,23 +67,30 @@ export default {
     this.$root.state = {};
   },
   mounted() {
-    // this.$root.state = {
-    //   game_time: 0,
-    //   gems: 0,
-    //   homing_daggers: 0,
-    //   enemies_alive: 0,
-    //   enemies_killed: 0,
-    //   level_two_time: 0,
-    //   level_three_time: 0,
-    //   level_four_time: 0,
-    //   death_type: -1,
-    //   is_replay: false
-    // };
-    // this.$root.watchers = 0;
+    this.$root.state = {
+      game_time: 0,
+      gems: 0,
+      homing_daggers: 0,
+      enemies_alive: 0,
+      enemies_killed: 0,
+      level_two_time: 0,
+      level_three_time: 0,
+      level_four_time: 0,
+      death_type: -1,
+      is_replay: false
+    };
+    this.$root.watchers = 0;
     this.getPlayerFromAPI();
-    this.$socket.send(
-      '{"func": "join_room", "body": "' + this.$route.params.id + '"}'
-    );
+    // while (this.$socket.readyState !== 1) {
+    //   setTimeout(() => {}, 5);
+    // }
+    const msg =
+      '{"func": "join_room", "body": "' + this.$route.params.id + '"}';
+    if (this.$socket.readyState === 1) {
+      this.$socket.send(msg);
+    } else {
+      this.$root.ws_queue.push(msg);
+    }
   }
 };
 </script>

@@ -4,7 +4,6 @@
 package socketio
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -219,20 +218,12 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 	}
 	si.websocketHub.BroadcastToAll <- websocketMessage
 
-	if notifyPlayerBest && game.GameTime > player.BestGameTime {
+	if game.ReplayPlayerID == 0 && notifyPlayerBest && game.GameTime > player.BestGameTime {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestSubmitted{
 			PlayerName:       player.PlayerName,
 			GameID:           gameID,
 			GameTime:         game.GameTime,
 			PreviousGameTime: player.BestGameTime,
-		}
-	}
-	if notifyAboveThreshold && game.GameTime > notifyThreshold {
-		si.websocketHub.DiscordBroadcast <- &websocket.PlayerDied{
-			PlayerName: player.PlayerName,
-			GameID:     gameID,
-			GameTime:   game.GameTime,
-			DeathType:  game.DeathType,
 		}
 	}
 }
@@ -330,10 +321,9 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		si.errorLog.Println("socketio onSubmit: %w", err)
 		return
 	}
-	fmt.Println(state.DeathType)
 	si.websocketHub.Broadcast <- websocketMessage
 	// if the notification hasn't yet happened and a player beats their previous score,
-	if notifyPlayerBest && !player.bestTimeNotified && gameTime > player.BestGameTime {
+	if !isReplay && notifyPlayerBest && !player.bestTimeNotified && gameTime > player.BestGameTime {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestReached{
 			PlayerID:         player.PlayerID,
 			PlayerName:       player.PlayerName,
@@ -341,7 +331,7 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		}
 		player.bestTimeNotified = true
 	}
-	if notifyAboveThreshold && !player.aboveThresholdNotified && gameTime >= notifyThreshold {
+	if !isReplay && notifyAboveThreshold && !player.aboveThresholdNotified && gameTime >= notifyThreshold {
 		player.aboveThresholdNotified = true
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAboveThreshold{
 			PlayerID:   player.PlayerID,

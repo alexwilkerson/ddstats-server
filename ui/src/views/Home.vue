@@ -1,10 +1,15 @@
 <template>
   <v-container class="home-container">
+    <v-row v-if="$root.mobile">
+      <v-col cols="12">
+        <LivePlayers />
+      </v-col>
+    </v-row>
     <h1 class="text-center">
       {{
-        loading
-          ? "Loading..."
-          : "Stats from " + moment(data.time_stamp).format("MMMM Do, YYYY")
+      loading
+      ? "Loading..."
+      : "Stats from " + moment(data.time_stamp).format("MMMM Do, YYYY")
       }}
     </h1>
     <v-row>
@@ -12,7 +17,7 @@
         <Main :data="data" :loading="loading" />
       </v-col>
       <v-col cols="12" sm="3">
-        <LivePlayers />
+        <LivePlayers v-if="!$root.mobile" />
         <TopGames :style="{ marginTop: '24px' }" />
         <RecentGames :style="{ marginTop: '24px' }" />
       </v-col>
