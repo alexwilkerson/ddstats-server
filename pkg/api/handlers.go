@@ -21,6 +21,8 @@ const (
 	GoldDaggerThreshold   float64 = 250
 	DevilDaggerThreshold  float64 = 500
 	PacifistSpawnset              = "Pacifist"
+	LevelOneSpawnset              = "Level One"
+	MaxHomingSpawnset             = "Max Homing"
 )
 
 func (api *API) getDaily(w http.ResponseWriter, r *http.Request) {
@@ -721,6 +723,7 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 
 	if pageSize < 1 || pageNum < 1 {
 		var leaderboard struct {
+			Spawnset         string                 `json:"spawnset"`
 			GameCount        int                    `json:"game_count"`
 			BronzeDaggerTime float64                `json:"bronze_dagger_time"`
 			SilverDaggerTime float64                `json:"silver_dagger_time"`
@@ -749,31 +752,45 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		if spawnset != "pacifist" {
+		if spawnset == "max_homing" {
+			leaderboard.BronzeDaggerTime = 0
+			leaderboard.SilverDaggerTime = 0
+			leaderboard.GoldDaggerTime = 0
+			leaderboard.DevilDaggerTime = 0
+		} else if spawnset == "pacifist" {
+			leaderboard.BronzeDaggerTime = 50
+			leaderboard.SilverDaggerTime = 70
+			leaderboard.GoldDaggerTime = 90
+			leaderboard.DevilDaggerTime = 110
+		} else if spawnset == "level_one" {
+			leaderboard.BronzeDaggerTime = 80
+			leaderboard.SilverDaggerTime = 100
+			leaderboard.GoldDaggerTime = 200
+			leaderboard.DevilDaggerTime = 300
+		} else {
 			spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
 			if err != nil {
 				api.clientMessage(w, http.StatusNotFound, "no spawnset found by this name")
 				return
 			}
-
 			leaderboard.BronzeDaggerTime = spawnsetFromDB.BronzeDaggerTime
 			leaderboard.SilverDaggerTime = spawnsetFromDB.SilverDaggerTime
 			leaderboard.GoldDaggerTime = spawnsetFromDB.GoldDaggerTime
 			leaderboard.DevilDaggerTime = spawnsetFromDB.DevilDaggerTime
-		} else {
-			leaderboard.BronzeDaggerTime = 50
-			leaderboard.SilverDaggerTime = 70
-			leaderboard.GoldDaggerTime = 90
-			leaderboard.DevilDaggerTime = 110
 		}
 
 		leaderboard.Spawnsets = append(leaderboard.Spawnsets, PacifistSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, LevelOneSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, MaxHomingSpawnset)
+
+		leaderboard.Spawnset = spawnset
 
 		api.writeJSON(w, leaderboard)
 		return
 	}
 
 	var games struct {
+		Spawnset         string                 `json:"spawnset"`
 		TotalPages       int                    `json:"total_pages"`
 		TotalGameCount   int                    `json:"total_game_count"`
 		PageNumber       int                    `json:"page_number"`
@@ -810,22 +827,31 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if spawnset != "pacifist" {
+	if spawnset == "max_homing" {
+		games.BronzeDaggerTime = 0
+		games.SilverDaggerTime = 0
+		games.GoldDaggerTime = 0
+		games.DevilDaggerTime = 0
+	} else if spawnset == "pacifist" {
+		games.BronzeDaggerTime = 50
+		games.SilverDaggerTime = 70
+		games.GoldDaggerTime = 90
+		games.DevilDaggerTime = 110
+	} else if spawnset == "level_one" {
+		games.BronzeDaggerTime = 80
+		games.SilverDaggerTime = 100
+		games.GoldDaggerTime = 200
+		games.DevilDaggerTime = 300
+	} else {
 		spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
 		if err != nil {
 			api.clientMessage(w, http.StatusNotFound, "no spawnset found by this name")
 			return
 		}
-
 		games.BronzeDaggerTime = spawnsetFromDB.BronzeDaggerTime
 		games.SilverDaggerTime = spawnsetFromDB.SilverDaggerTime
 		games.GoldDaggerTime = spawnsetFromDB.GoldDaggerTime
 		games.DevilDaggerTime = spawnsetFromDB.DevilDaggerTime
-	} else {
-		games.BronzeDaggerTime = 50
-		games.SilverDaggerTime = 70
-		games.GoldDaggerTime = 90
-		games.DevilDaggerTime = 110
 	}
 
 	games.TotalPages = int(math.Ceil(float64(games.TotalGameCount) / float64(pageSize)))
@@ -833,6 +859,10 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	games.PageSize = pageSize
 	games.GameCount = len(games.Games)
 	games.Spawnsets = append(games.Spawnsets, PacifistSpawnset)
+	games.Spawnsets = append(games.Spawnsets, LevelOneSpawnset)
+	games.Spawnsets = append(games.Spawnsets, MaxHomingSpawnset)
+
+	games.Spawnset = spawnset
 
 	api.writeJSON(w, games)
 }

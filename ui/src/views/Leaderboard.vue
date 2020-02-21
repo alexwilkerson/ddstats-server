@@ -1,6 +1,10 @@
 <template>
   <div class="wrapper">
-    <h1>{{ spawnset }} Leaderboard</h1>
+    <h1
+      v-if="spawnset !== 'v3'"
+      :style="{textTransform: 'capitalize'}"
+    >{{ spawnset.replace(/_/g, ' ') }} Leaderboard</h1>
+    <h1 v-else>v3</h1>
     <div v-if="loaded">
       <v-select
         :options="spawnsets"
@@ -9,7 +13,7 @@
         @input="go"
         placeholder="Select Leaderboard"
       ></v-select>
-      <div v-if="!$root.mobile" class="dagger-legend">
+      <div v-if="!$root.mobile && data.spawnset !== 'max_homing'" class="dagger-legend">
         <v-icon fill="#c33409">$dagger</v-icon>
         >= {{ data.devil_dagger_time }}s
         <v-icon fill="#ffcd00">$dagger</v-icon>
@@ -51,7 +55,7 @@ export default {
     sortDir: "asc",
     loadingTable: false,
     loaded: false,
-    spawnset: null,
+    spawnset: "Loading...",
     data: null,
     spawnsets: null,
     options: {
@@ -65,7 +69,9 @@ export default {
       this.getLeaderboardFromAPI();
     },
     go: function(spawnset) {
-      this.$router.push("/leaderboard/" + spawnset);
+      this.$router.push(
+        "/leaderboard/" + spawnset.toLowerCase().replace(/\s+/g, "_")
+      );
       this.spawnset = spawnset;
       this.loadingTable = true;
       this.loaded = false;
@@ -77,21 +83,28 @@ export default {
       axios
         .get(
           process.env.VUE_APP_API_URL +
-            `/api/v2/leaderboard?spawnset=${this.spawnset}&page_size=${rowsPerPage}&page_num=${page}&sort_by=${this.sortBy}&sort_dir=${this.sortDir}`
+            `/api/v2/leaderboard?spawnset=${this.spawnset
+              .toLowerCase()
+              .replace(
+                /\s+/g,
+                "_"
+              )}&page_size=${rowsPerPage}&page_num=${page}&sort_by=${
+              this.sortBy
+            }&sort_dir=${this.sortDir}`
         )
         .then(response => {
-          let spawnsets = [];
-          for (let i = 0; i < response.data.spawnsets.length; i++) {
-            if (
-              (this.$route.params.name === undefined &&
-                response.data.spawnsets[i] === "v3") ||
-              response.data.spawnsets[i] === this.$route.params.name
-            ) {
-              continue;
-            }
-            spawnsets.push(response.data.spawnsets[i]);
-          }
-          this.spawnsets = spawnsets;
+          // let spawnsets = [];
+          // for (let i = 0; i < response.data.spawnsets.length; i++) {
+          //   if (
+          //     (this.$route.params.name === undefined &&
+          //       response.data.spawnsets[i] === "v3") ||
+          //     response.data.spawnsets[i] === this.$route.params.name
+          //   ) {
+          //     continue;
+          //   }
+          //   spawnsets.push(response.data.spawnsets[i]);
+          // }
+          this.spawnsets = response.data.spawnsets;
           this.data = response.data;
           this.loaded = true;
           this.loadingTable = false;
