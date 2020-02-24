@@ -30,6 +30,13 @@ type PlayerAboveThreshold struct {
 	PlayerName string
 }
 
+type PlayerAboveThresholdSubmitted struct {
+	PlayerName string
+	GameID     int
+	GameTime   float64
+	DeathType  string
+}
+
 type PlayerDied struct {
 	PlayerName string
 	GameID     int

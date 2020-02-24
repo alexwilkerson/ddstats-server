@@ -106,6 +106,16 @@ func (d *Discord) listenForNotifications() {
 						d.errorLog.Printf("%+v", err)
 					}
 				}()
+			case *websocket.PlayerAboveThresholdSubmitted:
+				go func() {
+					err := d.broadcast(&discordgo.MessageEmbed{
+						Title:       fmt.Sprintf("%s died at %.4f seconds!", v.PlayerName, v.GameTime),
+						Description: fmt.Sprintf("...%s\nGame log here: https://ddstats.com/games/%d", strings.ToLower(v.DeathType), v.GameID),
+					})
+					if err != nil {
+						d.errorLog.Printf("%+v", err)
+					}
+				}()
 			case *websocket.PlayerDied:
 				go func() {
 					err := d.broadcast(&discordgo.MessageEmbed{

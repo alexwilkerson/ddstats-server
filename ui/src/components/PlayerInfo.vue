@@ -23,7 +23,8 @@
                 small
               >mdi-account</v-icon>Player ID
             </td>
-            <td class="text-right">{{ data.player_id }}</td>
+            <td class="text-right">{{ data.player_id }}
+            </td>
           </tr>
           <tr>
             <td class="text-left">

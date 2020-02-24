@@ -18,6 +18,7 @@ func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 			fmt.Println("message create panic:", r)
 		}
 	}()
+
 	// ignore all messages by bot
 	if m.Author.Bot || !startsWith(m.Content, prefix) {
 		return
