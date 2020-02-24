@@ -12,7 +12,7 @@ import (
 
 const (
 	oldestValidClientVersion = "0.3.1"
-	currentClientVersion     = "0.4.6"
+	currentClientVersion     = "0.4.7"
 )
 
 type API struct {

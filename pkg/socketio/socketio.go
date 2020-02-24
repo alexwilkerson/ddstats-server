@@ -226,6 +226,14 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 			PreviousGameTime: player.BestGameTime,
 		}
 	}
+	if game.ReplayPlayerID == 0 && notifyAboveThreshold && game.GameTime >= notifyThreshold {
+		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAboveThresholdSubmitted{
+			PlayerName: player.PlayerName,
+			GameID:     gameID,
+			GameTime:   game.GameTime,
+			DeathType:  game.DeathType,
+		}
+	}
 }
 
 func (si *sio) onLogin(s socketio.Conn, id int) {
