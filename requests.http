@@ -38,7 +38,7 @@ GET http://localhost:5000/api/v2/game/enemies_alive?id=20
 ### get a list of game states with game time and enemies killed
 GET http://localhost:5000/api/v2/game/enemies_killed?id=20
 ###
-GET http://localhost:5000/api/v2/player?id=229
+GET http://localhost:5000/api/v2/player?id=151675
 ###
 GET http://localhost:5000/api/v2/player/update?id=2
 ###

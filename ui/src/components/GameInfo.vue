@@ -83,8 +83,7 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                  >mdi-account</v-icon
-                >Player
+                >mdi-account</v-icon>Player
               </td>
               <td class="text-right">
                 {{ gameInfo.player_name }}
@@ -92,8 +91,7 @@
                   v-if="$root.checkPlayerLive(gameInfo.player_id)"
                   class="icon online-green"
                   small
-                  >mdi-access-point</v-icon
-                >
+                >mdi-access-point</v-icon>
               </td>
             </tr>
             <tr>
@@ -103,8 +101,7 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                  >mdi-card-bulleted</v-icon
-                >Game ID
+                >mdi-card-bulleted</v-icon>Game ID
               </td>
               <td class="text-right">{{ $route.params.id }}</td>
             </tr>
@@ -115,10 +112,64 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                  >mdi-grave-stone</v-icon
-                >Death Type
+                >mdi-grave-stone</v-icon>Death Type
               </td>
               <td class="text-right">{{ gameInfo.death_type }}</td>
+            </tr>
+            <tr v-if="gameInfo.level_two_time !== 0">
+              <td class="text-left">
+                <v-icon
+                  class="icon"
+                  :style="{ marginLeft: '4px', marginRight: '10px' }"
+                  color="#c33409"
+                  small
+                >mdi-roman-numeral-2</v-icon>Level Two
+              </td>
+              <td class="text-right">{{ gameInfo.level_two_time.toFixed(4) }}s</td>
+            </tr>
+            <tr v-if="gameInfo.level_three_time !== 0">
+              <td class="text-left">
+                <v-icon
+                  class="icon"
+                  :style="{ marginLeft: '4px', marginRight: '10px' }"
+                  color="#c33409"
+                  small
+                >mdi-roman-numeral-3</v-icon>Level Three
+              </td>
+              <td class="text-right">{{ gameInfo.level_three_time.toFixed(4) }}s</td>
+            </tr>
+            <tr v-if="gameInfo.level_four_time !== 0">
+              <td class="text-left">
+                <v-icon
+                  class="icon"
+                  :style="{ marginLeft: '4px', marginRight: '10px' }"
+                  color="#c33409"
+                  small
+                >mdi-roman-numeral-4</v-icon>Level Four
+              </td>
+              <td class="text-right">{{ gameInfo.level_four_time.toFixed(4) }}s</td>
+            </tr>
+            <tr v-if="gameInfo.levi_down_time !== 0">
+              <td class="text-left">
+                <v-icon
+                  class="icon"
+                  :style="{ marginLeft: '4px', marginRight: '10px' }"
+                  color="#c33409"
+                  small
+                >mdi-roman-numeral-4</v-icon>Levi Down Time
+              </td>
+              <td class="text-right">{{ gameInfo.levi_down_time.toFixed(4) }}s</td>
+            </tr>
+            <tr v-if="gameInfo.orb_down_time !== 0">
+              <td class="text-left">
+                <v-icon
+                  class="icon"
+                  :style="{ marginLeft: '4px', marginRight: '10px' }"
+                  color="#c33409"
+                  small
+                >mdi-roman-numeral-4</v-icon>Orb Down Time
+              </td>
+              <td class="text-right">{{ gameInfo.orb_down_time.toFixed(4) }}s</td>
             </tr>
             <tr>
               <td class="text-left">
@@ -127,8 +178,7 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                  >mdi-sim</v-icon
-                >Spawnset
+                >mdi-sim</v-icon>Spawnset
               </td>
               <td class="text-right">{{ gameInfo.spawnset }}</td>
             </tr>
@@ -139,17 +189,16 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                  >mdi-calendar-month</v-icon
-                >Recorded
+                >mdi-calendar-month</v-icon>Recorded
               </td>
               <td class="text-right">
                 {{
-                  dateHover
-                    ? moment
-                        .utc(gameInfo.time_stamp)
-                        .local()
-                        .format("lll")
-                    : moment(gameInfo.time_stamp).fromNow()
+                dateHover
+                ? moment
+                .utc(gameInfo.time_stamp)
+                .local()
+                .format("lll")
+                : moment(gameInfo.time_stamp).fromNow()
                 }}
               </td>
             </tr>
@@ -164,8 +213,7 @@
                   :style="{ marginLeft: '4px', marginRight: '10px' }"
                   color="#c33409"
                   small
-                  >mdi-video-account</v-icon
-                >Replay Recorded By
+                >mdi-video-account</v-icon>Replay Recorded By
               </td>
               <td class="text-right">{{ gameInfo.replay_player_name }}</td>
             </tr>

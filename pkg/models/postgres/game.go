@@ -15,12 +15,15 @@ type GameModel struct {
 }
 
 const (
-	v3SurvivalHashA   = "5ff43e37d0f85e068caab5457305754e"
-	v3SurvivalHashB   = "569fead87abf4d30fdee4231a6398051"
-	defaultSpawnset   = "v3"
-	pacifistSpawnset  = "pacifist"
-	levelOneSpawnset  = "level_one"
-	maxHomingSpawnset = "max_homing"
+	v3SurvivalHashA    = "5ff43e37d0f85e068caab5457305754e"
+	v3SurvivalHashB    = "569fead87abf4d30fdee4231a6398051"
+	defaultSpawnset    = "v3"
+	pacifistSpawnset   = "pacifist"
+	levelOneSpawnset   = "level_one"
+	levelTwoSpawnset   = "level_two"
+	levelThreeSpawnset = "level_three"
+	maxHomingSpawnset  = "max_homing"
+	pinkRunSpawnset    = "pink_run"
 )
 
 const maxHomingStmt = `
@@ -44,6 +47,8 @@ WITH max_game AS (
 			level_two_time,
 			level_three_time,
 			level_four_time,
+			levi_down_time,
+			orb_down_time,
 			homing_daggers_max_time,
 			enemies_alive_max_time,
 			homing_daggers_max,
@@ -86,6 +91,8 @@ SELECT ROW_NUMBER() OVER (ORDER BY ggg.homing_daggers_max DESC) AS rank, ggg.* F
 			max_game.level_two_time,
 			max_game.level_three_time,
 			max_game.level_four_time,
+			max_game.levi_down_time,
+			max_game.orb_down_time,
 			max_game.homing_daggers_max_time, 
 			max_game.enemies_alive_max_time,
 			max_game.homing_daggers_max,
@@ -95,6 +102,27 @@ SELECT ROW_NUMBER() OVER (ORDER BY ggg.homing_daggers_max DESC) AS rank, ggg.* F
 	NATURAL LEFT JOIN spawnset
 	JOIN player p1 ON max_game.player_id=p1.id JOIN death_type ON max_game.death_type=death_type.id
 ) ggg ORDER BY %s %s`
+
+func (g *GameModel) GetIDFromGameTime(playerID int, gameTime float64) (int, error) {
+	println(gameTime)
+	var gameID int
+	stmt := `
+		SELECT id
+		FROM GAME
+		WHERE player_id=$1
+			AND ROUND(game_time, 4)=$2
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			ORDER BY replay_player_id ASC
+			LIMIT 1;`
+	err := g.DB.Get(&gameID, stmt, playerID, gameTime)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return 0, models.ErrNoRecord
+		}
+		return 0, err
+	}
+	return gameID, nil
+}
 
 // GetTop retrieves a slice of the top games in the database with a given limit
 func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
@@ -123,6 +151,8 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 			level_two_time,
 			level_three_time,
 			level_four_time,
+			levi_down_time,
+			orb_down_time,
 			homing_daggers_max_time,
 			enemies_alive_max_time,
 			homing_daggers_max,
@@ -147,7 +177,7 @@ func (g *GameModel) GetTop(limit int) ([]*models.GameWithName, error) {
 func (g *GameModel) GetRecent(playerID, pageSize, pageNum int, sortBy, sortDir string) ([]*models.GameWithName, string, error) {
 	var where string
 	if playerID != 0 {
-		where = fmt.Sprintf("WHERE game.player_id=$1 AND game.replay_player_id=0")
+		where = fmt.Sprintf("WHERE game.player_id=$1 AND (game.replay_player_id=0 OR game.replay_player_id=$1)")
 	}
 
 	if sortBy == "" {
@@ -181,6 +211,8 @@ func (g *GameModel) GetRecent(playerID, pageSize, pageNum int, sortBy, sortDir s
 			level_two_time,
 			level_three_time,
 			level_four_time,
+			levi_down_time,
+			orb_down_time,
 			homing_daggers_max_time,
 			enemies_alive_max_time,
 			homing_daggers_max,
@@ -221,7 +253,29 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 		sortDir = "asc"
 	}
 
-	if spawnset == pacifistSpawnset {
+	if spawnset == pinkRunSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND version IS NOT NULL
+			AND version<>'0.2.3'
+			AND version<>'0.2.4'
+			AND version<>'0.3.0'
+			AND version<>'0.3.1'
+			AND version<>'0.3.2'
+			AND version<>'0.4.0'
+			AND version<>'0.4.1'
+			AND version<>'0.4.2'
+			AND version<>'0.4.3'
+			AND version<>'0.4.4'
+			AND version<>'0.4.5'
+			AND version<>'0.4.6'
+			AND version<>'0.4.7'
+			AND levi_down_time=0
+			AND orb_down_time=0
+			AND game_time > 350`
+		extra = "AND levi_down_time=0 AND orb_down_time=0"
+	} else if spawnset == pacifistSpawnset {
 		where = `
 			WHERE spawnset_name='v3'
 			AND (replay_player_id=0 OR replay_player_id=player_id)
@@ -241,6 +295,28 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 			AND version IS NOT NULL
 			AND version<>'0.2.3'`
 		extra = "AND gems<10"
+	} else if spawnset == levelTwoSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND level_two_time<>0
+			AND level_three_time=0
+			AND level_four_time=0
+			AND gems<70
+			AND version IS NOT NULL
+			AND version<>'0.2.3'`
+		extra = "AND gems<70"
+	} else if spawnset == levelThreeSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND level_two_time<>0
+			AND level_three_time<>0
+			AND level_four_time=0
+			AND gems>=70
+			AND version IS NOT NULL
+			AND version<>'0.2.3'`
+		extra = "AND gems>=70"
 	} else {
 		where = "WHERE spawnset_name=$1 AND (replay_player_id=0 OR replay_player_id=player_id)"
 	}
@@ -270,6 +346,8 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 				level_two_time,
 				level_three_time,
 				level_four_time,
+				levi_down_time,
+				orb_down_time,
 				homing_daggers_max_time,
 				enemies_alive_max_time,
 				homing_daggers_max,
@@ -308,6 +386,8 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 				max_game.level_two_time,
 				max_game.level_three_time,
 				max_game.level_four_time,
+				max_game.levi_down_time,
+				max_game.orb_down_time,
 				max_game.homing_daggers_max_time, 
 				max_game.enemies_alive_max_time,
 				max_game.homing_daggers_max,
@@ -319,7 +399,12 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 		) ggg ORDER BY %s %s LIMIT %d OFFSET %d`, where, extra, sortBy, sortDir, pageSize, (pageNum-1)*pageSize)
 	}
 	var err error
-	if spawnset == pacifistSpawnset || spawnset == levelOneSpawnset || spawnset == maxHomingSpawnset {
+	if spawnset == pinkRunSpawnset ||
+		spawnset == pacifistSpawnset ||
+		spawnset == levelOneSpawnset ||
+		spawnset == levelTwoSpawnset ||
+		spawnset == levelThreeSpawnset ||
+		spawnset == maxHomingSpawnset {
 		err = g.DB.Select(&games, stmt)
 	} else {
 		err = g.DB.Select(&games, stmt, spawnset)
@@ -341,7 +426,29 @@ func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.
 	var where string
 	var extra string
 
-	if spawnset == pacifistSpawnset {
+	if spawnset == pinkRunSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND version IS NOT NULL
+			AND version<>'0.2.3'
+			AND version<>'0.2.4'
+			AND version<>'0.3.0'
+			AND version<>'0.3.1'
+			AND version<>'0.3.2'
+			AND version<>'0.4.0'
+			AND version<>'0.4.1'
+			AND version<>'0.4.2'
+			AND version<>'0.4.3'
+			AND version<>'0.4.4'
+			AND version<>'0.4.5'
+			AND version<>'0.4.6'
+			AND version<>'0.4.7'
+			AND levi_down_time=0
+			AND orb_down_time=0
+			AND game_time > 350`
+		extra = "AND levi_down_time=0 AND orb_down_time=0"
+	} else if spawnset == pacifistSpawnset {
 		where = `
 			WHERE spawnset_name='v3'
 			AND (replay_player_id=0 OR replay_player_id=player_id)
@@ -361,6 +468,28 @@ func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.
 			AND version IS NOT NULL
 			AND version<>'0.2.3'`
 		extra = "AND gems<10"
+	} else if spawnset == levelTwoSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND level_two_time<>0
+			AND level_three_time=0
+			AND level_four_time=0
+			AND gems<70
+			AND version IS NOT NULL
+			AND version<>'0.2.3'`
+		extra = "AND gems<70"
+	} else if spawnset == levelThreeSpawnset {
+		where = `
+			WHERE spawnset_name='v3'
+			AND (replay_player_id=0 OR replay_player_id=player_id)
+			AND level_two_time<>0
+			AND level_three_time<>0
+			AND level_four_time=0
+			AND gems>=70
+			AND version IS NOT NULL
+			AND version<>'0.2.3'`
+		extra = "AND gems>=70"
 	} else {
 		where = "WHERE spawnset_name=$1 AND (replay_player_id=0 OR replay_player_id=player_id)"
 	}
@@ -395,6 +524,8 @@ func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.
 				level_two_time,
 				level_three_time,
 				level_four_time,
+				levi_down_time,
+				orb_down_time,
 				homing_daggers_max_time,
 				enemies_alive_max_time,
 				homing_daggers_max,
@@ -433,6 +564,8 @@ func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.
 				max_game.level_two_time,
 				max_game.level_three_time,
 				max_game.level_four_time,
+				max_game.levi_down_time,
+				max_game.orb_down_time,
 				max_game.homing_daggers_max_time, 
 				max_game.enemies_alive_max_time,
 				max_game.homing_daggers_max,
@@ -444,7 +577,12 @@ func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.
 		) ggg ORDER BY %s %s`, where, extra, sortBy, sortDir)
 	}
 	var err error
-	if spawnset == pacifistSpawnset || spawnset == levelOneSpawnset || spawnset == maxHomingSpawnset {
+	if spawnset == pinkRunSpawnset ||
+		spawnset == pacifistSpawnset ||
+		spawnset == levelOneSpawnset ||
+		spawnset == levelTwoSpawnset ||
+		spawnset == levelThreeSpawnset ||
+		spawnset == maxHomingSpawnset {
 		err = g.DB.Select(&games, stmt)
 	} else {
 		err = g.DB.Select(&games, stmt, spawnset)
@@ -466,7 +604,34 @@ func (g *GameModel) GetLeaderboardTotalCount(spawnset string) (int, error) {
 
 	var stmt string
 
-	if spawnset == maxHomingSpawnset {
+	if spawnset == pinkRunSpawnset {
+		stmt = `
+		SELECT COUNT(1) FROM (
+			SELECT MAX(game_time) AS max_game_time
+			FROM game
+			NATURAL LEFT JOIN spawnset
+			WHERE spawnset_name='v3'
+				AND (replay_player_id=0 OR replay_player_id=player_id)
+				AND version IS NOT NULL
+				AND version<>'0.2.3'
+				AND version<>'0.2.4'
+				AND version<>'0.3.0'
+				AND version<>'0.3.1'
+				AND version<>'0.3.2'
+				AND version<>'0.4.0'
+				AND version<>'0.4.1'
+				AND version<>'0.4.2'
+				AND version<>'0.4.3'
+				AND version<>'0.4.4'
+				AND version<>'0.4.5'
+				AND version<>'0.4.6'
+				AND version<>'0.4.7'
+				AND levi_down_time=0
+				AND orb_down_time=0
+				AND game_time > 350
+			GROUP BY player_id
+		) g`
+	} else if spawnset == maxHomingSpawnset {
 		stmt = `
 			SELECT COUNT(1) FROM (
 				SELECT MAX(homing_daggers_max) AS max_homing_daggers
@@ -507,6 +672,37 @@ func (g *GameModel) GetLeaderboardTotalCount(spawnset string) (int, error) {
 				AND version<>'0.2.3'
 			GROUP BY player_id
 		) g`
+	} else if spawnset == levelTwoSpawnset {
+		stmt = `
+		SELECT COUNT(1) FROM (
+			SELECT MAX(game_time) AS max_game_time
+			FROM game
+			NATURAL LEFT JOIN spawnset
+			WHERE spawnset_name='v3'
+				AND (replay_player_id=0 OR replay_player_id=player_id)
+				AND level_two_time<>0
+				AND level_three_time=0
+				AND level_four_time=0
+				AND gems<70
+				AND version IS NOT NULL
+				AND version<>'0.2.3'
+			GROUP BY player_id
+		) g`
+	} else if spawnset == levelThreeSpawnset {
+		stmt = `
+		SELECT COUNT(1) FROM (
+			SELECT MAX(game_time) AS max_game_time
+			FROM game
+			NATURAL LEFT JOIN spawnset
+			WHERE spawnset_name='v3'
+				AND (replay_player_id=0 OR replay_player_id=player_id)
+				AND level_two_time<>0
+				AND level_three_time<>0
+				AND level_four_time=0
+				AND version IS NOT NULL
+				AND version<>'0.2.3'
+			GROUP BY player_id
+		) g`
 	} else {
 		stmt = `
 		SELECT COUNT(1) FROM (
@@ -518,7 +714,12 @@ func (g *GameModel) GetLeaderboardTotalCount(spawnset string) (int, error) {
 		) g`
 	}
 
-	if spawnset == pacifistSpawnset || spawnset == levelOneSpawnset || spawnset == maxHomingSpawnset {
+	if spawnset == pinkRunSpawnset ||
+		spawnset == pacifistSpawnset ||
+		spawnset == levelOneSpawnset ||
+		spawnset == levelTwoSpawnset ||
+		spawnset == levelThreeSpawnset ||
+		spawnset == maxHomingSpawnset {
 		err = g.DB.QueryRow(stmt).Scan(&gameCount)
 	} else {
 		err = g.DB.QueryRow(stmt, spawnset).Scan(&gameCount)
@@ -558,6 +759,8 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 			level_two_time,
 			level_three_time,
 			level_four_time,
+			levi_down_time,
+			orb_down_time,
 			homing_daggers_max_time,
 			enemies_alive_max_time,
 			homing_daggers_max,

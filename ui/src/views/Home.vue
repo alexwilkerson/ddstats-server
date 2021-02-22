@@ -69,6 +69,6 @@ export default {
 <style>
 .home-container {
   padding-top: 40px;
-  max-width: 900px;
+  max-width: 950px;
 }
 </style>

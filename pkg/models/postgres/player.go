@@ -187,8 +187,9 @@ func (p *PlayerModel) UpsertDDPlayer(player *ddapi.Player) error {
 }
 
 func (p *PlayerModel) Exists(playerID int) (bool, error) {
-	stmt := "SELECT FROM player WHERE player_id=$1"
-	err := p.DB.QueryRow(stmt).Scan()
+	var id int
+	stmt := "SELECT id FROM player WHERE id=$1"
+	err := p.DB.Get(&id, stmt, playerID)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return false, nil
@@ -248,7 +249,6 @@ func (p *PlayerModel) UpdateDDPlayer(player *ddapi.Player) error {
 	if err != nil {
 		return err
 	}
-	fmt.Println(rowsAffected)
 	if rowsAffected == 0 {
 		return models.ErrNoRecord
 	}

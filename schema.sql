@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS game (
   level_two_time DOUBLE PRECISION DEFAULT 0.0,
   level_three_time DOUBLE PRECISION DEFAULT 0.0,
   level_four_time DOUBLE PRECISION DEFAULT 0.0,
+  levi_down_time DOUBLE PRECISION DEFAULT 0.0,
+  orb_down_time DOUBLE PRECISION DEFAULT 0.0,
   homing_daggers_max_time DOUBLE PRECISION DEFAULT 0.0,
   enemies_alive_max_time DOUBLE PRECISION DEFAULT 0.0,
   homing_daggers_max BIGINT NOT NULL,

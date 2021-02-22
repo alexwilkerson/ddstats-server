@@ -55,7 +55,10 @@ func main() {
 
 	ddAPI := ddapi.NewAPI(client)
 
-	api := api.NewAPI(client, postgresDB, websocketHub, ddAPI, infoLog, errorLog)
+	api, err := api.NewAPI(client, postgresDB, websocketHub, ddAPI, infoLog, errorLog)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 
 	socketioServer, err := socketio.NewServer(infoLog, errorLog, websocketHub, client, postgresDB)
 	if err != nil {

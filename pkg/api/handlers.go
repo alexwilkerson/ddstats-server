@@ -22,7 +22,10 @@ const (
 	DevilDaggerThreshold  float64 = 500
 	PacifistSpawnset              = "Pacifist"
 	LevelOneSpawnset              = "Level One"
+	LevelTwoSpawnset              = "Level Two"
+	LevelThreeSpawnset            = "Level Three"
 	MaxHomingSpawnset             = "Max Homing"
+	PinkRunSpawnset               = "Pink Run"
 )
 
 func (api *API) getDaily(w http.ResponseWriter, r *http.Request) {
@@ -757,6 +760,11 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 			leaderboard.SilverDaggerTime = 0
 			leaderboard.GoldDaggerTime = 0
 			leaderboard.DevilDaggerTime = 0
+		} else if spawnset == "pink_run" {
+			leaderboard.BronzeDaggerTime = 360
+			leaderboard.SilverDaggerTime = 500
+			leaderboard.GoldDaggerTime = 650
+			leaderboard.DevilDaggerTime = 900
 		} else if spawnset == "pacifist" {
 			leaderboard.BronzeDaggerTime = 50
 			leaderboard.SilverDaggerTime = 70
@@ -767,6 +775,16 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 			leaderboard.SilverDaggerTime = 100
 			leaderboard.GoldDaggerTime = 200
 			leaderboard.DevilDaggerTime = 300
+		} else if spawnset == "level_two" {
+			leaderboard.BronzeDaggerTime = 100
+			leaderboard.SilverDaggerTime = 150
+			leaderboard.GoldDaggerTime = 320
+			leaderboard.DevilDaggerTime = 400
+		} else if spawnset == "level_three" {
+			leaderboard.BronzeDaggerTime = 125
+			leaderboard.SilverDaggerTime = 225
+			leaderboard.GoldDaggerTime = 350
+			leaderboard.DevilDaggerTime = 460
 		} else {
 			spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
 			if err != nil {
@@ -780,7 +798,10 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		}
 
 		leaderboard.Spawnsets = append(leaderboard.Spawnsets, PacifistSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, PinkRunSpawnset)
 		leaderboard.Spawnsets = append(leaderboard.Spawnsets, LevelOneSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, LevelTwoSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, LevelThreeSpawnset)
 		leaderboard.Spawnsets = append(leaderboard.Spawnsets, MaxHomingSpawnset)
 
 		leaderboard.Spawnset = spawnset
@@ -832,6 +853,11 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		games.SilverDaggerTime = 0
 		games.GoldDaggerTime = 0
 		games.DevilDaggerTime = 0
+	} else if spawnset == "pink_run" {
+		games.BronzeDaggerTime = 360
+		games.SilverDaggerTime = 500
+		games.GoldDaggerTime = 650
+		games.DevilDaggerTime = 900
 	} else if spawnset == "pacifist" {
 		games.BronzeDaggerTime = 50
 		games.SilverDaggerTime = 70
@@ -842,6 +868,16 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 		games.SilverDaggerTime = 100
 		games.GoldDaggerTime = 200
 		games.DevilDaggerTime = 300
+	} else if spawnset == "level_two" {
+		games.BronzeDaggerTime = 100
+		games.SilverDaggerTime = 150
+		games.GoldDaggerTime = 320
+		games.DevilDaggerTime = 400
+	} else if spawnset == "level_three" {
+		games.BronzeDaggerTime = 125
+		games.SilverDaggerTime = 225
+		games.GoldDaggerTime = 350
+		games.DevilDaggerTime = 460
 	} else {
 		spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
 		if err != nil {
@@ -858,8 +894,12 @@ func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
 	games.PageNumber = pageNum
 	games.PageSize = pageSize
 	games.GameCount = len(games.Games)
+
 	games.Spawnsets = append(games.Spawnsets, PacifistSpawnset)
+	games.Spawnsets = append(games.Spawnsets, PinkRunSpawnset)
 	games.Spawnsets = append(games.Spawnsets, LevelOneSpawnset)
+	games.Spawnsets = append(games.Spawnsets, LevelTwoSpawnset)
+	games.Spawnsets = append(games.Spawnsets, LevelThreeSpawnset)
 	games.Spawnsets = append(games.Spawnsets, MaxHomingSpawnset)
 
 	games.Spawnset = spawnset
@@ -942,6 +982,12 @@ func (api *API) getPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	player.HighScoreGameID, err = api.db.Games.GetIDFromGameTime(id, player.GameTime)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		api.serverError(w, err)
+		return
+	}
+
 	api.writeJSON(w, player)
 }
 
@@ -998,7 +1044,19 @@ func (api *API) playerUpdate(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	api.writeJSON(w, player)
+	highScoreGameID, err := api.db.Games.GetIDFromGameTime(id, player.GameTime)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		api.serverError(w, err)
+		return
+	}
+
+	api.writeJSON(w, struct {
+		*ddapi.Player
+		HighScoreGameID int `json:"high_score_game_id,omitempty"`
+	}{
+		player,
+		highScoreGameID,
+	})
 }
 
 func (api *API) getMOTD(w http.ResponseWriter, r *http.Request) {
@@ -1034,7 +1092,7 @@ func (api *API) clientConnect(w http.ResponseWriter, r *http.Request) {
 		api.serverError(w, err)
 		return
 	}
-	update, err := updateAvailable(version.Version)
+	update, err := api.updateAvailable(version.Version)
 	if err != nil {
 		api.serverError(w, err)
 		return
