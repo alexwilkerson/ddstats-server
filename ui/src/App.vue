@@ -188,4 +188,8 @@ h3 {
   font-size: 15px !important;
   color: #c33409 !important;
 }
+
+.v-slide-group__content div.v-tab {
+  justify-content: left !important;
+}
 </style>

@@ -78,6 +78,14 @@
               <td class="text-left">Level 4</td>
               <td class="text-right">{{ $root.state.level_four_time.toFixed(4) }}s</td>
             </tr>
+            <tr v-if="$root.state.levi_down_time !== undefined && $root.state.levi_down_time != 0">
+              <td class="text-left">Levi Down Time</td>
+              <td class="text-right">{{ $root.state.levi_down_time.toFixed(4) }}s</td>
+            </tr>
+            <tr v-if="$root.state.orb_down_time !== undefined && $root.state.orb_down_time != 0">
+              <td class="text-left">Orb Down Time</td>
+              <td class="text-right">{{ $root.state.orb_down_time.toFixed(4) }}s</td>
+            </tr>
             <tr>
               <td class="text-left">Viewers</td>
               <td class="text-right">{{ $root.watchers }}</td>

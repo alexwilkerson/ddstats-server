@@ -39,6 +39,8 @@ type Game struct {
 	LevelTwoTime         float64     `json:"level_two_time" db:"level_two_time"`
 	LevelThreeTime       float64     `json:"level_three_time" db:"level_three_time"`
 	LevelFourTime        float64     `json:"level_four_time" db:"level_four_time"`
+	LeviDownTime         float64     `json:"levi_down_time" db:"levi_down_time"`
+	OrbDownTime          float64     `json:"orb_down_time" db:"orb_down_time"`
 	HomingDaggersMaxTime float64     `json:"homing_daggers_max_time" db:"homing_daggers_max_time"`
 	EnemiesAliveMaxTime  float64     `json:"enemies_alive_max_time" db:"enemies_alive_max_time"`
 	HomingDaggersMax     int         `json:"homing_daggers_max" db:"homing_daggers_max"`
@@ -57,6 +59,7 @@ type Player struct {
 	LastActive             *time.Time `json:"last_active,omitempty" db:"last_active"`
 	PlayerName             string     `json:"player_name" db:"player_name"`
 	Rank                   int        `json:"rank" db:"rank"`
+	HighScoreGameID        int        `json:"high_score_game_id,omitempty"`
 	GameTime               float64    `json:"game_time" db:"game_time"`
 	DeathType              string     `json:"death_type" db:"death_type"`
 	Gems                   int        `json:"gems" db:"gems"`
@@ -147,6 +150,8 @@ type SubmittedGame struct {
 	LevelTwoTime        float64   `json:"levelTwoTime"`
 	LevelThreeTime      float64   `json:"levelThreeTime"`
 	LevelFourTime       float64   `json:"levelFourTime"`
+	LeviDownTime        float64   `json:"leviDownTime"`
+	OrbDownTime         float64   `json:"orbDownTime"`
 	HomingDaggers       int       `json:"homingDaggers"`
 	HomingDaggersSlice  []int     `json:"homingDaggersVector"`
 	HomingMax           int       `json:"homingDaggersMax"`

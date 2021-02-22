@@ -102,12 +102,14 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 			level_two_time,
 			level_three_time,
 			level_four_time,
+			levi_down_time,
+			orb_down_time,
 			homing_daggers_max_time,
 			enemies_alive_max_time,
 			homing_daggers_max,
 			enemies_alive_max)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, CURRENT_TIMESTAMP,
-			$11, $12, $13, $14, $15, $16, $17, $18, $19, $20)
+			$11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)
 		RETURNING id`
 	var gameID int
 	err := sg.DB.QueryRow(stmt,
@@ -127,6 +129,8 @@ func (sg *SubmittedGameModel) Insert(game *models.SubmittedGame) (int, error) {
 		game.LevelTwoTime,
 		game.LevelThreeTime,
 		game.LevelFourTime,
+		game.LeviDownTime,
+		game.OrbDownTime,
 		game.HomingMaxTime,
 		game.EnemiesAliveMaxTime,
 		game.HomingMax,

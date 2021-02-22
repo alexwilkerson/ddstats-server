@@ -33,6 +33,8 @@ new Vue({
         level_two_time: 0,
         level_three_time: 0,
         level_four_time: 0,
+        levi_down_time: 0,
+        orb_down_time: 0,
         death_type: -1,
         is_replay: false
       },
@@ -100,6 +102,8 @@ new Vue({
                 this.state.level_two_time = 0;
                 this.state.level_three_time = 0;
                 this.state.level_four_time = 0;
+                this.state.levi_down_time = 0;
+                this.state.orb_down_time = 0;
               }
               this.$root.status = body.status;
             }
@@ -117,6 +121,8 @@ new Vue({
               level_two_time: 0,
               level_three_time: 0,
               level_four_time: 0,
+              levi_down_time: 0,
+              orb_down_time: 0,
               death_type: -1,
               is_replay: false
             };

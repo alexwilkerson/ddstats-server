@@ -76,6 +76,8 @@ export default {
       level_two_time: 0,
       level_three_time: 0,
       level_four_time: 0,
+      levi_down_time: 0,
+      orb_down_time: 0,
       death_type: -1,
       is_replay: false
     };

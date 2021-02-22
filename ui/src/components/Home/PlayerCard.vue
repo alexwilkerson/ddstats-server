@@ -20,12 +20,14 @@
         <v-icon left fill="#ff8300">$dagger</v-icon>
         New Bronze Daggers ({{ data.since_bronze_daggers.toLocaleString() }})
       </v-tab>
-      <v-tab
-        v-if="data.active_players_list.length > 0"
-      >Active Players ({{ data.active_players.toLocaleString() }})</v-tab>
-      <v-tab
-        v-if="data.new_players_list.length > 0"
-      >New Players ({{ data.new_players.toLocaleString() }})</v-tab>
+      <v-tab v-if="data.active_players_list.length > 0">
+        <v-icon left class="online-green">mdi-account</v-icon>
+        Active Players ({{ data.active_players.toLocaleString() }})
+      </v-tab>
+      <v-tab v-if="data.new_players_list.length > 0">
+        <v-icon left color="#0095fb">mdi-account</v-icon>
+        New Players ({{ data.new_players.toLocaleString() }})
+      </v-tab>
 
       <v-tab-item v-if="data.devil_daggers_list.length > 0">
         <v-card flat>

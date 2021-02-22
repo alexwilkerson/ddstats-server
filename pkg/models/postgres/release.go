@@ -13,6 +13,21 @@ type ReleaseModel struct {
 	DB *sqlx.DB
 }
 
+func (rm *ReleaseModel) GetMostRecentVersion() (string, error) {
+	var release models.Release
+	stmt := `
+		SELECT *
+		FROM release
+		ORDER BY time_stamp DESC LIMIT 1`
+	err := rm.DB.Get(&release, stmt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", models.ErrNoRecord
+		}
+	}
+	return release.Version, nil
+}
+
 func (rm *ReleaseModel) Select(version string) (*models.Release, error) {
 	var release models.Release
 	stmt := `
@@ -25,6 +40,7 @@ func (rm *ReleaseModel) Select(version string) (*models.Release, error) {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}
+		return nil, err
 	}
 
 	var releaseNotes []models.ReleaseNote

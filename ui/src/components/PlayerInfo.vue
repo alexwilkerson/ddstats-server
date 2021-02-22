@@ -23,20 +23,32 @@
                 small
               >mdi-account</v-icon>Player ID
             </td>
-            <td class="text-right">{{ data.player_id }}
-            </td>
+            <td class="text-right">{{ data.player_id }}</td>
           </tr>
-          <tr>
+          <tr
+            class="pointer"
+            v-if="data.high_score_game_id"
+            @click="$router.push('/games/' + data.high_score_game_id)"
+          >
             <td class="text-left">
               <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>Player Best Time
             </td>
-            <td class="text-right">{{ data.game_time }}s</td>
+            <td
+              class="text-right"
+              :style="{textDecoration: 'underline'}"
+            >{{ data.game_time.toFixed(4) }}s</td>
+          </tr>
+          <tr v-else>
+            <td class="text-left">
+              <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>Player Best Time
+            </td>
+            <td class="text-right">{{ data.game_time.toFixed(4) }}s</td>
           </tr>
           <tr>
             <td class="text-left">
               <v-icon class="icon" fill="#c33409" small>$stopwatch</v-icon>Average Game Time
             </td>
-            <td class="text-right">{{ data.overall_average_game_time }}s</td>
+            <td class="text-right">{{ data.overall_average_game_time.toFixed(4) }}s</td>
           </tr>
           <tr @mouseover="gameTimeHover = true" @mouseleave="gameTimeHover = false">
             <td class="text-left">
