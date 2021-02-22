@@ -66,13 +66,13 @@ func validVersion(version string) (bool, error) {
 	return false, nil
 }
 
-func updateAvailable(version string) (bool, error) {
+func (api *API) updateAvailable(version string) (bool, error) {
 	var vMajor, vMinor, vPatch, cvMajor, cvMinor, cvPatch int
 	_, err := fmt.Sscanf(version, "%d.%d.%d", &vMajor, &vMinor, &vPatch)
 	if err != nil {
 		return false, err
 	}
-	_, err = fmt.Sscanf(currentClientVersion, "%d.%d.%d", &cvMajor, &cvMinor, &cvPatch)
+	_, err = fmt.Sscanf(api.currentClientVersion, "%d.%d.%d", &cvMajor, &cvMinor, &cvPatch)
 	if err != nil {
 		return false, err
 	}

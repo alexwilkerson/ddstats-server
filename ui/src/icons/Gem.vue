@@ -1,0 +1,36 @@
+<template>
+  <svg
+    width="100%"
+    height="100%"
+    viewBox="0 0 59 92"
+    version="1.1"
+    xmlns="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    xml:space="preserve"
+    xmlns:serif="http://www.serif.com/"
+    style="fill-rule:evenodd;clip-rule:evenodd;stroke-linejoin:round;stroke-miterlimit:2;"
+  >
+    <g transform="matrix(1,0,0,1,-20.697,-4.247)">
+      <path
+        d="M50.676,4.247L57.063,14.301L79.303,49.324L65.639,49.324L58.205,37.618L50.676,25.763L50.676,4.247Z"
+        style="fill-rule:nonzero;"
+      />
+      <path
+        d="M35.304,26.322L42.938,14.301L49.322,4.247L49.322,25.763L41.795,37.616L34.36,49.324L20.697,49.324L35.304,26.322Z"
+        style="fill-rule:nonzero;"
+      />
+      <path
+        d="M49.322,95.753L20.697,50.676L34.36,50.676L41.795,62.384L49.322,74.236L49.322,95.753Z"
+        style="fill-rule:nonzero;"
+      />
+      <path
+        d="M42.938,61.658L35.534,50L42.938,38.342L50,27.222L57.063,38.342L64.466,50L57.063,61.658L50,72.778L42.938,61.658Z"
+        style="fill-rule:nonzero;"
+      />
+      <path
+        d="M64.695,73.678L50.676,95.753L50.676,74.236L58.205,62.384L65.639,50.676L79.303,50.676L64.695,73.678Z"
+        style="fill-rule:nonzero;"
+      />
+    </g>
+  </svg>
+</template>

@@ -7,6 +7,9 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
+
+	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/models"
 	"github.com/alexwilkerson/ddstats-server/pkg/websocket"
@@ -17,6 +20,12 @@ const (
 	SilverDaggerThreshold float64 = 120
 	GoldDaggerThreshold   float64 = 250
 	DevilDaggerThreshold  float64 = 500
+	PacifistSpawnset              = "Pacifist"
+	LevelOneSpawnset              = "Level One"
+	LevelTwoSpawnset              = "Level Two"
+	LevelThreeSpawnset            = "Level Three"
+	MaxHomingSpawnset             = "Max Homing"
+	PinkRunSpawnset               = "Pink Run"
 )
 
 func (api *API) getDaily(w http.ResponseWriter, r *http.Request) {
@@ -99,8 +108,6 @@ func (api *API) getNews(w http.ResponseWriter, r *http.Request) {
 		api.clientMessage(w, http.StatusBadRequest, "page_num must be greater than 0")
 		return
 	}
-
-	fmt.Println("pageSize", pageSize, "pageNum", pageNum)
 
 	var news struct {
 		TotalPages     int            `json:"total_pages"`
@@ -194,15 +201,6 @@ func (api *API) getReleases(w http.ResponseWriter, r *http.Request) {
 }
 
 func (api *API) serveWebsocket(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("WebSocket endpoint hit")
-	if _, ok := r.URL.Query()["room"]; !ok {
-		api.clientError(w, http.StatusNotFound)
-		return
-	}
-
-	room := r.URL.Query().Get("room")
-
-	// upgrade this connection to a Websocket connection
 	conn, err := websocket.Upgrade(w, r)
 	if err != nil {
 		fmt.Fprintf(w, "%+v", err)
@@ -212,7 +210,6 @@ func (api *API) serveWebsocket(w http.ResponseWriter, r *http.Request) {
 	client := &websocket.Client{
 		Conn: conn,
 		Hub:  api.websocketHub,
-		Room: room,
 	}
 
 	api.websocketHub.Register <- client
@@ -282,6 +279,19 @@ func (api *API) submitGame(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// This does the same as above, but for replay players.
+	if game.ReplayPlayerID != 0 {
+		replayPlayer, err := api.ddAPI.UserByID(game.ReplayPlayerID)
+		if err != nil && !errors.Is(err, ddapi.ErrPlayerNotFound) {
+			api.serverError(w, err)
+			return
+		}
+		err = api.db.ReplayPlayers.Upsert(int(replayPlayer.PlayerID), replayPlayer.PlayerName)
+		if err != nil {
+			api.errorLog.Printf("%v", err)
+		}
+	}
+
 	gameID, err := api.db.SubmittedGames.Insert(&game)
 	if err != nil {
 		api.clientMessage(w, http.StatusBadRequest, "error while inserting data to database")
@@ -294,6 +304,44 @@ func (api *API) submitGame(w http.ResponseWriter, r *http.Request) {
 	}{"Game submitted.", gameID})
 }
 
+func (api *API) getGameFull(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil || id < 1 {
+		api.clientError(w, http.StatusBadRequest)
+		return
+	}
+
+	game, err := api.db.Games.Get(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			api.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			api.serverError(w, err)
+		}
+		return
+	}
+
+	states, err := api.db.States.GetAll(id)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			api.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			api.serverError(w, err)
+		}
+		return
+	}
+
+	v := struct {
+		GameInfo *models.GameWithName `json:"game_info"`
+		States   []*models.State      `json:"states"`
+	}{
+		GameInfo: game,
+		States:   states,
+	}
+
+	api.writeJSON(w, v)
+}
+
 func (api *API) getGameAll(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil || id < 1 {
@@ -301,7 +349,7 @@ func (api *API) getGameAll(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetAll(id)
+	states, err := api.db.States.GetAll(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -321,7 +369,7 @@ func (api *API) getGameGems(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetGems(id)
+	states, err := api.db.States.GetGems(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -341,7 +389,7 @@ func (api *API) getGameHomingDaggers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetHomingDaggers(id)
+	states, err := api.db.States.GetHomingDaggers(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -361,7 +409,7 @@ func (api *API) getGameDaggersHit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetDaggersHit(id)
+	states, err := api.db.States.GetDaggersHit(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -381,7 +429,7 @@ func (api *API) getGameDaggersFired(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetDaggersFired(id)
+	states, err := api.db.States.GetDaggersFired(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -401,7 +449,7 @@ func (api *API) getGameAccuracy(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetAccuracy(id)
+	states, err := api.db.States.GetAccuracy(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -421,7 +469,7 @@ func (api *API) getGameEnemiesAlive(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetEnemiesAlive(id)
+	states, err := api.db.States.GetEnemiesAlive(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -441,7 +489,7 @@ func (api *API) getGameEnemiesKilled(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	states, err := api.db.Games.GetEnemiesKilled(id)
+	states, err := api.db.States.GetEnemiesKilled(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
 			api.clientMessage(w, http.StatusNotFound, err.Error())
@@ -495,6 +543,24 @@ func (api *API) getPlayers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sortBy := strings.ToLower(r.URL.Query().Get("sort_by"))
+	sortDir := strings.ToLower(r.URL.Query().Get("sort_dir"))
+
+	if sortBy != "" && !(sortBy == "rank" || sortBy == "player_name" || sortBy == "game_time" || sortBy == "overall_game_time" || sortBy == "overall_deaths" || sortBy == "overall_accuracy") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if (sortBy != "" && sortDir == "") || (sortBy == "" && sortDir != "") {
+		api.clientMessage(w, http.StatusBadRequest, "both 'sort_dir' and 'sort_by' params must be set when sorting")
+		return
+	}
+
+	if sortDir != "" && !(sortDir == "asc" || sortDir == "desc") {
+		api.clientMessage(w, http.StatusBadRequest, "'sort_dir' param must be 'asc' or 'desc'")
+		return
+	}
+
 	var players struct {
 		TotalPages       int              `json:"total_pages"`
 		TotalPlayerCount int              `json:"total_player_count"`
@@ -504,7 +570,7 @@ func (api *API) getPlayers(w http.ResponseWriter, r *http.Request) {
 		Players          []*models.Player `json:"players"`
 	}
 
-	players.Players, err = api.db.Players.GetAll(pageSize, pageNum)
+	players.Players, err = api.db.Players.GetAll(pageSize, pageNum, sortBy, sortDir)
 	if err != nil {
 		api.serverError(w, err)
 		return
@@ -564,7 +630,32 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	sortBy := strings.ToLower(r.URL.Query().Get("sort_by"))
+	sortDir := strings.ToLower(r.URL.Query().Get("sort_dir"))
+
+	if playerID != 0 && sortBy != "" && !(sortBy == "id" || sortBy == "game_time" || sortBy == "gems" || sortBy == "homing_daggers" || sortBy == "accuracy" || sortBy == "enemies_alive" || sortBy == "enemies_killed" || sortBy == "time_stamp") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if playerID == 0 && sortBy != "" && !(sortBy == "id" || sortBy == "player_name" || sortBy == "game_time" || sortBy == "gems" || sortBy == "homing_daggers" || sortBy == "accuracy" || sortBy == "enemies_alive" || sortBy == "enemies_killed" || sortBy == "time_stamp") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if (sortBy != "" && sortDir == "") || (sortBy == "" && sortDir != "") {
+		api.clientMessage(w, http.StatusBadRequest, "both 'sort_dir' and 'sort_by' params must be set when sorting")
+		return
+	}
+
+	if sortDir != "" && !(sortDir == "asc" || sortDir == "desc") {
+		api.clientMessage(w, http.StatusBadRequest, "'sort_dir' param must be 'asc' or 'desc'")
+		return
+	}
+
 	var games struct {
+		PlayerID       int                    `json:"player_id,omitempty"`
+		PlayerName     string                 `json:"player_name,omitempty"`
 		TotalPages     int                    `json:"total_pages"`
 		TotalGameCount int                    `json:"total_game_count"`
 		PageNumber     int                    `json:"page_number"`
@@ -573,10 +664,14 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 		Games          []*models.GameWithName `json:"games"`
 	}
 
-	games.Games, err = api.db.Games.GetRecent(playerID, pageSize, pageNum)
+	games.Games, games.PlayerName, err = api.db.Games.GetRecent(playerID, pageSize, pageNum, sortBy, sortDir)
 	if err != nil {
 		api.serverError(w, err)
 		return
+	}
+
+	if playerID != 0 {
+		games.PlayerID = playerID
 	}
 
 	if games.Games == nil {
@@ -594,6 +689,220 @@ func (api *API) getRecentGames(w http.ResponseWriter, r *http.Request) {
 	games.PageNumber = pageNum
 	games.PageSize = pageSize
 	games.GameCount = len(games.Games)
+
+	api.writeJSON(w, games)
+}
+
+func (api *API) getLeaderboard(w http.ResponseWriter, r *http.Request) {
+	var err error
+	spawnset := r.URL.Query().Get("spawnset")
+	if spawnset == "" {
+		api.clientMessage(w, http.StatusBadRequest, "no spawnset name must be included")
+		return
+	}
+
+	spawnset = strings.ToLower(spawnset)
+
+	pageSize, _ := strconv.Atoi(r.URL.Query().Get("page_size"))
+	pageNum, _ := strconv.Atoi(r.URL.Query().Get("page_num"))
+
+	sortBy := strings.ToLower(r.URL.Query().Get("sort_by"))
+	sortDir := strings.ToLower(r.URL.Query().Get("sort_dir"))
+
+	if sortBy != "" && !(sortBy == "rank" || sortBy == "game_time" || sortBy == "gems" || sortBy == "homing_daggers" || sortBy == "accuracy" || sortBy == "enemies_alive" || sortBy == "enemies_killed" || sortBy == "player_name") {
+		api.clientMessage(w, http.StatusBadRequest, "invalid 'sort_by' param")
+		return
+	}
+
+	if (sortBy != "" && sortDir == "") || (sortBy == "" && sortDir != "") {
+		api.clientMessage(w, http.StatusBadRequest, "both 'sort_dir' and 'sort_by' params must be set when sorting")
+		return
+	}
+
+	if sortDir != "" && !(sortDir == "asc" || sortDir == "desc") {
+		api.clientMessage(w, http.StatusBadRequest, "'sort_dir' param must be 'asc' or 'desc'")
+		return
+	}
+
+	if pageSize < 1 || pageNum < 1 {
+		var leaderboard struct {
+			Spawnset         string                 `json:"spawnset"`
+			GameCount        int                    `json:"game_count"`
+			BronzeDaggerTime float64                `json:"bronze_dagger_time"`
+			SilverDaggerTime float64                `json:"silver_dagger_time"`
+			GoldDaggerTime   float64                `json:"gold_dagger_time"`
+			DevilDaggerTime  float64                `json:"devil_dagger_time"`
+			Games            []*models.GameWithName `json:"games"`
+			Spawnsets        []string               `json:"spawnsets"`
+		}
+
+		leaderboard.Games, err = api.db.Games.GetLeaderboard(spawnset, sortBy, sortDir)
+		if err != nil {
+			api.serverError(w, err)
+			return
+		}
+
+		if leaderboard.Games == nil {
+			api.clientMessage(w, http.StatusNotFound, "no records found in this range")
+			return
+		}
+
+		leaderboard.GameCount = len(leaderboard.Games)
+
+		leaderboard.Spawnsets, err = api.db.Spawnsets.SelectSpawnsetNames()
+		if err != nil {
+			api.serverError(w, err)
+			return
+		}
+
+		if spawnset == "max_homing" {
+			leaderboard.BronzeDaggerTime = 0
+			leaderboard.SilverDaggerTime = 0
+			leaderboard.GoldDaggerTime = 0
+			leaderboard.DevilDaggerTime = 0
+		} else if spawnset == "pink_run" {
+			leaderboard.BronzeDaggerTime = 360
+			leaderboard.SilverDaggerTime = 500
+			leaderboard.GoldDaggerTime = 650
+			leaderboard.DevilDaggerTime = 900
+		} else if spawnset == "pacifist" {
+			leaderboard.BronzeDaggerTime = 50
+			leaderboard.SilverDaggerTime = 70
+			leaderboard.GoldDaggerTime = 90
+			leaderboard.DevilDaggerTime = 110
+		} else if spawnset == "level_one" {
+			leaderboard.BronzeDaggerTime = 80
+			leaderboard.SilverDaggerTime = 100
+			leaderboard.GoldDaggerTime = 200
+			leaderboard.DevilDaggerTime = 300
+		} else if spawnset == "level_two" {
+			leaderboard.BronzeDaggerTime = 100
+			leaderboard.SilverDaggerTime = 150
+			leaderboard.GoldDaggerTime = 320
+			leaderboard.DevilDaggerTime = 400
+		} else if spawnset == "level_three" {
+			leaderboard.BronzeDaggerTime = 125
+			leaderboard.SilverDaggerTime = 225
+			leaderboard.GoldDaggerTime = 350
+			leaderboard.DevilDaggerTime = 460
+		} else {
+			spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
+			if err != nil {
+				api.clientMessage(w, http.StatusNotFound, "no spawnset found by this name")
+				return
+			}
+			leaderboard.BronzeDaggerTime = spawnsetFromDB.BronzeDaggerTime
+			leaderboard.SilverDaggerTime = spawnsetFromDB.SilverDaggerTime
+			leaderboard.GoldDaggerTime = spawnsetFromDB.GoldDaggerTime
+			leaderboard.DevilDaggerTime = spawnsetFromDB.DevilDaggerTime
+		}
+
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, PacifistSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, PinkRunSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, LevelOneSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, LevelTwoSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, LevelThreeSpawnset)
+		leaderboard.Spawnsets = append(leaderboard.Spawnsets, MaxHomingSpawnset)
+
+		leaderboard.Spawnset = spawnset
+
+		api.writeJSON(w, leaderboard)
+		return
+	}
+
+	var games struct {
+		Spawnset         string                 `json:"spawnset"`
+		TotalPages       int                    `json:"total_pages"`
+		TotalGameCount   int                    `json:"total_game_count"`
+		PageNumber       int                    `json:"page_number"`
+		PageSize         int                    `json:"page_size"`
+		GameCount        int                    `json:"game_count"`
+		BronzeDaggerTime float64                `json:"bronze_dagger_time"`
+		SilverDaggerTime float64                `json:"silver_dagger_time"`
+		GoldDaggerTime   float64                `json:"gold_dagger_time"`
+		DevilDaggerTime  float64                `json:"devil_dagger_time"`
+		Games            []*models.GameWithName `json:"games"`
+		Spawnsets        []string               `json:"spawnsets"`
+	}
+
+	games.Games, err = api.db.Games.GetLeaderboardPaginated(spawnset, pageSize, pageNum, sortBy, sortDir)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	if games.Games == nil {
+		api.clientMessage(w, http.StatusNotFound, "no records found in this range")
+		return
+	}
+
+	games.TotalGameCount, err = api.db.Games.GetLeaderboardTotalCount(spawnset)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	games.Spawnsets, err = api.db.Spawnsets.SelectSpawnsetNames()
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	if spawnset == "max_homing" {
+		games.BronzeDaggerTime = 0
+		games.SilverDaggerTime = 0
+		games.GoldDaggerTime = 0
+		games.DevilDaggerTime = 0
+	} else if spawnset == "pink_run" {
+		games.BronzeDaggerTime = 360
+		games.SilverDaggerTime = 500
+		games.GoldDaggerTime = 650
+		games.DevilDaggerTime = 900
+	} else if spawnset == "pacifist" {
+		games.BronzeDaggerTime = 50
+		games.SilverDaggerTime = 70
+		games.GoldDaggerTime = 90
+		games.DevilDaggerTime = 110
+	} else if spawnset == "level_one" {
+		games.BronzeDaggerTime = 80
+		games.SilverDaggerTime = 100
+		games.GoldDaggerTime = 200
+		games.DevilDaggerTime = 300
+	} else if spawnset == "level_two" {
+		games.BronzeDaggerTime = 100
+		games.SilverDaggerTime = 150
+		games.GoldDaggerTime = 320
+		games.DevilDaggerTime = 400
+	} else if spawnset == "level_three" {
+		games.BronzeDaggerTime = 125
+		games.SilverDaggerTime = 225
+		games.GoldDaggerTime = 350
+		games.DevilDaggerTime = 460
+	} else {
+		spawnsetFromDB, err := api.db.Spawnsets.Select(spawnset)
+		if err != nil {
+			api.clientMessage(w, http.StatusNotFound, "no spawnset found by this name")
+			return
+		}
+		games.BronzeDaggerTime = spawnsetFromDB.BronzeDaggerTime
+		games.SilverDaggerTime = spawnsetFromDB.SilverDaggerTime
+		games.GoldDaggerTime = spawnsetFromDB.GoldDaggerTime
+		games.DevilDaggerTime = spawnsetFromDB.DevilDaggerTime
+	}
+
+	games.TotalPages = int(math.Ceil(float64(games.TotalGameCount) / float64(pageSize)))
+	games.PageNumber = pageNum
+	games.PageSize = pageSize
+	games.GameCount = len(games.Games)
+
+	games.Spawnsets = append(games.Spawnsets, PacifistSpawnset)
+	games.Spawnsets = append(games.Spawnsets, PinkRunSpawnset)
+	games.Spawnsets = append(games.Spawnsets, LevelOneSpawnset)
+	games.Spawnsets = append(games.Spawnsets, LevelTwoSpawnset)
+	games.Spawnsets = append(games.Spawnsets, LevelThreeSpawnset)
+	games.Spawnsets = append(games.Spawnsets, MaxHomingSpawnset)
+
+	games.Spawnset = spawnset
 
 	api.writeJSON(w, games)
 }
@@ -637,6 +946,32 @@ func (api *API) getPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	exists, err := api.db.Players.Exists(id)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+	if !exists {
+		api.clientMessage(w, http.StatusNotFound, "not a ddstats player")
+		return
+	}
+
+	playerFromDDAPI, err := api.ddAPI.UserByID(id)
+	if err != nil {
+		api.serverError(w, err)
+		return
+	}
+
+	err = api.db.Players.UpdateDDPlayer(playerFromDDAPI)
+	if err != nil {
+		if errors.Is(err, models.ErrNoRecord) {
+			api.clientMessage(w, http.StatusNotFound, err.Error())
+		} else {
+			api.serverError(w, err)
+		}
+		return
+	}
+
 	player, err := api.db.Players.Get(id)
 	if err != nil {
 		if errors.Is(err, models.ErrNoRecord) {
@@ -647,10 +982,16 @@ func (api *API) getPlayer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	player.HighScoreGameID, err = api.db.Games.GetIDFromGameTime(id, player.GameTime)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		api.serverError(w, err)
+		return
+	}
+
 	api.writeJSON(w, player)
 }
 
-func (api *API) playerUpdate(w http.ResponseWriter, r *http.Request) {
+func (api *API) playerUpsert(w http.ResponseWriter, r *http.Request) {
 	id, err := strconv.Atoi(r.URL.Query().Get("id"))
 	if err != nil {
 		api.clientMessage(w, http.StatusBadRequest, "id must be an integer")
@@ -676,6 +1017,46 @@ func (api *API) playerUpdate(w http.ResponseWriter, r *http.Request) {
 	}
 
 	api.writeJSON(w, player)
+}
+
+func (api *API) playerUpdate(w http.ResponseWriter, r *http.Request) {
+	id, err := strconv.Atoi(r.URL.Query().Get("id"))
+	if err != nil {
+		api.clientMessage(w, http.StatusBadRequest, "id must be an integer")
+		return
+	}
+
+	if id < 1 {
+		api.clientMessage(w, http.StatusBadRequest, "negative id not allowed")
+		return
+	}
+
+	player, err := api.ddAPI.UserByID(id)
+	if err != nil {
+		api.clientMessage(w, http.StatusNotFound, err.Error())
+		return
+	}
+
+	err = api.db.Players.UpdateDDPlayer(player)
+	if err != nil {
+		fmt.Println(err)
+		api.clientMessage(w, http.StatusNotFound, "no user found")
+		return
+	}
+
+	highScoreGameID, err := api.db.Games.GetIDFromGameTime(id, player.GameTime)
+	if err != nil && !errors.Is(err, models.ErrNoRecord) {
+		api.serverError(w, err)
+		return
+	}
+
+	api.writeJSON(w, struct {
+		*ddapi.Player
+		HighScoreGameID int `json:"high_score_game_id,omitempty"`
+	}{
+		player,
+		highScoreGameID,
+	})
 }
 
 func (api *API) getMOTD(w http.ResponseWriter, r *http.Request) {
@@ -711,7 +1092,7 @@ func (api *API) clientConnect(w http.ResponseWriter, r *http.Request) {
 		api.serverError(w, err)
 		return
 	}
-	update, err := updateAvailable(version.Version)
+	update, err := api.updateAvailable(version.Version)
 	if err != nil {
 		api.serverError(w, err)
 		return

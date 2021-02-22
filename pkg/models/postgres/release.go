@@ -13,18 +13,52 @@ type ReleaseModel struct {
 	DB *sqlx.DB
 }
 
+func (rm *ReleaseModel) GetMostRecentVersion() (string, error) {
+	var release models.Release
+	stmt := `
+		SELECT *
+		FROM release
+		ORDER BY time_stamp DESC LIMIT 1`
+	err := rm.DB.Get(&release, stmt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return "", models.ErrNoRecord
+		}
+	}
+	return release.Version, nil
+}
+
 func (rm *ReleaseModel) Select(version string) (*models.Release, error) {
 	var release models.Release
 	stmt := `
 		SELECT *
 		FROM release
-		WHERE version=$1`
+		WHERE version=$1
+		ORDER BY time_stamp DESC`
 	err := rm.DB.Get(&release, stmt, version)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return nil, models.ErrNoRecord
 		}
+		return nil, err
 	}
+
+	var releaseNotes []models.ReleaseNote
+	stmt = `
+		SELECT *
+		FROM release_note
+		WHERE release_version=$1
+		ORDER BY id ASC`
+	err = rm.DB.Select(&releaseNotes, stmt, version)
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return nil, err
+	}
+
+	release.Notes = make([]string, 0, len(releaseNotes))
+	for _, releaseNote := range releaseNotes {
+		release.Notes = append(release.Notes, releaseNote.Note)
+	}
+
 	return &release, nil
 }
 
@@ -40,6 +74,25 @@ func (rm *ReleaseModel) GetAll(pageSize, pageNum int) ([]*models.Release, error)
 			return nil, models.ErrNoRecord
 		}
 	}
+
+	for _, release := range releases {
+		var releaseNotes []models.ReleaseNote
+		stmt = `
+			SELECT *
+			FROM release_note
+			WHERE release_version=$1
+			ORDER BY id ASC`
+		err = rm.DB.Select(&releaseNotes, stmt, release.Version)
+		if err != nil && !errors.Is(err, sql.ErrNoRows) {
+			return nil, err
+		}
+
+		release.Notes = make([]string, 0, len(releaseNotes))
+		for _, releaseNote := range releaseNotes {
+			release.Notes = append(release.Notes, releaseNote.Note)
+		}
+	}
+
 	return releases, nil
 }
 

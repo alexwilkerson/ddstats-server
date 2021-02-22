@@ -3,6 +3,7 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
@@ -34,7 +35,9 @@ func (cpm *CollectorPlayerModel) Select(playerID int) (*models.CollectorPlayer, 
 func (cpm *CollectorPlayerModel) NewPlayer(tx *sqlx.Tx, collectorPlayerID int) error {
 	stmt := `
 		INSERT INTO collector_player(id)
-		VALUES ($1)`
+		VALUES ($1)
+		ON CONFLICT (id)
+		DO NOTHING`
 	_, err := tx.Exec(stmt, collectorPlayerID)
 	if err != nil {
 		return err
@@ -100,6 +103,7 @@ func (cpm *CollectorPlayerModel) UpsertPlayer(tx *sqlx.Tx, player *ddapi.Player,
 		player.OverallDaggersFired,
 	)
 	if err != nil {
+		fmt.Println("upsert:", err)
 		return err
 	}
 	return nil

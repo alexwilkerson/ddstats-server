@@ -9,10 +9,18 @@ GET http://localhost:5000/api/v2/ddapi/get_scores?offset=400000&limit=100
 
 ### get top games
 GET http://localhost:5000/api/v2/game/top?limit=10
+### get leaderboard
+GET http://localhost:5000/api/v2/leaderboard?spawnset=max_homing&page_size=10&page_num=1&sort_by=rank&sort_dir=asc
+### get paginated list of leaderboard
+GET http://localhost:5000/api/v2/leaderboard?spawnset=pacifist&page_size=10&page_num=1
+### get paginated list of most recent games
+GET http://localhost:5000/api/v2/game/recent?page_size=10&page_num=1
 ### get paginated list of most recent games
 GET http://localhost:5000/api/v2/game/recent?player_id=229&page_size=10&page_num=1
 ### get game by game id
-GET http://localhost:5000/api/v2/game?id=20
+GET http://localhost:5000/api/v2/game?id=67882
+### get a list of all game states
+GET http://localhost:5000/api/v2/game/full?id=20000
 ### get a list of all game states
 GET http://localhost:5000/api/v2/game/all?id=20
 ### get a list of game states with game time and gems
@@ -30,9 +38,9 @@ GET http://localhost:5000/api/v2/game/enemies_alive?id=20
 ### get a list of game states with game time and enemies killed
 GET http://localhost:5000/api/v2/game/enemies_killed?id=20
 ###
-GET http://localhost:5000/api/v2/player?id=229
+GET http://localhost:5000/api/v2/player?id=151675
 ###
-GET http://localhost:5000/api/v2/player/update?id=230
+GET http://localhost:5000/api/v2/player/update?id=2
 ###
 GET http://localhost:5000/api/v2/player/all?page_size=9&page_num=1
 ###

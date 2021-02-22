@@ -19,7 +19,7 @@ func (d *Discord) commandLive() {
 			for _, player := range livePlayers {
 				var value string
 				if player.Status == "Alive" {
-					value = fmt.Sprintf("%s at %.4f seconds.\nLive: https://ddstats.com/user/%d", player.Status, player.GameTime, player.ID)
+					value = fmt.Sprintf("%s at %.4f seconds.\nLive: https://ddstats.com/players/%d", player.Status, player.GameTime, player.ID)
 				} else {
 					value = fmt.Sprintf("%s.", player.Status)
 				}

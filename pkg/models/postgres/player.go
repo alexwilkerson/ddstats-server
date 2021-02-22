@@ -80,13 +80,18 @@ func (p *PlayerModel) Get(id int) (*models.Player, error) {
 }
 
 // GetAll retreives a slice of users using a specified page size and page num starting at 1
-func (p *PlayerModel) GetAll(pageSize, pageNum int) ([]*models.Player, error) {
+func (p *PlayerModel) GetAll(pageSize, pageNum int, sortBy, sortDir string) ([]*models.Player, error) {
+	if sortBy == "" {
+		sortBy = "rank"
+		sortDir = "asc"
+	}
+
 	var players []*models.Player
 	stmt := fmt.Sprintf(`
 		SELECT *
 		FROM player
 		WHERE id<>-1
-		ORDER BY game_time DESC LIMIT %d OFFSET %d`, pageSize, (pageNum-1)*pageSize)
+		ORDER BY %s %s LIMIT %d OFFSET %d`, sortBy, sortDir, pageSize, (pageNum-1)*pageSize)
 	err := p.DB.Select(&players, stmt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
@@ -137,7 +142,6 @@ func (p *PlayerModel) UpsertDDPlayer(player *ddapi.Player) error {
 		) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18)
 		ON CONFLICT (id) DO
 		UPDATE SET
-			id=$1,
 			player_name=$2,
 			rank=$3,
 			game_time=$4,
@@ -178,6 +182,75 @@ func (p *PlayerModel) UpsertDDPlayer(player *ddapi.Player) error {
 	)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+func (p *PlayerModel) Exists(playerID int) (bool, error) {
+	var id int
+	stmt := "SELECT id FROM player WHERE id=$1"
+	err := p.DB.Get(&id, stmt, playerID)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, nil
+		}
+		return false, err
+	}
+	return true, nil
+}
+
+// UpdateDDPlayer takes the Player struct from the ddapi package and updates it into
+// the player table in the database
+func (p *PlayerModel) UpdateDDPlayer(player *ddapi.Player) error {
+	stmt := `
+		UPDATE player SET
+			player_name=$2,
+			rank=$3,
+			game_time=$4,
+			death_type=$5,
+			gems=$6,
+			daggers_hit=$7,
+			daggers_fired=$8,
+			enemies_killed=$9,
+			accuracy=$10,
+			overall_game_time=$11,
+			overall_average_game_time=$12,
+			overall_deaths=$13,
+			overall_gems=$14,
+			overall_enemies_killed=$15,
+			overall_daggers_hit=$16,
+			overall_daggers_fired=$17,
+			overall_accuracy=$18
+		WHERE id=$1`
+	res, err := p.DB.Exec(stmt,
+		player.PlayerID,
+		player.PlayerName,
+		player.Rank,
+		player.GameTime,
+		player.DeathType,
+		player.Gems,
+		player.DaggersHit,
+		player.DaggersFired,
+		player.EnemiesKilled,
+		player.Accuracy,
+		player.OverallGameTime,
+		player.OverallAverageGameTime,
+		player.OverallDeaths,
+		player.OverallGems,
+		player.OverallEnemiesKilled,
+		player.OverallDaggersHit,
+		player.OverallDaggersFired,
+		player.OverallAccuracy,
+	)
+	if err != nil {
+		return err
+	}
+	rowsAffected, err := res.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if rowsAffected == 0 {
+		return models.ErrNoRecord
 	}
 	return nil
 }
