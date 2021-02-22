@@ -34,6 +34,7 @@ func main() {
 	addr := flag.String("addr", ":5000", "HTTP Network Address")
 	dsn := flag.String("dsn", "host=localhost port=5432 user=ddstats password=ddstats dbname=ddstats sslmode=disable", "PostgreSQL data source name")
 	discordToken := flag.String("discord-token", "***REMOVED***", "Discord Bot Token")
+	disableDiscord := flag.Bool("disable-discord", false, "Disable the Discord Bot")
 	flag.Parse()
 
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
@@ -54,7 +55,10 @@ func main() {
 
 	ddAPI := ddapi.NewAPI(client)
 
-	api := api.NewAPI(client, postgresDB, websocketHub, ddAPI, infoLog, errorLog)
+	api, err := api.NewAPI(client, postgresDB, websocketHub, ddAPI, infoLog, errorLog)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
 
 	socketioServer, err := socketio.NewServer(infoLog, errorLog, websocketHub, client, postgresDB)
 	if err != nil {
@@ -70,15 +74,17 @@ func main() {
 		WriteTimeout: 10 * time.Second,
 	}
 
-	discordSession, err := discord.New(*discordToken, postgresDB, ddAPI, websocketHub, infoLog, errorLog)
-	if err != nil {
-		errorLog.Fatal(err)
+	if !*disableDiscord {
+		discordSession, err := discord.New(*discordToken, postgresDB, ddAPI, websocketHub, infoLog, errorLog)
+		if err != nil {
+			errorLog.Fatal(err)
+		}
+		err = discordSession.Start()
+		if err != nil {
+			errorLog.Fatal(err)
+		}
+		defer discordSession.Close()
 	}
-	err = discordSession.Start()
-	if err != nil {
-		errorLog.Fatal(err)
-	}
-	defer discordSession.Close()
 
 	go websocketHub.Start()
 	defer websocketHub.Close()

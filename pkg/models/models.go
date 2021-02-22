@@ -18,7 +18,9 @@ var ErrDiscordUserVerified = errors.New("discord user is verified so cannot upda
 //Game record representation
 type Game struct {
 	ID                   int         `json:"id" db:"id"`
+	Rank                 int         `json:"rank,omitempty" db:"rank"`
 	PlayerID             int         `json:"player_id" db:"player_id"`
+	PlayerGameTime       float64     `json:"player_game_time" db:"player_game_time"`
 	Granularity          int         `json:"granularity" db:"granularity"`
 	GameTime             float64     `json:"game_time" db:"game_time"`
 	DeathType            string      `json:"death_type" db:"death_type"`
@@ -30,12 +32,15 @@ type Game struct {
 	EnemiesAlive         int         `json:"enemies_alive" db:"enemies_alive"`
 	EnemiesKilled        int         `json:"enemies_killed" db:"enemies_killed"`
 	TimeStamp            time.Time   `json:"time_stamp" db:"time_stamp"`
-	ReplayPlayerID       int         `json:"replay_player_id" db:"replay_player_id"`
-	SurvivalHash         string      `json:"survival_hash" db:"survival_hash"`
+	ReplayPlayerID       int         `json:"replay_player_id,omitempty" db:"replay_player_id"`
+	ReplayPlayerName     string      `json:"replay_player_name,omitempty" db:"replay_player_name"`
+	Spawnset             string      `json:"spawnset" db:"spawnset"`
 	Version              null.String `json:"version" db:"version"`
 	LevelTwoTime         float64     `json:"level_two_time" db:"level_two_time"`
 	LevelThreeTime       float64     `json:"level_three_time" db:"level_three_time"`
 	LevelFourTime        float64     `json:"level_four_time" db:"level_four_time"`
+	LeviDownTime         float64     `json:"levi_down_time" db:"levi_down_time"`
+	OrbDownTime          float64     `json:"orb_down_time" db:"orb_down_time"`
 	HomingDaggersMaxTime float64     `json:"homing_daggers_max_time" db:"homing_daggers_max_time"`
 	EnemiesAliveMaxTime  float64     `json:"enemies_alive_max_time" db:"enemies_alive_max_time"`
 	HomingDaggersMax     int         `json:"homing_daggers_max" db:"homing_daggers_max"`
@@ -50,24 +55,31 @@ type GameWithName struct {
 
 // Player struct is for players
 type Player struct {
-	ID                     int     `json:"player_id" db:"id"`
-	PlayerName             string  `json:"player_name" db:"player_name"`
-	Rank                   int     `json:"rank" db:"rank"`
-	GameTime               float64 `json:"game_time" db:"game_time"`
-	DeathType              string  `json:"death_type" db:"death_type"`
-	Gems                   int     `json:"gems" db:"gems"`
-	DaggersHit             int     `json:"daggers_hit" db:"daggers_hit"`
-	DaggersFired           int     `json:"daggers_fired" db:"daggers_fired"`
-	EnemiesKilled          int     `json:"enemies_killed" db:"enemies_killed"`
-	Accuracy               float64 `json:"accuracy" db:"accuracy"`
-	OverallGameTime        float64 `json:"overall_game_time" db:"overall_game_time"`
-	OverallAverageGameTime float64 `json:"overall_average_game_time" db:"overall_average_game_time"`
-	OverallDeaths          int     `json:"overall_deaths" db:"overall_deaths"`
-	OverallGems            int     `json:"overall_gems" db:"overall_gems"`
-	OverallEnemiesKilled   int     `json:"overall_enemies_killed" db:"overall_enemies_killed"`
-	OverallDaggersHit      int     `json:"overall_daggers_hit" db:"overall_daggers_hit"`
-	OverallDaggersFired    int     `json:"overall_daggers_fired" db:"overall_daggers_fired"`
-	OverallAccuracy        float64 `json:"overall_accuracy" db:"overall_accuracy"`
+	ID                     int        `json:"player_id" db:"id"`
+	LastActive             *time.Time `json:"last_active,omitempty" db:"last_active"`
+	PlayerName             string     `json:"player_name" db:"player_name"`
+	Rank                   int        `json:"rank" db:"rank"`
+	HighScoreGameID        int        `json:"high_score_game_id,omitempty"`
+	GameTime               float64    `json:"game_time" db:"game_time"`
+	DeathType              string     `json:"death_type" db:"death_type"`
+	Gems                   int        `json:"gems" db:"gems"`
+	DaggersHit             int        `json:"daggers_hit" db:"daggers_hit"`
+	DaggersFired           int        `json:"daggers_fired" db:"daggers_fired"`
+	EnemiesKilled          int        `json:"enemies_killed" db:"enemies_killed"`
+	Accuracy               float64    `json:"accuracy" db:"accuracy"`
+	OverallGameTime        float64    `json:"overall_game_time" db:"overall_game_time"`
+	OverallAverageGameTime float64    `json:"overall_average_game_time" db:"overall_average_game_time"`
+	OverallDeaths          int        `json:"overall_deaths" db:"overall_deaths"`
+	OverallGems            int        `json:"overall_gems" db:"overall_gems"`
+	OverallEnemiesKilled   int        `json:"overall_enemies_killed" db:"overall_enemies_killed"`
+	OverallDaggersHit      int        `json:"overall_daggers_hit" db:"overall_daggers_hit"`
+	OverallDaggersFired    int        `json:"overall_daggers_fired" db:"overall_daggers_fired"`
+	OverallAccuracy        float64    `json:"overall_accuracy" db:"overall_accuracy"`
+}
+
+type ReplayPlayer struct {
+	ID         int    `db:"id"`
+	PlayerName string `db:"player_name"`
 }
 
 // State struct is for State
@@ -138,6 +150,8 @@ type SubmittedGame struct {
 	LevelTwoTime        float64   `json:"levelTwoTime"`
 	LevelThreeTime      float64   `json:"levelThreeTime"`
 	LevelFourTime       float64   `json:"levelFourTime"`
+	LeviDownTime        float64   `json:"leviDownTime"`
+	OrbDownTime         float64   `json:"orbDownTime"`
 	HomingDaggers       int       `json:"homingDaggers"`
 	HomingDaggersSlice  []int     `json:"homingDaggersVector"`
 	HomingMax           int       `json:"homingDaggersMax"`
@@ -175,8 +189,14 @@ type DiscordUser struct {
 type Release struct {
 	Version   string    `json:"version" db:"version"`
 	TimeStamp time.Time `json:"time_stamp" db:"time_stamp"`
-	Body      string    `json:"body" db:"body"`
+	Notes     []string  `json:"notes"`
 	FileName  string    `json:"file_name" db:"file_name"`
+}
+
+type ReleaseNote struct {
+	ID             int    `db:"id"`
+	ReleaseVersion string `db:"release_version"`
+	Note           string `db:"note"`
 }
 
 type News struct {
@@ -267,6 +287,7 @@ type CollectorPlayer struct {
 
 type CollectorHighScore struct {
 	CollectorRunID      int     `json:"-" db:"collector_run_id"`
+	CollectorPlayerRank int     `json:"rank" db:"collector_player_rank"`
 	CollectorPlayerID   int     `json:"player_id" db:"collector_player_id"`
 	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
 	Score               float64 `json:"game_time" db:"score"`
@@ -290,6 +311,15 @@ type CollectorNewPlayer struct {
 	CollectorPlayerName string  `json:"player_name" db:"collector_player_name"`
 	Rank                int     `json:"rank" db:"rank"`
 	GameTime            float64 `json:"game_time" db:"game_time"`
+}
+
+type Spawnset struct {
+	SurvivalHash     string  `json:"survival_hash,omitempty" db:"survival_hash"`
+	SpawnsetName     string  `json:"spawnset_name,omitempty" db:"spawnset_name"`
+	BronzeDaggerTime float64 `json:"bronze_dagger_time" db:"bronze_dagger_time"`
+	SilverDaggerTime float64 `json:"silver_dagger_time" db:"silver_dagger_time"`
+	GoldDaggerTime   float64 `json:"gold_dagger_time" db:"gold_dagger_time"`
+	DevilDaggerTime  float64 `json:"devil_dagger_time" db:"devil_dagger_time"`
 }
 
 type Duration time.Duration

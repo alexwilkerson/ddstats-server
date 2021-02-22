@@ -43,7 +43,7 @@ func (api *API) handleCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		var allowedHost string
-		allowedHosts := []string{"http://localhost:5000", "http://ddstats.com", "https://ddstats.com"}
+		allowedHosts := []string{"http://localhost:5000", "http://localhost:8080", "https://www.ddstats.com", "http://www.ddstats.com", "http://ddstats.com", "https://ddstats.com", "http://10.0.1.45:8080"}
 		for _, host := range allowedHosts {
 			if host == origin {
 				allowedHost = host
@@ -55,6 +55,7 @@ func (api *API) handleCORS(next http.Handler) http.Handler {
 		if r.Method == http.MethodOptions {
 			w.Header().Set("Access-Control-Allow-Origin", allowedHost)
 			w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS, GET, PUT, DELETE")
+			w.Header().Set("Access-Control-Allow-Credentials", "true")
 			w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 			w.Header().Set("Access-Control-Max-Age", "3600")
 			w.WriteHeader(http.StatusNoContent)

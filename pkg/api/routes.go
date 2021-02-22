@@ -24,8 +24,10 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	mux.Post("/api/v2/submit_game", http.HandlerFunc(api.submitGame))
 	mux.Post("/api/v2/client_connect", http.HandlerFunc(api.clientConnect))
 	mux.Get("/api/v2/game/top", http.HandlerFunc(api.getTopGames))
+	mux.Get("/api/v2/leaderboard", http.HandlerFunc(api.getLeaderboard))
 	mux.Get("/api/v2/game/recent", http.HandlerFunc(api.getRecentGames))
 	mux.Get("/api/v2/game", http.HandlerFunc(api.getGame))
+	mux.Get("/api/v2/game/full", http.HandlerFunc(api.getGameFull))
 	mux.Get("/api/v2/game/all", http.HandlerFunc(api.getGameAll))
 	mux.Get("/api/v2/game/gems", http.HandlerFunc(api.getGameGems))
 	mux.Get("/api/v2/game/homing_daggers", http.HandlerFunc(api.getGameHomingDaggers))
@@ -47,8 +49,6 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	mux.Post("/api/get_motd", http.HandlerFunc(api.clientConnect))
 	mux.Post("/api/submit_game", http.HandlerFunc(api.submitGame))
 
-	mux.Get("/ws", http.HandlerFunc(api.serveWebsocket))
-
 	// Why? Well, because the pat application only accounts for REST requests,
 	// so if the server receives anything else (such as a websocket request),
 	// there's no way to register it.. these three lines will match the /socket-io/
@@ -60,12 +60,29 @@ func (api *API) Routes(socketioServer *socketio.Server) http.Handler {
 	// serves the vue app, built inside the dist directory
 	// must be handled by this parent mux, since for whatever
 	// reason it won't work otherwise
-	vueApp := http.FileServer(http.Dir("./ui/dist/"))
-	muxParent.Handle("/", http.StripPrefix("/", vueApp))
+	vueApp := api.handleCORS(http.FileServer(http.Dir("/home/alex/ddstats/ui/dist/")))
+	muxParent.Handle("/", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		http.StripPrefix(r.URL.RequestURI(), vueApp).ServeHTTP(w, r)
+	}))
+	// these routes are needed to point to specific static files generated
+	// by vue
+	muxParent.Handle("/js/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/fonts/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/css/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/img/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/static/", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/favicon.ico", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/android-chrome-192x192.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/android-chrome-512x512.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/apple-touch-icon.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/favicon-16x16.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/favicon-32x32.png", http.StripPrefix("/", vueApp))
+	muxParent.Handle("/site.webmanifest", http.StripPrefix("/", vueApp))
+	// END VUEJS BULLSHIT
 
 	muxParent.Handle("/api/", standardMiddleware.Then(mux))
 	muxParent.Handle("/api/v2/", standardMiddleware.Then(mux))
-	muxParent.Handle("/ws/", standardMiddleware.Then(mux))
+	muxParent.Handle("/ws", standardMiddleware.Then(http.HandlerFunc(api.serveWebsocket)))
 
 	return muxParent
 }

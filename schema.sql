@@ -4,6 +4,7 @@ DROP TABLE collector_high_score;
 DROP TABLE collector_player;
 DROP TABLE collector_run;
 DROP TABLE news;
+DROP TABLE release_note;
 DROP TABLE release;
 DROP TABLE message_of_the_day;
 DROP TABLE death_type;
@@ -15,7 +16,6 @@ DROP TABLE game;
 
 CREATE TABLE IF NOT EXISTS game (
   id BIGSERIAL PRIMARY KEY NOT NULL,
-  recorded TIMESTAMP WITH TIME ZONE,
   player_id BIGINT NOT NULL,
   granularity INTEGER NOT NULL,
   game_time DOUBLE PRECISION NOT NULL,
@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS game (
   level_two_time DOUBLE PRECISION DEFAULT 0.0,
   level_three_time DOUBLE PRECISION DEFAULT 0.0,
   level_four_time DOUBLE PRECISION DEFAULT 0.0,
+  levi_down_time DOUBLE PRECISION DEFAULT 0.0,
+  orb_down_time DOUBLE PRECISION DEFAULT 0.0,
   homing_daggers_max_time DOUBLE PRECISION DEFAULT 0.0,
   enemies_alive_max_time DOUBLE PRECISION DEFAULT 0.0,
   homing_daggers_max BIGINT NOT NULL,
@@ -51,10 +53,10 @@ CREATE TABLE IF NOT EXISTS state (
   enemies_killed BIGINT NOT NULL
 );
 
-CREATE INDEX game_id_idx ON state(game_id);
+CREATE INDEX IF NOT EXISTS game_id_idx ON state(game_id);
 
 CREATE TABLE IF NOT EXISTS player (
-  id BIGSERIAL PRIMARY KEY NOT NULL,
+  id BIGINT PRIMARY KEY NOT NULL,
   player_name TEXT NOT NULL,
   rank INTEGER NOT NULL,
   game_time DOUBLE PRECISION NOT NULL,
@@ -74,6 +76,11 @@ CREATE TABLE IF NOT EXISTS player (
   overall_accuracy DOUBLE PRECISION NOT NULL
 );
 
+CREATE TABLE IF NOT EXISTS replay_player (
+  id BIGINT PRIMARY KEY NOT NULL,
+  player_name TEXT NOT NULL
+);
+
 CREATE TABLE IF NOT EXISTS live (
   player_id INTEGER PRIMARY KEY NOT NULL REFERENCES player(id) ON DELETE CASCADE ON UPDATE CASCADE,
   sid TEXT NOT NULL
@@ -81,7 +88,11 @@ CREATE TABLE IF NOT EXISTS live (
 
 CREATE TABLE IF NOT EXISTS spawnset (
   survival_hash TEXT PRIMARY KEY NOT NULL,
-  spawnset_name TEXT NOT NULL
+  spawnset_name TEXT NOT NULL,
+  bronze_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0,
+  silver_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0,
+  gold_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0,
+  devil_dagger_time DOUBLE PRECISION NOT NULL DEFAULT 0
 );
 
 CREATE TABLE IF NOT EXISTS death_type (
@@ -104,8 +115,13 @@ CREATE TABLE IF NOT EXISTS discord_user (
 CREATE TABLE IF NOT EXISTS release (
   version TEXT PRIMARY KEY NOT NULL,
   time_stamp TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  body TEXT NOT NULL DEFAULT '',
   file_name TEXT NOT NULL DEFAULT ''
+);
+
+CREATE TABLE IF NOT EXISTS release_note (
+  id SERIAL NOT NULL PRIMARY KEY,
+  release_version TEXT REFERENCES release(version) ON UPDATE CASCADE ON DELETE CASCADE,
+  note TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS news (
@@ -200,7 +216,7 @@ CREATE TABLE IF NOT EXISTS collector_high_score (
   score DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
-CREATE IF NOT EXISTS INDEX collector_high_score_collector_run_id_idx ON collector_high_score(collector_run_id);
+CREATE INDEX IF NOT EXISTS collector_high_score_collector_run_id_idx ON collector_high_score(collector_run_id);
 
 CREATE TABLE IF NOT EXISTS collector_active_player (
   collector_run_id BIGINT REFERENCES collector_run(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -213,7 +229,7 @@ CREATE TABLE IF NOT EXISTS collector_active_player (
   since_deaths INTEGER NOT NULL DEFAULT 0
 );
 
-CREATE IF NOT EXISTS INDEX collector_active_player_collector_run_id_idx ON collector_active_player(collector_run_id);
+CREATE INDEX IF NOT EXISTS collector_active_player_collector_run_id_idx ON collector_active_player(collector_run_id);
 
 CREATE TABLE IF NOT EXISTS collector_new_player (
   collector_run_id BIGINT REFERENCES collector_run(id) ON UPDATE CASCADE ON DELETE CASCADE,
@@ -222,7 +238,7 @@ CREATE TABLE IF NOT EXISTS collector_new_player (
   game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
-CREATE IF NOT EXISTS INDEX collector_new_player_collector_run_id_idx ON collector_new_player(collector_run_id);
+CREATE INDEX IF NOT EXISTS collector_new_player_collector_run_id_idx ON collector_new_player(collector_run_id);
 
 -- below are POSTGRES helper functions to make dealing with the database easier --
 

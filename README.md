@@ -35,6 +35,16 @@ Total : 42 files, 3887 codes, 176 comments, 528 blanks, all 4591 lines
 | pkg/socketio        |     1 |   266 |       9 |    25 |   300 |
 | pkg/websocket       |     4 |   307 |      19 |    32 |   358 |
 
+## Building for linux
+
+```
+GOOS=linux GOARCH=amd64 go build -o dist/server -v ./cmd/server
+```
+
+```
+GOOS=linux GOARCH=amd64 go build -o dist/collector -v ./cmd/collector
+```
+
 ## Automatically restarting server during dev
 
 Go 1.11+ installation required
@@ -52,6 +62,32 @@ reflex -d none -c reflex.conf
 ## Things Left to Do...
 
 - [ ] authorization
+
+#### ui
+
+##### pages
+
+- [ ] index
+  - collector statistics
+  - global stats
+  - live users
+  - news
+- [ ] players
+  - live users
+- [ ] info
+  - live users
+- [ ] individual player page
+  - live users
+  - live stats
+  - recent games
+  - player global stats
+- [ ] download page
+  - live users
+- [ ] leaderboard page
+  - filter by leaderboard
+  - live users
+- [ ] game stats
+  - live users
 
 #### collector
 
@@ -108,6 +144,7 @@ _MAKE SURE TO CHECK FOR SURVIVAL HASH WHEN MAKING THE NOTIFICATION FUNCTION!_
 
 - [x] POST api/v2/game/submit
 - [x] GET api/v2/game/top
+- [x] GET api/v2/leaderboard?spawnset={spawnset_name}?page_size={int}&page_num={int}
 - [x] GET api/v2/game/recent?page_size={int}&page_num={int} (optional: player_id={int} will give most recent for given player)
 - [x] GET api/v2/game?id={int} (info)
 - [x] GET api/v2/game/all?id={int}
@@ -187,6 +224,9 @@ delete from state where game_id not in (select id from game where id is not null
 select id, game_id, printf("%.6f", game_time) as game_time, gems, homing_daggers, daggers_hit, daggers_fired, enemies_alive, enemies_killed from state;
 ```
 
+might have to split up state to get it into postgres
+`split -l 2500000 state.csv` works
+
 #### spawnset
 
 ```sql
@@ -227,4 +267,21 @@ select * from live;
 select * from users;
 ```
 
+### little helper to delete non-ddstats-users from database
+
+````sql
+DELETE FROM player
+WHERE id<>-1 AND id IN (
+	SELECT player.id
+	FROM player LEFT JOIN game ON player.id=game.player_id
+	WHERE game.id IS NULL
+	GROUP BY player.id
+);```
+
 ![DDSTATS Logo](/ui/static/ddstats_logo_v2_black_100px.png)
+````
+
+#### deployment commands
+
+yarn build --mode production (from ui dir)
+scp -r dist casd:~/ddstats/ui (from ui dir)

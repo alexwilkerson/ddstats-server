@@ -23,9 +23,9 @@ const (
 	StatusNotConnected    = "Not Connected"
 	StatusConnecting      = "Connecting"
 	StatusAlive           = "Alive"
-	StatusWatchingAReplay = "WatchingAReplay"
+	StatusWatchingAReplay = "Watching A Replay"
 	StatusInMainMenu      = "In Main Menu"
-	StatusInDaggerLobby   = "In DaggerLobby"
+	StatusInDaggerLobby   = "In Dagger Lobby"
 	StatusDead            = "Dead"
 )
 
@@ -76,6 +76,11 @@ func (p *player) getStatus() string {
 	return status
 }
 
+type gameSubmitted struct {
+	PlayerID int `json:"player_id"`
+	GameID   int `json:"game_id"`
+}
+
 type state struct {
 	PlayerID             int     `json:"player_id"`
 	GameTime             float64 `json:"game_time"`
@@ -88,10 +93,13 @@ type state struct {
 	LevelTwoTime         float64 `json:"level_two_time"`
 	LevelThreeTime       float64 `json:"level_three_time"`
 	LevelFourTime        float64 `json:"level_four_time"`
+	LeviDownTime         float64 `json:"levi_down_time"`
+	OrbDownTime          float64 `json:"orb_down_time"`
 	DeathType            int     `json:"death_type"`
 	IsReplay             bool    `json:"is_replay"`
-	NotifyPlayerBest     bool    `json:"notify_player_best"`
-	NotifyAboveThreshold bool    `json:"notify_above_1000"`
+	Status               string  `json:"status"`
+	NotifyPlayerBest     bool    `json:"-"`
+	NotifyAboveThreshold bool    `json:"-"`
 }
 
 // NewServer returns a Server from the go-socket.io package with all of the routes already
@@ -121,6 +129,7 @@ func (si *sio) routes(server *socketio.Server) {
 	server.OnError(defaultNamespace, si.onError)
 	server.OnEvent(defaultNamespace, "login", si.onLogin)
 	server.OnEvent(defaultNamespace, "submit", si.onSubmit)
+	server.OnEvent(defaultNamespace, "state_update", si.onStateUpdate)
 	server.OnEvent(defaultNamespace, "status_update", si.onStatusUpdate)
 	server.OnEvent(defaultNamespace, "game_submitted", si.onGameSubmitted)
 }
@@ -140,6 +149,11 @@ func (si *sio) onDisconnect(s socketio.Conn, msg string) {
 	}
 	player := v.(*player)
 	player.Lock()
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(player.PlayerID), "submit", struct{}{})
+	if err != nil {
+		si.errorLog.Println("socketio onSubmit: %w", err)
+	}
+	si.websocketHub.Broadcast <- websocketMessage
 	si.livePlayers.Delete(s.ID())
 	si.websocketHub.UnregisterPlayer <- player.websocketPlayer
 	player.Unlock()
@@ -176,6 +190,12 @@ func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
 	player.websocketPlayer.Status = status
 	player.websocketPlayer.Unlock()
 	player.Unlock()
+
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "status", status)
+	if err != nil {
+		si.errorLog.Println("socketio status: %w", err)
+	}
+	si.websocketHub.Broadcast <- websocketMessage
 }
 
 func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, notifyAboveThreshold bool) {
@@ -190,7 +210,18 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 	if err != nil {
 		si.errorLog.Printf("%+v", err)
 	}
-	if notifyPlayerBest && game.GameTime > player.BestGameTime {
+
+	// submit new game notification to website
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(player.PlayerID)), "game_submitted", gameSubmitted{
+		PlayerID: player.PlayerID,
+		GameID:   gameID,
+	})
+	if err != nil {
+		si.errorLog.Println("socketio on game_submitted: %w", err)
+	}
+	si.websocketHub.BroadcastToAll <- websocketMessage
+
+	if game.ReplayPlayerID == 0 && notifyPlayerBest && game.GameTime > player.BestGameTime {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestSubmitted{
 			PlayerName:       player.PlayerName,
 			GameID:           gameID,
@@ -198,8 +229,8 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 			PreviousGameTime: player.BestGameTime,
 		}
 	}
-	if notifyAboveThreshold && game.GameTime > notifyThreshold {
-		si.websocketHub.DiscordBroadcast <- &websocket.PlayerDied{
+	if game.ReplayPlayerID == 0 && notifyAboveThreshold && game.GameTime >= notifyThreshold {
+		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAboveThresholdSubmitted{
 			PlayerName: player.PlayerName,
 			GameID:     gameID,
 			GameTime:   game.GameTime,
@@ -243,11 +274,22 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 
 	si.websocketHub.RegisterPlayer <- &websocketPlayer
 
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(p.PlayerID)), "submit", struct{}{})
+	if err != nil {
+		si.errorLog.Println("socketio onSubmit: %w", err)
+	}
+	si.websocketHub.Broadcast <- websocketMessage
+
 	si.infoLog.Println(id)
 	si.infoLog.Println("duration:", time.Since(start))
 }
 
+// this function catches functions from older client and passes them to new function with leviDownTime and orbDownTime counted as 0
 func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired int, levelTwoTime, levelThreeTime, levelFourTime float64, isReplay bool, deathType int, notifyPlayerBest, notifyAboveThreshold bool) {
+	si.onStateUpdate(s, playerID, gameTime, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired, levelTwoTime, levelThreeTime, levelFourTime, 0, 0, isReplay, deathType, notifyPlayerBest, notifyAboveThreshold)
+}
+
+func (si *sio) onStateUpdate(s socketio.Conn, playerID int, gameTime float64, gems, homingDaggers, enemiesAlive, enemiesKilled, daggersHit, daggersFired int, levelTwoTime, levelThreeTime, levelFourTime, leviDownTime, orbDownTime float64, isReplay bool, deathType int, notifyPlayerBest, notifyAboveThreshold bool) {
 	state := state{
 		PlayerID:             playerID,
 		GameTime:             gameTime,
@@ -260,6 +302,8 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		LevelTwoTime:         levelTwoTime,
 		LevelThreeTime:       levelThreeTime,
 		LevelFourTime:        levelFourTime,
+		LeviDownTime:         leviDownTime,
+		OrbDownTime:          orbDownTime,
 		DeathType:            deathType,
 		IsReplay:             isReplay,
 		NotifyPlayerBest:     notifyPlayerBest,
@@ -276,6 +320,7 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	}
 	player := p.(*player)
 	player.Lock()
+	state.Status = player.getStatus()
 	defer player.Unlock()
 	if state.GameTime < player.GameTime {
 		player.aboveThresholdNotified = false
@@ -296,7 +341,7 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 	}
 	si.websocketHub.Broadcast <- websocketMessage
 	// if the notification hasn't yet happened and a player beats their previous score,
-	if notifyPlayerBest && !player.bestTimeNotified && gameTime > player.BestGameTime {
+	if !isReplay && notifyPlayerBest && !player.bestTimeNotified && gameTime > player.BestGameTime {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerBestReached{
 			PlayerID:         player.PlayerID,
 			PlayerName:       player.PlayerName,
@@ -304,7 +349,7 @@ func (si *sio) onSubmit(s socketio.Conn, playerID int, gameTime float64, gems, h
 		}
 		player.bestTimeNotified = true
 	}
-	if notifyAboveThreshold && !player.aboveThresholdNotified && gameTime >= notifyThreshold {
+	if !isReplay && notifyAboveThreshold && !player.aboveThresholdNotified && gameTime >= notifyThreshold {
 		player.aboveThresholdNotified = true
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAboveThreshold{
 			PlayerID:   player.PlayerID,

@@ -128,6 +128,11 @@ func (c *Collector) Start() {
 					}
 					return
 				default:
+					err := c.DB.ReplayPlayers.Upsert(int(player.PlayerID), player.PlayerName)
+					if err != nil {
+						c.rollbackAndLogError(tx, err)
+						return
+					}
 					switch player.DeathType {
 					case Fallen:
 						run.Fallen++

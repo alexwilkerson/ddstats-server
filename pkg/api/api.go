@@ -11,26 +11,31 @@ import (
 )
 
 const (
-	oldestValidClientVersion = "0.3.1"
-	currentClientVersion     = "0.4.5"
+	oldestValidClientVersion = "0.6.0"
 )
 
 type API struct {
-	client       *http.Client
-	db           *postgres.Postgres
-	websocketHub *websocket.Hub
-	ddAPI        *ddapi.API
-	infoLog      *log.Logger
-	errorLog     *log.Logger
+	client               *http.Client
+	db                   *postgres.Postgres
+	websocketHub         *websocket.Hub
+	ddAPI                *ddapi.API
+	infoLog              *log.Logger
+	errorLog             *log.Logger
+	currentClientVersion string
 }
 
-func NewAPI(client *http.Client, db *postgres.Postgres, websocketHub *websocket.Hub, ddapi *ddapi.API, infoLog, errorLog *log.Logger) *API {
-	return &API{
-		client:       client,
-		db:           db,
-		websocketHub: websocketHub,
-		ddAPI:        ddapi,
-		infoLog:      infoLog,
-		errorLog:     errorLog,
+func NewAPI(client *http.Client, db *postgres.Postgres, websocketHub *websocket.Hub, ddapi *ddapi.API, infoLog, errorLog *log.Logger) (*API, error) {
+	clientVersion, err := db.Releases.GetMostRecentVersion()
+	if err != nil {
+		return nil, err
 	}
+	return &API{
+		client:               client,
+		db:                   db,
+		websocketHub:         websocketHub,
+		ddAPI:                ddapi,
+		infoLog:              infoLog,
+		errorLog:             errorLog,
+		currentClientVersion: clientVersion,
+	}, nil
 }
