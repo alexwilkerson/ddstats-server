@@ -2,14 +2,19 @@ package main
 
 import (
 	"context"
+	"errors"
 	"flag"
 	"log"
+	"net"
 	"net/http"
 	"os"
 	"os/signal"
 	"time"
 
+	"github.com/alexwilkerson/ddstats-server/gamesubmission"
 	"github.com/alexwilkerson/ddstats-server/pkg/models/postgres"
+	"github.com/soheilhy/cmux"
+	"google.golang.org/grpc"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/api"
 	"github.com/alexwilkerson/ddstats-server/pkg/discord"
@@ -21,6 +26,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
 )
+
+const defaultTimeout = 10 * time.Second
 
 type application struct {
 	errorLog     *log.Logger
@@ -47,7 +54,9 @@ func main() {
 	defer db.Close()
 
 	// TODO: set up client appropriately
-	client := &http.Client{}
+	client := &http.Client{
+		Timeout: defaultTimeout,
+	}
 
 	postgresDB := postgres.NewPostgres(client, db)
 
@@ -64,6 +73,22 @@ func main() {
 	if err != nil {
 		errorLog.Fatal(err)
 	}
+
+	l, err := net.Listen("tcp", *addr)
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
+	m := cmux.New(l)
+
+	grpcL := m.Match(cmux.HTTP2HeaderField("content-type", "application/grpc"))
+	otherL := m.Match(cmux.Any())
+
+	grpcS := grpc.NewServer()
+	gamesubmission.RegisterGameRecorderServer(grpcS, &server{
+		db:     postgresDB,
+		client: client,
+	})
 
 	srv := &http.Server{
 		Addr:         *addr,
@@ -111,8 +136,11 @@ func main() {
 	}()
 
 	infoLog.Printf("Starting server on %s", *addr)
-	if err := srv.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-		errorLog.Fatalf("could not listen on %s: %w", *addr, err)
+	go grpcS.Serve(grpcL)
+	go srv.Serve(otherL)
+
+	if err := m.Serve(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		errorLog.Fatalf("could not listen on %s: %v", *addr, err)
 	}
 
 	<-done

@@ -6,6 +6,7 @@ import (
 
 	"github.com/alexwilkerson/ddstats-server/pkg/models"
 	"github.com/jmoiron/sqlx"
+	"github.com/lib/pq"
 )
 
 // StateModel wraps the database connection
@@ -35,6 +36,50 @@ func (s *StateModel) Insert(state *models.State) error {
 		state.DaggersFired,
 		state.EnemiesAlive,
 		state.EnemiesKilled,
+	)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// Insert inserts a state into the state table
+func (s *StateModel) InsertGRPC(state *models.State) error {
+	stmt := `
+		INSERT INTO state(
+			game_id,
+			game_time,
+			gems,
+			homing_daggers,
+			daggers_hit,
+			daggers_fired,
+			enemies_alive,
+			enemies_killed,
+			total_gems,
+			level_gems,
+			gems_despawned,
+			gems_eaten,
+			daggers_eaten,
+			per_enemy_alive_count,
+			per_enemy_kill_count) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
+				$11, $12, $13, $14, $15)`
+	_, err := s.DB.Exec(stmt,
+		state.GameID,
+		state.GameTime,
+		state.Gems,
+		state.HomingDaggers,
+		state.DaggersHit,
+		state.DaggersFired,
+		state.EnemiesAlive,
+		state.EnemiesKilled,
+		state.TotalGems,
+		state.LevelGems,
+		state.GemsDespawned,
+		state.DaggersEaten,
+		state.DaggersFired,
+		pq.Array(state.PerEnemyAliveCount),
+		pq.Array(state.PerEnemyKillCount),
 	)
 	if err != nil {
 		return err

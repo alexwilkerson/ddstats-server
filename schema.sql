@@ -238,6 +238,10 @@ CREATE TABLE IF NOT EXISTS collector_new_player (
   game_time DOUBLE PRECISION NOT NULL DEFAULT 0.0
 );
 
+CREATE TABLE IF NOT EXISTS stat_frame (
+
+);
+
 CREATE INDEX IF NOT EXISTS collector_new_player_collector_run_id_idx ON collector_new_player(collector_run_id);
 
 -- below are POSTGRES helper functions to make dealing with the database easier --
