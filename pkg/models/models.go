@@ -45,6 +45,14 @@ type Game struct {
 	EnemiesAliveMaxTime  float64     `json:"enemies_alive_max_time" db:"enemies_alive_max_time"`
 	HomingDaggersMax     int         `json:"homing_daggers_max" db:"homing_daggers_max"`
 	EnemiesAliveMax      int         `json:"enemies_alive_max" db:"enemies_alive_max"`
+	TotalGems            int         `json:"total_gems,omitempty" db:"total_gems"`
+	LevelGems            int         `json:"level_gems,omitempty" db:"level_gems"`
+	GemsDespawned        int         `json:"gems_despawned,omitempty" db:"gems_despawned"`
+	GemsEaten            int         `json:"gems_eaten,omitempty" db:"gems_eaten"`
+	DaggersEaten         int         `json:"daggers_eaten,omitempty" db:"daggers_eaten"`
+	IsReplay             bool        `json:"is_replay" db:"is_replay"`
+	PerEnemyAliveCount   []int16     `json:"per_enemy_alive_count,omitempty" db:"per_enemy_alive_count"`
+	PerEnemyKillCount    []int16     `json:"per_enemy_kill_count,omitempty" db:"per_enemy_kill_count"`
 }
 
 // GameWithName is game with player_name included
@@ -84,15 +92,22 @@ type ReplayPlayer struct {
 
 // State struct is for State
 type State struct {
-	GameID        int     `json:"game_id,omitempty" db:"game_id"`
-	GameTime      float64 `json:"game_time" db:"game_time"`
-	Gems          int     `json:"gems" db:"gems"`
-	HomingDaggers int     `json:"homing_daggers" db:"homing_daggers"`
-	DaggersHit    int     `json:"daggers_hit" db:"daggers_hit"`
-	DaggersFired  int     `json:"daggers_fired" db:"daggers_fired"`
-	Accuracy      float64 `json:"accuracy" db:"accuracy"`
-	EnemiesAlive  int     `json:"enemies_alive" db:"enemies_alive"`
-	EnemiesKilled int     `json:"enemies_killed" db:"enemies_killed"`
+	GameID             int     `json:"game_id,omitempty" db:"game_id"`
+	GameTime           float64 `json:"game_time" db:"game_time"`
+	Gems               int     `json:"gems" db:"gems"`
+	HomingDaggers      int     `json:"homing_daggers" db:"homing_daggers"`
+	DaggersHit         int     `json:"daggers_hit" db:"daggers_hit"`
+	DaggersFired       int     `json:"daggers_fired" db:"daggers_fired"`
+	Accuracy           float64 `json:"accuracy" db:"accuracy"`
+	EnemiesAlive       int     `json:"enemies_alive" db:"enemies_alive"`
+	EnemiesKilled      int     `json:"enemies_killed" db:"enemies_killed"`
+	TotalGems          int32   `json:"total_gems,omitempty" db:"total_gems"`
+	LevelGems          int32   `json:"level_gems,omitempty" db:"level_gems"`
+	GemsDespawned      int32   `json:"gems_despawned,omitempty" db:"gems_despawned"`
+	GemsEaten          int32   `json:"gems_eaten,omitempty" db:"gems_eaten"`
+	DaggersEaten       int32   `json:"daggers_eaten,omitempty" db:"daggers_eaten"`
+	PerEnemyAliveCount []int32 `json:"per_enemy_alive_count,omitempty" db:"per_enemy_alive_count"`
+	PerEnemyKillCount  []int32 `json:"per_enemy_kill_count,omitempty" db:"per_enemy_kill_count"`
 }
 
 // Gems holds game time and gems
@@ -168,6 +183,41 @@ type SubmittedGame struct {
 	EnemiesKilledSlice  []int     `json:"enemiesKilledVector"`
 	DeathType           int       `json:"deathType"`
 	ReplayPlayerID      int       `json:"replayPlayerID"`
+	Version             string    `json:"version"`
+	SurvivalHash        string    `json:"survivalHash"`
+}
+
+// SubmittedGameV2 is used to decode the JSON struct that comes in when a player
+// completes a game and is submitted for version 0.6.1+
+type SubmittedGameV2 struct {
+	PlayerID            int       `json:"player_id"`
+	PlayerName          string    `json:"player_name"`
+	GameTime            float64   `json:"time"`
+	GameTimeSlice       []float64 `json:"time_slice"`
+	Gems                int       `json:"gems"`
+	GemsSlice           []int     `json:"gems_slice"`
+	LevelTwoTime        float64   `json:"level_two_time"`
+	LevelThreeTime      float64   `json:"level_three_time"`
+	LevelFourTime       float64   `json:"level_four_time"`
+	LeviDownTime        float64   `json:"levi_down_time"`
+	OrbDownTime         float64   `json:"orb_down_time"`
+	HomingDaggers       int       `json:"homing_daggers"`
+	HomingDaggersSlice  []int     `json:"homing_daggers_slice"`
+	HomingMax           int       `json:"homing_daggers_max"`
+	HomingMaxTime       float64   `json:"homing_daggers_max_time"`
+	DaggersFired        int       `json:"daggers_fired"`
+	DaggersFiredSlice   []int     `json:"daggers_fired_slice"`
+	DaggersHit          int       `json:"daggers_hit"`
+	DaggersHitSlice     []int     `json:"daggers_hit_slice"`
+	EnemiesAlive        int       `json:"enemies_alive"`
+	EnemiesAliveSlice   []int     `json:"enemies_alive_slice"`
+	EnemiesAliveMax     int       `json:"enemies_alive_max"`
+	EnemiesAliveMaxTime float64   `json:"enemies_alive_max_time"`
+	EnemiesKilled       int       `json:"enemies_killed"`
+	EnemiesKilledSlice  []int     `json:"enemies_killed_slice"`
+	GemsDespawnedSlice  []int     `json:"gems_despawned_slice"`
+	DeathType           int       `json:"death_type"`
+	ReplayPlayerID      int       `json:"replay_player_id"`
 	Version             string    `json:"version"`
 	SurvivalHash        string    `json:"survivalHash"`
 }

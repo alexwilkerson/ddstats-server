@@ -35,6 +35,12 @@ Total : 42 files, 3887 codes, 176 comments, 528 blanks, all 4591 lines
 | pkg/socketio        |     1 |   266 |       9 |    25 |   300 |
 | pkg/websocket       |     4 |   307 |      19 |    32 |   358 |
 
+## Building protos
+
+protoc --go_out=. --go_opt=paths=source_relative \
+ --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+ gamesubmission/gamesubmission.proto
+
 ## Building for linux
 
 ```
