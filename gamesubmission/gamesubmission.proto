@@ -1,0 +1,63 @@
+syntax = "proto3";
+
+option go_package = "github.com/alexwilkerson/ddstats-server/gamesubmission";
+
+package gamesubmission;
+
+service GameRecorder {
+  rpc SubmitGame (SubmitGameRequest) returns (SubmitGameReply) {}
+}
+
+message SubmitGameRequest {
+  string version = 1;
+  int32 playerID = 2;
+  string playerName = 3;
+  string levelHashMD5 = 4;
+  float time = 5;
+  float timeLvll2 = 6;
+  float timeLvll3 = 7;
+  float timeLvll4 = 8;
+  float timeLeviDown = 9;
+  float timeOrbDown = 10;
+  int32 gemsCollected = 11;
+  int32 kills = 12;
+  int32 daggersFired = 13;
+  int32 daggersHit = 14;
+  int32 enemiesAlive = 15;
+  int32 enemiesAliveMax = 16;
+  float enemiesAliveMaxTime = 17;
+  int32 levelGems = 18;
+  int32 homingDaggers = 19;
+  int32 homingDaggersMax = 20;
+  float homingDaggersMaxTime = 21;
+  int32 totalGems = 22;
+  int32 gemsDespawned = 23;
+  int32 gemsEaten = 24;
+  int32 daggersEaten = 25;
+  uint32 deathType = 26;
+  bool isReplay = 27;
+  bool replayPlayerID = 28;
+  repeated int32 perEnemyAliveCount = 29;
+  repeated int32 perEnemyKillcount = 30;
+  repeated StatFrame stats = 31;
+}
+
+message StatFrame {
+  int32 gemsCollected = 1;
+  int32 kills = 2;
+  int32 daggersFired = 3;
+  int32 daggersHit = 4;
+  int32 enemiesAlive = 5;
+  int32 levelGems = 6;
+  int32 homingDaggers = 7;
+  int32 gemsDespawned = 8;
+  int32 gemsEaten = 9;
+  int32 totalGems = 10;
+  int32 daggersEaten = 11;
+  repeated int32 perEnemyAliveCount = 12;
+  repeated int32 perEnemyKillCount = 13;
+}
+
+message SubmitGameReply {
+  int32 gameID = 1;
+}

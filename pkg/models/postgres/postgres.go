@@ -23,6 +23,7 @@ type Postgres struct {
 	CollectorHighScores    *CollectorHighScoreModel
 	CollectorActivePlayers *CollectorActivePlayerModel
 	CollectorNewPlayers    *CollectorNewPlayerModel
+	GameSubmissions        *GameSubmissionModel
 }
 
 func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
@@ -43,5 +44,6 @@ func NewPostgres(client *http.Client, db *sqlx.DB) *Postgres {
 		CollectorHighScores:    &CollectorHighScoreModel{DB: db},
 		CollectorActivePlayers: &CollectorActivePlayerModel{DB: db},
 		CollectorNewPlayers:    &CollectorNewPlayerModel{DB: db},
+		GameSubmissions:        &GameSubmissionModel{DB: db, Client: client},
 	}
 }
