@@ -60,6 +60,11 @@ func main() {
 
 	postgresDB := postgres.NewPostgres(client, db)
 
+	clientVersion, err := postgresDB.Releases.GetMostRecentVersion()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	websocketHub := websocket.NewHub(postgresDB)
 
 	ddAPI := ddapi.NewAPI(client)
@@ -86,8 +91,9 @@ func main() {
 
 	grpcS := grpc.NewServer()
 	gamesubmission.RegisterGameRecorderServer(grpcS, &server{
-		db:     postgresDB,
-		client: client,
+		db:                   postgresDB,
+		client:               client,
+		currentClientVersion: clientVersion,
 	})
 
 	srv := &http.Server{
