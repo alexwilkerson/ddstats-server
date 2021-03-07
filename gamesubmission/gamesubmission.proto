@@ -15,9 +15,9 @@ message SubmitGameRequest {
   string playerName = 3;
   string levelHashMD5 = 4;
   float time = 5;
-  float timeLvll2 = 6;
-  float timeLvll3 = 7;
-  float timeLvll4 = 8;
+  float timeLvl2 = 6;
+  float timeLvl3 = 7;
+  float timeLvl4 = 8;
   float timeLeviDown = 9;
   float timeOrbDown = 10;
   int32 gemsCollected = 11;
