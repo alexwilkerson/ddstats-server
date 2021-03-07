@@ -36,7 +36,7 @@ message SubmitGameRequest {
   int32 daggersEaten = 25;
   uint32 deathType = 26;
   bool isReplay = 27;
-  bool replayPlayerID = 28;
+  int32 replayPlayerID = 28;
   repeated int32 perEnemyAliveCount = 29;
   repeated int32 perEnemyKillcount = 30;
   repeated StatFrame stats = 31;
