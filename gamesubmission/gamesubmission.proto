@@ -6,6 +6,7 @@ package gamesubmission;
 
 service GameRecorder {
   rpc SubmitGame (SubmitGameRequest) returns (SubmitGameReply) {}
+  rpc ClientStart (ClientStartRequest) returns (ClientStartReply) {}
 }
 
 message SubmitGameRequest {
@@ -60,4 +61,14 @@ message StatFrame {
 
 message SubmitGameReply {
   int32 gameID = 1;
+}
+
+message ClientStartRequest {
+  string version = 1;
+}
+
+message ClientStartReply {
+  string motd = 1;
+  bool validVersion = 2;
+  bool updateAvailable = 3;
 }
