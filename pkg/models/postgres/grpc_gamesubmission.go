@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"database/sql"
 	"errors"
 	"net/http"
 
@@ -14,6 +15,63 @@ import (
 type GameSubmissionModel struct {
 	DB     *sqlx.DB
 	Client *http.Client
+}
+
+// CheckDuplicate takes a submitted game, checks if it's a replay...
+// if it is, it will try to find a matching game recording to make sure
+// the game hasn't already been previously recorded into the database.
+// This is to make sure people who are watching replays of their own games
+// won't record the same games over and over and over again.
+func (gsm *GameSubmissionModel) CheckDuplicate(game *pb.SubmitGameRequest) (bool, int32, error) {
+	var id int
+
+	stmt := `
+		SELECT id
+		FROM game
+		WHERE
+			player_id=$1 AND
+			game_time=$2 AND
+			death_type=$3 AND
+			gems=$4 AND
+			homing_daggers=$5 AND
+			daggers_fired=$6 AND
+			daggers_hit=$7 AND
+			enemies_alive=$8 AND
+			enemies_killed=$9 AND
+			homing_daggers_max=$10 AND
+			enemies_alive_max=$11 AND
+			(replay_player_id=0 OR replay_player_id=$12) AND
+			total_gems=$13 AND
+			gems_despawned=$14 AND
+			gems_eaten=$15 AND
+			daggers_eaten=$16
+		ORDER BY id ASC
+		LIMIT 1`
+	err := gsm.DB.QueryRow(stmt,
+		game.PlayerID,
+		game.Time,
+		game.DeathType,
+		game.GemsCollected,
+		game.HomingDaggers,
+		game.DaggersFired,
+		game.DaggersHit,
+		game.EnemiesAlive,
+		game.Kills,
+		game.HomingDaggersMax,
+		game.EnemiesAliveMax,
+		game.ReplayPlayerID,
+		game.TotalGems,
+		game.GemsDespawned,
+		game.GemsEaten,
+		game.DaggersEaten,
+	).Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return false, 0, nil
+		}
+		return false, 0, err
+	}
+	return true, int32(id), nil
 }
 
 func (gsm *GameSubmissionModel) Insert(game *pb.SubmitGameRequest) (int32, error) {

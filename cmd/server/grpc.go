@@ -23,11 +23,20 @@ type server struct {
 
 // SubmitGame is uncommented so far.
 func (s *server) SubmitGame(ctx context.Context, in *pb.SubmitGameRequest) (*pb.SubmitGameReply, error) {
-	gameID, err := s.db.GameSubmissions.Insert(in)
+	duplicate, gameID, err := s.db.GameSubmissions.CheckDuplicate(in)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("SubmitGame: error checking for duplicate game: %w", err)
 	}
-	// log.Printf("Received: %v", in.GetName())
+
+	if duplicate {
+		return &pb.SubmitGameReply{GameID: gameID}, nil
+	}
+
+	gameID, err = s.db.GameSubmissions.Insert(in)
+	if err != nil {
+		return nil, fmt.Errorf("SubmitGame: error inserting game: %w", err)
+	}
+
 	return &pb.SubmitGameReply{GameID: gameID}, nil
 }
 
