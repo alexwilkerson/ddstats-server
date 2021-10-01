@@ -43,7 +43,7 @@ func (api *API) handleCORS(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		origin := r.Header.Get("Origin")
 		var allowedHost string
-		allowedHosts := []string{"http://localhost:5000", "http://localhost:8080", "https://www.ddstats.com", "http://www.ddstats.com", "http://ddstats.com", "https://ddstats.com", "http://10.0.1.45:8080"}
+		allowedHosts := []string{"https://www.ddstats.com", "http://www.ddstats.com", "http://ddstats.com", "https://ddstats.com"}
 		for _, host := range allowedHosts {
 			if host == origin {
 				allowedHost = host
