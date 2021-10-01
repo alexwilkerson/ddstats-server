@@ -40,7 +40,7 @@ type application struct {
 func main() {
 	addr := flag.String("addr", ":5000", "HTTP Network Address")
 	dsn := flag.String("dsn", "host=localhost port=5432 user=ddstats password=ddstats dbname=ddstats sslmode=disable", "PostgreSQL data source name")
-	discordToken := flag.String("discord-token", "***REMOVED***", "Discord Bot Token")
+	discordToken := flag.String("discord-token", "wheaties", "Discord Bot Token")
 	disableDiscord := flag.Bool("disable-discord", false, "Disable the Discord Bot")
 	flag.Parse()
 

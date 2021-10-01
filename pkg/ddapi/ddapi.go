@@ -62,6 +62,7 @@ var DeathTypes = []string{
 	"INCARNATED",
 	"DISCARNATED",
 	"BARBED",
+	"HAUNTED",
 }
 
 // Player is the struct returned after parsing the binary data
