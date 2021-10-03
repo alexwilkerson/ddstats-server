@@ -61,10 +61,10 @@ WITH max_game AS (
 			WHERE spawnset_name='v3'
 			AND (replay_player_id=0 OR replay_player_id=player_id)
 			AND homing_daggers_max=GREATEST(homing_daggers_max)
-
+	
 			GROUP BY player_id) gg ON game.player_id=gg.player_id AND game.homing_daggers_max=gg.max_homing_daggers),
 min_replay AS(
-	SELECT player_id, MIN(replay_player_id) AS min_replay
+	SELECT player_id, MIN(replay_player_id) AS min_replay 
 	FROM max_game
 	group by player_id
 )
@@ -93,7 +93,7 @@ SELECT ROW_NUMBER() OVER (ORDER BY ggg.homing_daggers_max DESC) AS rank, ggg.* F
 			max_game.level_four_time,
 			max_game.levi_down_time,
 			max_game.orb_down_time,
-			max_game.homing_daggers_max_time,
+			max_game.homing_daggers_max_time, 
 			max_game.enemies_alive_max_time,
 			max_game.homing_daggers_max,
 			max_game.enemies_alive_max
@@ -359,7 +359,7 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 				%s
 				GROUP BY player_id) gg ON game.player_id=gg.player_id AND round(game.game_time, 4)=gg.max_game_time %s),
 		min_replay AS(
-			SELECT player_id, MIN(replay_player_id) AS min_replay
+			SELECT player_id, MIN(replay_player_id) AS min_replay 
 			FROM max_game
 			group by player_id
 		)
@@ -388,7 +388,7 @@ func (g *GameModel) GetLeaderboardPaginated(spawnset string, pageSize, pageNum i
 				max_game.level_four_time,
 				max_game.levi_down_time,
 				max_game.orb_down_time,
-				max_game.homing_daggers_max_time,
+				max_game.homing_daggers_max_time, 
 				max_game.enemies_alive_max_time,
 				max_game.homing_daggers_max,
 				max_game.enemies_alive_max
@@ -537,7 +537,7 @@ func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.
 				%s
 				GROUP BY player_id) gg ON game.player_id=gg.player_id AND round(game.game_time, 4)=gg.max_game_time %s),
 		min_replay AS(
-			SELECT player_id, MIN(replay_player_id) AS min_replay
+			SELECT player_id, MIN(replay_player_id) AS min_replay 
 			FROM max_game
 			group by player_id
 		)
@@ -566,7 +566,7 @@ func (g *GameModel) GetLeaderboard(spawnset, sortBy, sortDir string) ([]*models.
 				max_game.level_four_time,
 				max_game.levi_down_time,
 				max_game.orb_down_time,
-				max_game.homing_daggers_max_time,
+				max_game.homing_daggers_max_time, 
 				max_game.enemies_alive_max_time,
 				max_game.homing_daggers_max,
 				max_game.enemies_alive_max
