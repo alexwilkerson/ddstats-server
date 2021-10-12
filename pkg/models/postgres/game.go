@@ -765,13 +765,13 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 			enemies_alive_max_time,
 			homing_daggers_max,
 			enemies_alive_max,
-            total_gems,
-            level_gems,
-            gems_despawned,
-            gems_eaten,
-            daggers_eaten,
-            per_enemy_alive_count,
-            per_enemy_kill_count
+			total_gems,
+			level_gems,
+			gems_despawned,
+			gems_eaten,
+			daggers_eaten,
+			per_enemy_alive_count,
+			per_enemy_kill_count
 		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
 			NATURAL LEFT JOIN spawnset
 			LEFT JOIN replay_player p2 ON game.replay_player_id=p2.id
