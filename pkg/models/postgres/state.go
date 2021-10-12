@@ -25,7 +25,7 @@ func (s *StateModel) Insert(state *models.State) error {
 			daggers_hit,
 			daggers_fired,
 			enemies_alive,
-			enemies_killed) 
+			enemies_killed)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8)`
 	_, err := s.DB.Exec(stmt,
 		state.GameID,
@@ -61,7 +61,7 @@ func (s *StateModel) InsertGRPC(state *models.State) error {
 			gems_eaten,
 			daggers_eaten,
 			per_enemy_alive_count,
-			per_enemy_kill_count) 
+			per_enemy_kill_count)
 		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10,
 				$11, $12, $13, $14, $15)`
 	_, err := s.DB.Exec(stmt,
@@ -104,9 +104,7 @@ func (s *StateModel) GetAll(id int) ([]*models.State, error) {
 			level_gems,
 			gems_despawned,
 			gems_eaten,
-			daggers_eaten,
-			per_enemy_alive_count,
-			per_enemy_kill_count
+			daggers_eaten
 		FROM state
 		WHERE game_id=$1
 		ORDER BY game_time ASC`
