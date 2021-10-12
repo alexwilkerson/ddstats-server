@@ -99,7 +99,14 @@ func (s *StateModel) GetAll(id int) ([]*models.State, error) {
 			daggers_fired,
 			round(divzero(daggers_hit, daggers_fired)*100, 2) as accuracy,
 			enemies_alive,
-			enemies_killed
+			enemies_killed,
+			total_gems,
+			level_gems,
+			gems_despawned,
+			gems_eaten,
+			daggers_eaten,
+			per_enemy_alive_count,
+			per_enemy_kill_count
 		FROM state
 		WHERE game_id=$1
 		ORDER BY game_time ASC`
