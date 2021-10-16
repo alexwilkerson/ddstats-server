@@ -61,7 +61,7 @@ var DeathTypes = []string{
 	"ENVENMONATED",
 	"INCARNATED",
 	"DISCARNATED",
-	"BARBED",
+	"ENTANGLED",
 	"HAUNTED",
 }
 
