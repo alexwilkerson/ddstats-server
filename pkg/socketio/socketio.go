@@ -34,7 +34,7 @@ const (
 )
 
 const (
-	notifyThreshold = 10
+	notifyThreshold = 1000
 )
 
 type sio struct {
