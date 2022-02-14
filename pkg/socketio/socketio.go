@@ -34,7 +34,7 @@ const (
 )
 
 const (
-	notifyThreshold = 1000
+	notifyThreshold = 10
 )
 
 type sio struct {
@@ -228,6 +228,20 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 			GameTime:         game.GameTime,
 			PreviousGameTime: player.BestGameTime,
 		}
+
+		websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(player.PlayerID)), "new_personal_best_broadcast", websocket.PlayerBestSubmitted{
+			PlayerName:       player.PlayerName,
+			GameID:           gameID,
+			GameTime:         game.GameTime,
+			PreviousGameTime: player.BestGameTime,
+		})
+
+		if err != nil {
+			si.errorLog.Println("socketio on game_submitted: %w", err)
+		}
+
+		si.websocketHub.BroadcastToAll <- websocketMessage
+
 	}
 	if game.ReplayPlayerID == 0 && notifyAboveThreshold && game.GameTime >= notifyThreshold {
 		si.websocketHub.DiscordBroadcast <- &websocket.PlayerAboveThresholdSubmitted{
@@ -236,6 +250,19 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 			GameTime:   game.GameTime,
 			DeathType:  game.DeathType,
 		}
+
+		websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(player.PlayerID)), "death_past_threshold_broadcast", websocket.PlayerAboveThresholdSubmitted{
+			PlayerName: player.PlayerName,
+			GameID:     gameID,
+			GameTime:   game.GameTime,
+			DeathType:  game.DeathType,
+		})
+
+		if err != nil {
+			si.errorLog.Println("socketio on game_submitted: %w", err)
+		}
+
+		si.websocketHub.BroadcastToAll <- websocketMessage
 	}
 }
 
@@ -348,6 +375,18 @@ func (si *sio) onStateUpdate(s socketio.Conn, playerID int, gameTime float64, ge
 			PreviousGameTime: player.BestGameTime,
 		}
 		player.bestTimeNotified = true
+
+		websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(player.PlayerID)), "past_personal_best_broadcast", websocket.PlayerBestReached{
+			PlayerID:         player.PlayerID,
+			PlayerName:       player.PlayerName,
+			PreviousGameTime: player.BestGameTime,
+		})
+
+		if err != nil {
+			si.errorLog.Println("socketio on status_update: %w", err)
+		}
+
+		si.websocketHub.BroadcastToAll <- websocketMessage
 	}
 	if !isReplay && notifyAboveThreshold && !player.aboveThresholdNotified && gameTime >= notifyThreshold {
 		player.aboveThresholdNotified = true
@@ -355,6 +394,17 @@ func (si *sio) onStateUpdate(s socketio.Conn, playerID int, gameTime float64, ge
 			PlayerID:   player.PlayerID,
 			PlayerName: player.PlayerName,
 		}
+
+		websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(player.PlayerID)), "past_threshold_broadcast", websocket.PlayerAboveThreshold{
+			PlayerID:   player.PlayerID,
+			PlayerName: player.PlayerName,
+		})
+
+		if err != nil {
+			si.errorLog.Println("socketio on status_update: %w", err)
+		}
+
+		si.websocketHub.BroadcastToAll <- websocketMessage
 	}
 }
 
