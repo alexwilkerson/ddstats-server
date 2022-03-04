@@ -2,3 +2,5 @@ dist/
 .VSCodeCounter
 *.zip
 passwords.txt
+*.vim
+/.undodir
