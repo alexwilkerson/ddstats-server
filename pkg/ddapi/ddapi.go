@@ -14,13 +14,13 @@ import (
 
 const (
 	// EndpointGetUserByID is the endpoint to get a user by ID
-	EndpointGetUserByID = "http://dd.hasmodai.com/backend16/get_user_by_id_public.php"
+	EndpointGetUserByID = "http://dd.hasmodai.com/dd3/get_user_by_id_public.php"
 	// EndpointGetUserByRank is the endpoint to get a user by rank
-	EndpointGetUserByRank = "http://dd.hasmodai.com/backend16/get_user_by_rank_public.php"
+	EndpointGetUserByRank = "http://dd.hasmodai.com/dd3/get_user_by_rank_public.php"
 	// EndpointGetScores is the endpoint to get the leaderboard
-	EndpointGetScores = "http://dd.hasmodai.com/backend16/get_scores.php"
+	EndpointGetScores = "http://dd.hasmodai.com/dd3/get_scores.php"
 	// EndpointGetUserSearch is the endpoint to get search for users
-	EndpointGetUserSearch = "http://dd.hasmodai.com/backend16/get_user_search_public.php"
+	EndpointGetUserSearch = "http://dd.hasmodai.com/dd3/get_user_search_public.php"
 )
 
 var (
