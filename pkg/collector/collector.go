@@ -266,7 +266,9 @@ func (c *Collector) compileRunStats(run *models.CollectorRun, previousRun *model
 	if c.playersWithNewRanks != 0 {
 		run.AverageRankImprovement = float64(c.playerRankImprovement) / float64(c.playersWithNewRanks)
 	}
-	run.AverageGameTimePerActivePlayer = c.playerGameTime / float64(c.playerDeaths)
+	if c.playerDeaths != 0 {
+		run.AverageGameTimePerActivePlayer = c.playerGameTime / float64(c.playerDeaths)
+	}
 	activePlayers := float64(c.activePlayers)
 	if activePlayers != 0 {
 		run.AverageDeathsPerActivePlayer = float64(c.playerDeaths) / activePlayers
