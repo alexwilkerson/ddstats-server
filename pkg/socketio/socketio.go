@@ -151,7 +151,7 @@ func (si *sio) onDisconnect(s socketio.Conn, msg string) {
 	player.Lock()
 	websocketMessage, err := websocket.NewMessage(strconv.Itoa(player.PlayerID), "submit", struct{}{})
 	if err != nil {
-		si.errorLog.Println("socketio onSubmit: %w", err)
+		si.errorLog.Printf("socketio onSubmit: %v", err)
 	}
 	si.websocketHub.Broadcast <- websocketMessage
 	si.livePlayers.Delete(s.ID())
@@ -193,7 +193,7 @@ func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
 
 	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "status", status)
 	if err != nil {
-		si.errorLog.Println("socketio status: %w", err)
+		si.errorLog.Printf("socketio status: %v", err)
 	}
 	si.websocketHub.Broadcast <- websocketMessage
 }
@@ -217,7 +217,7 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 		GameID:   gameID,
 	})
 	if err != nil {
-		si.errorLog.Println("socketio on game_submitted: %w", err)
+		si.errorLog.Printf("socketio on game_submitted: %v", err)
 	}
 	si.websocketHub.BroadcastToAll <- websocketMessage
 
@@ -237,7 +237,7 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 		})
 
 		if err != nil {
-			si.errorLog.Println("socketio on game_submitted: %w", err)
+			si.errorLog.Printf("socketio on game_submitted: %v", err)
 		}
 
 		si.websocketHub.BroadcastToAll <- websocketMessage
@@ -259,7 +259,7 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 		})
 
 		if err != nil {
-			si.errorLog.Println("socketio on game_submitted: %w", err)
+			si.errorLog.Printf("socketio on game_submitted: %v", err)
 		}
 
 		si.websocketHub.BroadcastToAll <- websocketMessage
@@ -277,7 +277,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 
 	p, err := si.ddAPI.UserByID(id)
 	if err != nil {
-		si.errorLog.Printf("socketio onLogin: %w", err)
+		si.errorLog.Printf("socketio onLogin: %v", err)
 		s.Close()
 		return
 	}
@@ -294,7 +294,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 
 	err = si.db.Players.UpsertDDPlayer(p)
 	if err != nil {
-		si.errorLog.Printf("socketio onLogin: %w", err)
+		si.errorLog.Printf("socketio onLogin: %v", err)
 		s.Close()
 		return
 	}
@@ -303,7 +303,7 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 
 	websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(p.PlayerID)), "submit", struct{}{})
 	if err != nil {
-		si.errorLog.Println("socketio onSubmit: %w", err)
+		si.errorLog.Printf("socketio onSubmit: %v", err)
 	}
 	si.websocketHub.Broadcast <- websocketMessage
 
@@ -363,7 +363,7 @@ func (si *sio) onStateUpdate(s socketio.Conn, playerID int, gameTime float64, ge
 	player.websocketPlayer.Unlock()
 	websocketMessage, err := websocket.NewMessage(strconv.Itoa(playerID), "submit", state)
 	if err != nil {
-		si.errorLog.Println("socketio onSubmit: %w", err)
+		si.errorLog.Printf("socketio onSubmit: %v", err)
 		return
 	}
 	si.websocketHub.Broadcast <- websocketMessage
@@ -383,7 +383,7 @@ func (si *sio) onStateUpdate(s socketio.Conn, playerID int, gameTime float64, ge
 		})
 
 		if err != nil {
-			si.errorLog.Println("socketio on status_update: %w", err)
+			si.errorLog.Printf("socketio on status_update: %v", err)
 		}
 
 		si.websocketHub.BroadcastToAll <- websocketMessage
@@ -401,7 +401,7 @@ func (si *sio) onStateUpdate(s socketio.Conn, playerID int, gameTime float64, ge
 		})
 
 		if err != nil {
-			si.errorLog.Println("socketio on status_update: %w", err)
+			si.errorLog.Printf("socketio on status_update: %v", err)
 		}
 
 		si.websocketHub.BroadcastToAll <- websocketMessage

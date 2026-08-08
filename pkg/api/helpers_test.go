@@ -3,15 +3,16 @@ package api
 import "testing"
 
 func TestValidVersion(t *testing.T) {
+	// cases are tied to oldestValidClientVersion in api.go
 	tests := []struct {
 		version string
 		want    bool
 	}{
-		{"0.4.5", true},
-		{"0.4.0", true},
-		{"0.3.0", false},
-		{"0.3.1", true},
-		{"1.3.1", true},
+		{"0.5.9", false},
+		{"0.6.0", true},
+		{"0.6.1", true},
+		{"0.7.0", true},
+		{"1.0.0", true},
 		{"0.0.9", false},
 	}
 	for _, tt := range tests {

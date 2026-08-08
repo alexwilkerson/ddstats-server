@@ -10,12 +10,12 @@ import (
 	"gopkg.in/guregu/null.v3"
 )
 
-//ErrNoRecord will be returned when DB record not found
+// ErrNoRecord will be returned when DB record not found
 var ErrNoRecord = errors.New("no record found")
 var ErrNoDiscordUserFound = errors.New("no entry associated with that discord ID")
 var ErrDiscordUserVerified = errors.New("discord user is verified so cannot update their values")
 
-//Game record representation
+// Game record representation
 type Game struct {
 	ID                   int         `json:"id" db:"id"`
 	Rank                 int         `json:"rank,omitempty" db:"rank"`

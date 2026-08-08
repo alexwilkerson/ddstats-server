@@ -38,7 +38,7 @@ func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 	if since < command.cooldown {
 		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("The %s%s command is on cooldown. Please wait %s to use it. %s", prefix, command.name, command.cooldown-since, m.Author.Mention()))
 		if err != nil {
-			d.errorLog.Printf("%w", err)
+			d.errorLog.Printf("%v", err)
 		}
 		return
 	}
@@ -53,7 +53,7 @@ func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 	}
 	_, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 	if err != nil {
-		d.errorLog.Printf("%w", err)
+		d.errorLog.Printf("%v", err)
 	}
 
 	// switch strings.ToLower(contentTokens[0]) {

@@ -19,7 +19,7 @@ func (d *Discord) commandHelp() {
 		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
 			userChannel, err := d.Session.UserChannelCreate(m.Author.ID)
 			if err != nil {
-				d.errorLog.Printf("error creating user channel for user %s with ID %s: %w", m.Author.Username, m.Author.ID, err)
+				d.errorLog.Printf("error creating user channel for user %s with ID %s: %v", m.Author.Username, m.Author.ID, err)
 				return errorEmbed(fmt.Sprintf("Unable to message you. Do you have DMs disabled? %s", m.Author.Mention()))
 			}
 			if len(args) == 0 {
@@ -39,7 +39,7 @@ func (d *Discord) commandHelp() {
 					},
 				})
 				if err != nil {
-					d.errorLog.Printf("error sending message to user channel for user %s with ID %s: %w", m.Author.Username, m.Author.ID, err)
+					d.errorLog.Printf("error sending message to user channel for user %s with ID %s: %v", m.Author.Username, m.Author.ID, err)
 					return errorEmbed(fmt.Sprintf("Unable to message you. Do you have DMs disabled? %s", m.Author.Mention()))
 				}
 				// if the incoming command is coming in through a DM, don't return

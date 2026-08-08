@@ -136,7 +136,7 @@ func main() {
 		srv.SetKeepAlivesEnabled(false)
 		err := srv.Shutdown(ctx)
 		if err != nil {
-			errorLog.Fatal("Could not gracefully shut down the server: %w", err)
+			errorLog.Fatalf("Could not gracefully shut down the server: %v", err)
 		}
 		close(done)
 	}()
