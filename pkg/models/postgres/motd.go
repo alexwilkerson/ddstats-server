@@ -30,3 +30,10 @@ func (m *MOTDModel) Get() (*models.MOTD, error) {
 	}
 	return &motd, nil
 }
+
+// Insert sets a new message of the day, which becomes the one returned by Get
+func (m *MOTDModel) Insert(message string) error {
+	stmt := `INSERT INTO message_of_the_day (message) VALUES ($1)`
+	_, err := m.DB.Exec(stmt, message)
+	return err
+}
