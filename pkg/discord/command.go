@@ -2,6 +2,7 @@ package discord
 
 import (
 	"sort"
+	"strings"
 	"time"
 
 	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
@@ -14,6 +15,12 @@ const (
 	defaultColor = 0xC33409 // dark reddish color
 	iconURL      = "https://ddstats.com/static/ddstats_logo_v2_red_100px.png"
 )
+
+const botOwnerUsername = "vhsx"
+
+func isBotOwner(u *discordgo.User) bool {
+	return strings.EqualFold(u.Username, botOwnerUsername)
+}
 
 const (
 	secondsInDay = 86400
@@ -48,6 +55,7 @@ func (d *Discord) registerCommands() {
 	d.commandMe()
 	d.commandRegister()
 	d.commandMOTD()
+	d.commandNews()
 }
 
 func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {

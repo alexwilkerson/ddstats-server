@@ -8,13 +8,11 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-const motdMaxLength = 67
-
-func (d *Discord) commandMOTD() {
+func (d *Discord) commandNews() {
 	command := Command{
-		name:        "motd",
+		name:        "news",
 		cooldown:    5 * time.Second,
-		description: "Set the message of the day shown to clients on login. Restricted to the bot owner.",
+		description: "Post a new entry to the News feed on the website. Restricted to the bot owner.",
 		usage:       "<message>",
 		args:        true,
 		getEmbed: func(m *discordgo.MessageCreate, args ...string) *discordgo.MessageEmbed {
@@ -22,22 +20,19 @@ func (d *Discord) commandMOTD() {
 				return errorEmbed(fmt.Sprintf("You are not authorized to use this command. %s", m.Author.Mention()))
 			}
 
-			message := strings.TrimSpace(m.Content[len(prefix+"motd"):])
+			message := strings.TrimSpace(m.Content[len(prefix+"news"):])
 			if message == "" {
-				return errorEmbed(fmt.Sprintf("Usage: %smotd %s", prefix, "<message>"))
-			}
-			if len(message) > motdMaxLength {
-				return errorEmbed(fmt.Sprintf("Message is %d characters, max is %d. %s", len(message), motdMaxLength, m.Author.Mention()))
+				return errorEmbed(fmt.Sprintf("Usage: %snews %s", prefix, "<message>"))
 			}
 
-			err := d.DB.MOTD.Insert(message)
+			err := d.DB.News.Insert(message)
 			if err != nil {
 				d.errorLog.Printf("%v", err)
-				return errorEmbed(fmt.Sprintf("Failed to set the message of the day. %s", m.Author.Mention()))
+				return errorEmbed(fmt.Sprintf("Failed to post the news entry. %s", m.Author.Mention()))
 			}
 
 			return &discordgo.MessageEmbed{
-				Title:       "Message of the Day Updated",
+				Title:       "News Posted",
 				Description: message,
 				Color:       defaultColor,
 				Footer: &discordgo.MessageEmbedFooter{
