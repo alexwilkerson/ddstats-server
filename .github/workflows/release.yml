@@ -27,8 +27,8 @@ jobs:
       - name: Build server + collector
         run: |
           mkdir -p dist
-          GOOS=linux GOARCH=amd64 go build -trimpath -o dist/server ./cmd/server
-          GOOS=linux GOARCH=amd64 go build -trimpath -o dist/collector ./cmd/collector
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o dist/server ./cmd/server
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -trimpath -o dist/collector ./cmd/collector
 
       - uses: actions/setup-node@v4
         with:
