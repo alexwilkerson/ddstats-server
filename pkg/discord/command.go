@@ -47,6 +47,7 @@ func (d *Discord) registerCommands() {
 	d.commandHelp()
 	d.commandMe()
 	d.commandRegister()
+	d.commandMOTD()
 }
 
 func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {
