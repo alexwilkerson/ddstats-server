@@ -31,19 +31,19 @@ func (d *Discord) commandMe() {
 						},
 					}
 				}
-				d.errorLog.Printf("%w", err)
+				d.errorLog.Printf("%v", err)
 				return errorEmbed(fmt.Sprintf("Database error while trying to retrieve user ID %q. %s", m.Author.ID, m.Author.Mention()))
 			}
 			player, err := d.ddAPI.UserByID(discordUser.DDID)
 			if err != nil {
 				if errors.Is(err, ddapi.ErrStatusCode) {
-					d.errorLog.Printf("%w", err)
+					d.errorLog.Printf("%v", err)
 					return errorEmbed(fmt.Sprintf("Unable to access the Devil Daggers API. %s", m.Author.Mention()))
 				}
 				if errors.Is(err, ddapi.ErrPlayerNotFound) {
 					return errorEmbed(fmt.Sprintf("No players were found for Player ID %d. %s", discordUser.DDID, m.Author.Mention()))
 				}
-				d.errorLog.Printf("%w", err)
+				d.errorLog.Printf("%v", err)
 				return errorEmbed(fmt.Sprintf("Some error occurred while calling !id. %s", m.Author.Mention()))
 			}
 			return &discordgo.MessageEmbed{

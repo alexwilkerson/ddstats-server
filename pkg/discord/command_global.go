@@ -22,10 +22,10 @@ func (d *Discord) commandGlobal() {
 			leaderboard, err := d.ddAPI.GetLeaderboard(0, 0)
 			if err != nil {
 				if errors.Is(err, ddapi.ErrStatusCode) {
-					d.errorLog.Printf("%w", err)
+					d.errorLog.Printf("%v", err)
 					return errorEmbed(fmt.Sprintf("Unable to access the Devil Daggers API. %s", m.Author.Mention()))
 				}
-				d.errorLog.Printf("%w", err)
+				d.errorLog.Printf("%v", err)
 				return errorEmbed(fmt.Sprintf("Some error occurred while calling !id. %s", m.Author.Mention()))
 			}
 			p := message.NewPrinter(language.English)

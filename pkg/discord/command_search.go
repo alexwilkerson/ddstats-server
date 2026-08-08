@@ -26,13 +26,13 @@ func (d *Discord) commandSearch() {
 			players, err := d.ddAPI.UserSearch(userName)
 			if err != nil {
 				if errors.Is(err, ddapi.ErrStatusCode) {
-					d.errorLog.Printf("%w", err)
+					d.errorLog.Printf("%v", err)
 					return errorEmbed(fmt.Sprintf("Unable to access the Devil Daggers API. %s", m.Author.Mention()))
 				}
 				if errors.Is(err, ddapi.ErrNoPlayersFound) {
 					return errorEmbed(fmt.Sprintf("No players were found for '%s'. %s", strings.Join(args, " "), m.Author.Mention()))
 				}
-				d.errorLog.Printf("%w", err)
+				d.errorLog.Printf("%v", err)
 				return errorEmbed(fmt.Sprintf("Some error occurred while calling !search. %s", m.Author.Mention()))
 			}
 			player := players[0]
