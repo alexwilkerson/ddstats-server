@@ -1,0 +1,87 @@
+name: Release
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26'
+          cache: true
+
+      - name: Build server + collector
+        run: |
+          mkdir -p dist
+          GOOS=linux GOARCH=amd64 go build -trimpath -o dist/server ./cmd/server
+          GOOS=linux GOARCH=amd64 go build -trimpath -o dist/collector ./cmd/collector
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '16'
+          cache: yarn
+          cache-dependency-path: ui/yarn.lock
+
+      - name: Build UI
+        working-directory: ui
+        run: |
+          yarn install --frozen-lockfile
+          yarn build
+
+      - name: Upload build artifacts to staging dir
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          rm: true
+          source: dist/server,dist/collector,ui/dist
+          target: /home/alex/ddstats/.deploy
+          strip_components: 0
+
+      - name: Swap in new build and restart
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script_stop: true
+          script: |
+            cd /home/alex/ddstats
+
+            test -s .deploy/dist/server
+            test -s .deploy/dist/collector
+            test -s .deploy/ui/dist/index.html
+
+            chmod +x .deploy/dist/server .deploy/dist/collector
+
+            mv -f .deploy/dist/server server
+            mv -f .deploy/dist/collector collector
+
+            rm -rf ui/dist.prev
+            if [ -d ui/dist ]; then
+              mv ui/dist ui/dist.prev
+            fi
+            mv .deploy/ui/dist ui/dist
+
+            sudo systemctl restart ddstats-server
+            sleep 3
+            systemctl is-active --quiet ddstats-server
+
+            curl -sS --retry 5 --retry-delay 2 -o /dev/null -w 'motd status: %{http_code}\n' http://127.0.0.1:5000/api/v2/motd
+
+            rm -rf .deploy
