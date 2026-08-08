@@ -43,6 +43,13 @@ func (nm *NewsModel) GetAll(pageSize, pageNum int) ([]*models.News, error) {
 	return news, nil
 }
 
+// Insert adds a new news post, shown at the top of the News feed on the website
+func (nm *NewsModel) Insert(body string) error {
+	stmt := `INSERT INTO news (body) VALUES ($1)`
+	_, err := nm.DB.Exec(stmt, body)
+	return err
+}
+
 func (nm *NewsModel) GetTotalCount() (int, error) {
 	var count int
 	stmt := `
