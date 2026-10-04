@@ -201,6 +201,7 @@ func (si *sio) onStatusUpdate(s socketio.Conn, playerID, statusID int) {
 func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, notifyAboveThreshold bool) {
 	v, ok := si.livePlayers.Load(s.ID())
 	if !ok {
+		si.errorLog.Printf("socketio game_submitted: game %d dropped, connection %s is not logged in", gameID, s.ID())
 		return
 	}
 	player := v.(*player)
@@ -208,7 +209,8 @@ func (si *sio) onGameSubmitted(s socketio.Conn, gameID int, notifyPlayerBest, no
 	defer player.Unlock()
 	game, err := si.db.Games.Get(gameID)
 	if err != nil {
-		si.errorLog.Printf("%+v", err)
+		si.errorLog.Printf("socketio game_submitted: game %d for player %d dropped, loading game: %v", gameID, player.PlayerID, err)
+		return
 	}
 
 	// submit new game notification to website
@@ -275,33 +277,38 @@ func (si *sio) onLogin(s socketio.Conn, id int) {
 		return
 	}
 
-	p, err := si.ddAPI.UserByID(id)
+	p, err := resolveLoginPlayer(id, si.ddAPI.UserByID, si.db.Players.Get)
 	if err != nil {
-		si.errorLog.Printf("socketio onLogin: %v", err)
+		si.errorLog.Printf("socketio onLogin: player %d: %v", id, err)
 		s.Close()
 		return
 	}
+	if p.ddPlayer == nil {
+		si.infoLog.Printf("socketio onLogin: player %d: DD lookup failed, logged in from stored record: %v", id, p.ddErr)
+	}
 
-	websocketPlayer := websocket.PlayerWithLock{Player: websocket.Player{ID: int(p.PlayerID), Name: p.PlayerName, Status: StatusLoggedIn}}
+	websocketPlayer := websocket.PlayerWithLock{Player: websocket.Player{ID: p.id, Name: p.name, Status: StatusLoggedIn}}
 
 	si.livePlayers.Store(s.ID(), &player{
 		websocketPlayer: &websocketPlayer,
-		PlayerID:        int(p.PlayerID),
-		PlayerName:      p.PlayerName,
-		BestGameTime:    p.GameTime,
+		PlayerID:        p.id,
+		PlayerName:      p.name,
+		BestGameTime:    p.bestGameTime,
 		DeathType:       -2, // IN MENU
 	})
 
-	err = si.db.Players.UpsertDDPlayer(p)
-	if err != nil {
-		si.errorLog.Printf("socketio onLogin: %v", err)
-		s.Close()
-		return
+	if p.ddPlayer != nil {
+		err = si.db.Players.UpsertDDPlayer(p.ddPlayer)
+		if err != nil {
+			si.errorLog.Printf("socketio onLogin: player %d: %v", id, err)
+			s.Close()
+			return
+		}
 	}
 
 	si.websocketHub.RegisterPlayer <- &websocketPlayer
 
-	websocketMessage, err := websocket.NewMessage(strconv.Itoa(int(p.PlayerID)), "submit", struct{}{})
+	websocketMessage, err := websocket.NewMessage(strconv.Itoa(p.id), "submit", struct{}{})
 	if err != nil {
 		si.errorLog.Printf("socketio onSubmit: %v", err)
 	}
