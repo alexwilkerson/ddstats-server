@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	ddStatusCheckInterval = time.Minute
+	ddStatusCheckInterval = 5 * time.Second
 	// A single timeout is common even when the DD servers are healthy, so the
 	// servers are only reported down after several consecutive failed checks.
 	ddStatusFailureThreshold = 3
@@ -104,18 +104,19 @@ func (d *Discord) monitorDDStatus() {
 
 func (d *Discord) checkDDStatus() {
 	err := d.ddAPI.Heartbeat()
-	if err != nil {
-		d.infoLog.Printf("Devil Daggers heartbeat failed: %v", err)
-	}
 
 	var embed *discordgo.MessageEmbed
+	// Only transitions are logged; at this check interval, logging every
+	// failed heartbeat would flood the log during a long outage.
 	switch d.ddStatus.record(err, time.Now()) {
 	case ddStatusWentDown:
+		d.infoLog.Printf("Devil Daggers servers are down: %v", err)
 		embed = &discordgo.MessageEmbed{
 			Title:       "The Devil Daggers servers are down",
 			Description: "Leaderboards and score submissions are unavailable. I'll post here as soon as they're back up.",
 		}
 	case ddStatusCameUp:
+		d.infoLog.Println("Devil Daggers servers are back up")
 		embed = &discordgo.MessageEmbed{
 			Title:       "The Devil Daggers servers are back up",
 			Description: "Leaderboards and score submissions are available again.",
