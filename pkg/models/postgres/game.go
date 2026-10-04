@@ -740,10 +740,10 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 		SELECT
 			game.id,
 			player_id,
-			p1.player_name,
+			COALESCE(p1.player_name, 'unknown') AS player_name,
 			granularity,
 			round(game.game_time, 4) as game_time,
-			death_type.name as death_type,
+			COALESCE(death_type.name, 'UNKNOWN') AS death_type,
 			game.gems,
 			game.homing_daggers,
 			game.daggers_fired,
@@ -770,7 +770,12 @@ func (g *GameModel) Get(id int) (*models.GameWithName, error) {
 			gems_despawned,
 			gems_eaten,
 			daggers_eaten
-		FROM game JOIN player p1 ON game.player_id=p1.id JOIN death_type ON game.death_type=death_type.id
+		FROM game
+			-- Outer joins so games with a death type missing from death_type, or
+			-- recorded under an unknown player, still load instead of returning
+			-- no rows.
+			LEFT JOIN player p1 ON game.player_id=p1.id
+			LEFT JOIN death_type ON game.death_type=death_type.id
 			NATURAL LEFT JOIN spawnset
 			LEFT JOIN replay_player p2 ON game.replay_player_id=p2.id
 		WHERE game.id=$1`
