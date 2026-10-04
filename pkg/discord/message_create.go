@@ -2,6 +2,7 @@ package discord
 
 import (
 	"fmt"
+	"runtime/debug"
 	"strings"
 	"time"
 
@@ -15,7 +16,7 @@ const (
 func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	defer func() {
 		if r := recover(); r != nil {
-			fmt.Println("message create panic:", r)
+			d.errorLog.Printf("panic handling discord message %q from %s: %v\n%s", m.Content, describeMessageSource(m), r, debug.Stack())
 		}
 	}()
 
@@ -34,11 +35,13 @@ func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 		return
 	}
 	command := c.(*Command)
+	source := describeMessageSource(m)
 	since := time.Since(command.lastUsed)
 	if since < command.cooldown {
+		d.infoLog.Printf("discord command %s%s from %s rejected: on cooldown", prefix, command.name, source)
 		_, err := s.ChannelMessageSend(m.ChannelID, fmt.Sprintf("The %s%s command is on cooldown. Please wait %s to use it. %s", prefix, command.name, command.cooldown-since, m.Author.Mention()))
 		if err != nil {
-			d.errorLog.Printf("%v", err)
+			d.errorLog.Printf("sending cooldown notice for %s%s to %s: %v", prefix, command.name, source, err)
 		}
 		return
 	}
@@ -48,12 +51,13 @@ func (d *Discord) messageCreate(s *discordgo.Session, m *discordgo.MessageCreate
 	}
 	command.lastUsed = time.Now()
 	embed := command.getEmbed(m, args...)
+	d.infoLog.Printf("discord command %s%s args=%q from %s took %s", prefix, command.name, args, source, time.Since(command.lastUsed).Round(time.Millisecond))
 	if embed == nil {
 		return
 	}
 	_, err := s.ChannelMessageSendEmbed(m.ChannelID, embed)
 	if err != nil {
-		d.errorLog.Printf("%v", err)
+		d.errorLog.Printf("sending %s%s reply to %s: %v", prefix, command.name, source, err)
 	}
 
 	// switch strings.ToLower(contentTokens[0]) {

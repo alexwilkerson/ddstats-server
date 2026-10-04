@@ -86,7 +86,7 @@ The upstream Devil Daggers backend (`dd.hasmodai.com`) has no JSON API — it re
 
 ### Discord bot (`pkg/discord`)
 
-Commands live one-per-file (`command_*.go`) and self-register into a `sync.Map` via `registerCommands()`/`command.go`; `discord.go` is the client-agnostic subscriber to `websocketHub.DiscordBroadcast` that turns hub notification events (`PlayerBestReached`, `PlayerAboveThreshold`, etc.) into embeds posted to any channel whose name contains `ddstats` in every guild the bot is in. Adding a new notification type means adding a struct + channel send in `pkg/websocket`, a case in `discord.go`'s `listenForNotifications` switch, and usually a corresponding push out of `pkg/socketio`.
+Commands live one-per-file (`command_*.go`) and self-register into a `sync.Map` via `registerCommands()`/`command.go`; `discord.go` is the client-agnostic subscriber to `websocketHub.DiscordBroadcast` that turns hub notification events (`PlayerBestReached`, `PlayerAboveThreshold`, etc.) into embeds posted to any channel whose name contains `ddstats` in every guild the bot is in. For production debugging (logs, offline checklist, gateway close codes), see `docs/discord-bot.md`. Adding a new notification type means adding a struct + channel send in `pkg/websocket`, a case in `discord.go`'s `listenForNotifications` switch, and usually a corresponding push out of `pkg/socketio`.
 
 ### gRPC / protobuf (`gamesubmission/`)
 
