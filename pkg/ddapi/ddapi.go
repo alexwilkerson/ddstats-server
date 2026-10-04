@@ -341,3 +341,17 @@ func roundToNearest(f float64, numberOfDecimalPlaces int) float64 {
 	multiplier := math.Pow10(numberOfDecimalPlaces)
 	return math.Round(f*multiplier) / multiplier
 }
+
+// Heartbeat reports whether the Devil Daggers backend is serving leaderboard
+// data. It requests rank 1 because that player always exists, so anything
+// other than a parseable, named player means the backend is unhealthy.
+func (api *API) Heartbeat() error {
+	player, err := api.UserByRank(1)
+	if err != nil {
+		return err
+	}
+	if player.PlayerName == "" {
+		return ErrPlayerNotFound
+	}
+	return nil
+}

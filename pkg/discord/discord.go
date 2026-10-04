@@ -27,6 +27,7 @@ type Discord struct {
 	websocketHub    *websocket.Hub
 	commands        *sync.Map
 	ddstatsChannels *ddstatsChannels
+	ddStatus        *ddStatus
 	infoLog         *log.Logger
 	errorLog        *log.Logger
 	quit            chan struct{}
@@ -44,6 +45,7 @@ func New(token string, db *postgres.Postgres, ddAPI *ddapi.API, websocketHub *we
 		websocketHub:    websocketHub,
 		commands:        &sync.Map{},
 		ddstatsChannels: &ddstatsChannels{},
+		ddStatus:        &ddStatus{},
 		infoLog:         infoLog,
 		errorLog:        errorLog,
 		quit:            make(chan struct{}),
@@ -68,6 +70,7 @@ func (d *Discord) Start() error {
 		return err
 	}
 	go d.listenForNotifications()
+	go d.monitorDDStatus()
 	return nil
 }
 

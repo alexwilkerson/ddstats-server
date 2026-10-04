@@ -56,6 +56,7 @@ func (d *Discord) registerCommands() {
 	d.commandRegister()
 	d.commandMOTD()
 	d.commandNews()
+	d.commandStatus()
 }
 
 func fieldsFromPlayer(player *ddapi.Player) []*discordgo.MessageEmbedField {
