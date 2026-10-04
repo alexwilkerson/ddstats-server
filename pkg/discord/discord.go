@@ -1,6 +1,7 @@
 package discord
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"strings"
@@ -13,11 +14,14 @@ import (
 	"github.com/alexwilkerson/ddstats-server/pkg/ddapi"
 
 	"github.com/bwmarrin/discordgo"
+	gorillawebsocket "github.com/gorilla/websocket"
 )
 
 const (
 	ddstatsChannelName = "ddstats"
 	prefix             = "."
+	// https://discord.com/developers/docs/topics/opcodes-and-status-codes#gateway-gateway-close-event-codes
+	closeCodeDisallowedIntents = 4014
 )
 
 type Discord struct {
@@ -48,7 +52,19 @@ func New(token string, db *postgres.Postgres, ddAPI *ddapi.API, websocketHub *we
 		errorLog:        errorLog,
 		quit:            make(chan struct{}),
 	}
+	// Message Content is a privileged intent: it must also be enabled for the
+	// bot in the Discord Developer Portal, or the gateway rejects the
+	// connection with close code 4014.
+	session.Identify.Intents = discordgo.IntentGuilds |
+		discordgo.IntentGuildMessages |
+		discordgo.IntentDirectMessages |
+		discordgo.IntentMessageContent
+	session.LogLevel = discordgo.LogWarning
+	discordgo.Logger = discordgoLogger(infoLog, errorLog)
 	session.AddHandler(discord.messageCreate)
+	session.AddHandler(discord.onReady)
+	session.AddHandler(discord.onResumed)
+	session.AddHandler(discord.onDisconnect)
 	discord.registerCommands()
 	return &discord, nil
 }
@@ -56,16 +72,21 @@ func New(token string, db *postgres.Postgres, ddAPI *ddapi.API, websocketHub *we
 func (d *Discord) Start() error {
 	d.infoLog.Println("Starting Discord Bot")
 	err := d.Session.Open()
+	var closeErr *gorillawebsocket.CloseError
+	if errors.As(err, &closeErr) && closeErr.Code == closeCodeDisallowedIntents {
+		return fmt.Errorf("opening discord gateway connection: %w (enable the Message Content intent for the bot in the Discord Developer Portal)", err)
+	}
 	if err != nil {
-		return err
+		return fmt.Errorf("opening discord gateway connection: %w", err)
 	}
 	err = d.getDDStatsChannels()
 	if err != nil {
-		return err
+		return fmt.Errorf("finding ddstats channels: %w", err)
 	}
-	err = d.Session.UpdateStatusComplex(discordgo.UpdateStatusData{Game: &discordgo.Game{Name: ".help | ddstats.com"}})
+	d.infoLog.Printf("Discord bot broadcasting to %d ddstats channel(s)", len(d.ddstatsChannels.load()))
+	err = d.Session.UpdateGameStatus(0, ".help | ddstats.com")
 	if err != nil {
-		return err
+		return fmt.Errorf("setting discord status: %w", err)
 	}
 	go d.listenForNotifications()
 	return nil
@@ -144,7 +165,7 @@ func (d *Discord) broadcast(embed *discordgo.MessageEmbed) error {
 	for _, channel := range d.ddstatsChannels.load() {
 		_, err := d.Session.ChannelMessageSendEmbed(channel, embed)
 		if err != nil {
-			return err
+			return fmt.Errorf("broadcasting %q to channel %s: %w", embed.Title, channel, err)
 		}
 	}
 	return nil

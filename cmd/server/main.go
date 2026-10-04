@@ -110,9 +110,10 @@ func main() {
 		if err != nil {
 			errorLog.Fatal(err)
 		}
+		// The bot failing to connect shouldn't take the website down with it.
 		err = discordSession.Start()
 		if err != nil {
-			errorLog.Fatal(err)
+			errorLog.Printf("Discord bot failed to start, continuing without it: %v", err)
 		}
 		defer discordSession.Close()
 	}
